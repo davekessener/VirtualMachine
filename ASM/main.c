@@ -11,16 +11,11 @@ FILE *openfout(const char *);
 
 int main(int argc, char *argv[])
 {
-	PREPROCESSOR pp;
-	ASM assm;
+	ASM *assm;
 	INS_TABLE instr;
 	PARAMS p;
-	FILE *fout;
-    char *tmp;
-	int err;
+	char name_buf[BUF_SIZE];
 
-	PREPROCESSOR_init(&pp);
-	ASM_init(&assm);
 	INS_init(&instr);
 
 	readParameter(&p, argc, argv);
@@ -38,9 +33,11 @@ int main(int argc, char *argv[])
 		return EXIT_SUCCESS;
 	}
 
-	if(p.output == NULL || p.input == NULL || p.inst == NULL || p.ic <= 0)
+	if((p.output == NULL && !(p.flags & FLAG_OBJ)) || 
+		p.input == NULL || p.inst == NULL || p.ic <= 0)
 	{
-		fprintf(stderr, "ERR: An output as well as one or more input file[s] have to be specified.\nAbort.\n");
+		fprintf(stderr, "ERR: An output as well as one or more "
+			"input file[s] have to be specified.\nAbort.\n");
 		return EXIT_FAILURE;
 	}
 
@@ -61,15 +58,35 @@ int main(int argc, char *argv[])
 		}
 	}
 
+	if(p.flags & FLAG_OBJ)
+	{
+		for(i = 0 ; i < p.ic ; i++)
+		{
+			sprintf(name_buf, "%s.o", p.input[i]);
+			fout = openfout(name_buf);
 
-	fout = openfout(p.output);
+			ASM_writeLinkable(assm + i, fout);
 
-	//ASM_finalize(&assm);
-	//ASM_write(&assm, fout);
-	ASM_writeLinkable(&assm, fout);
-	ASM_dispose(&assm);
+			fclose(fout);
+		}
+	}
+	else
+	{
+		fout = openfout(p.output);
 
-	fclose(fout);
+		for(i = 0 ; i < p.ic ; i++)
+		{
+			ASM_finalize(assm + i);
+			ASM_write(assm + i, fout);
+		}
+
+		fclose(fout);
+	}
+
+	for(i = 0 ; i < p.ic ; i++)
+	{
+		ASM_dispose(assm + i);
+	}
 
 	return EXIT_SUCCESS;
 }
