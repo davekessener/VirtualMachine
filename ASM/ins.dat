@@ -1,0 +1,32 @@
+0 HLT
+1 NOP
+2 LD r,r
+3 LD r,c
+4 LD r,a
+5 LD a,r
+6 LD a,c
+7 JMP c
+8 JZ r,c
+9 CALL c
+10 CLLZ r,c
+11 RET
+12 CMP r,r
+13 CMP r,c
+14 BTST r,c
+15 BSET r,c
+16 BRST r,c
+17 INC r
+18 DEC r
+19 ADD r,r
+20 SUB r,r
+21 MUL r,r
+22 DIV r,r
+23 NOT r
+24 AND r,r
+25 OR r,r
+26 XOR r,r
+27 SHL r,c
+28 SHR r,c
+29 OFF c
+30 IN r,c
+31 OUT c,r
