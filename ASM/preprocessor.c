@@ -232,6 +232,7 @@ void PREPROCESSOR_include(PREPROCESSOR *this, const char *src)
 		if(strcmp(this->includes[i], src) == 0) return;
 	}
 
+//	fprintf(stderr, "@OPENING '%s'\n", src);
 	inc = fopen(src, "rb");
 
 	assert(inc);
@@ -248,6 +249,7 @@ void PREPROCESSOR_include(PREPROCESSOR *this, const char *src)
 	fread(buf, 1, s, inc);
 	buf[s] = '\0';
 
+//	fprintf(stderr, "@CLOSING '%s'\n", src);
 	fclose(inc);
 
 	SQ_init(&sq);

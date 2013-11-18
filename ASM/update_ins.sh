@@ -1,4 +1,4 @@
 #!/bin/bash
 cp ~/data/eclipse/LWJGL/VirtualMachine/resource/ins.dat .
-cp test.bin ~/data/eclipse/LWJGL/VirtualMachine/resource/
+cp $1 ~/data/eclipse/LWJGL/VirtualMachine/resource/test.bin
 

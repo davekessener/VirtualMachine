@@ -1,0 +1,49 @@
+0 HLT
+1 NOP
+2 LD r,r
+3 LD r,c
+4 LD r,a
+5 LD a,r
+6 LD a,c
+7 JMP c
+8 JZ r,c
+9 CALL c
+10 CLLZ r,c
+11 RET
+12 RETI
+13 RETZ
+14 CMP r,r
+15 CMP r,c
+16 BTST r,c
+17 BSET r,c
+18 BRST r,c
+19 INC r
+20 DEC r
+21 ADD r,r
+22 SUB r,r
+23 MUL r,r
+24 DIV r,r
+25 NOT r
+26 AND r,r
+27 OR r,r
+28 XOR r,r
+29 ADD r,c
+30 SUB r,c
+31 MUL r,c
+32 DIV r,c
+33 AND r,c
+34 OR r,c
+35 XOR r,c
+36 SHL r,c
+37 SHR r,c
+38 OFF c
+39 IN r,c
+40 OUT c,r
+41 OUT c,c
+42 LDIR a
+43 INT c
+44 EI
+45 DI
+46 PUSH r
+47 PUSH c
+48 POP r

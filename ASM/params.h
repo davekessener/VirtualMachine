@@ -1,5 +1,5 @@
 #ifndef __PARAMS_H
-#define __PArAMS_H
+#define __PARAMS_H
 
 #include <stdlib.h>
 #include "include.h"

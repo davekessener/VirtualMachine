@@ -5,8 +5,7 @@
 #include <malloc.h>
 #include "tokenizer.h"
 #include "numeval.h"
-
-#define BUF_SIZE 1024
+#include "include.h"
 
 #define INS_ARG_NONE  0
 #define INS_ARG_CONST 1
@@ -53,7 +52,7 @@ typedef struct
 
 typedef struct
 {
-	int error, pos, org, flags;
+	int error, pos, org, cpc, flags;
 	SYM_TABLE sym;
 	INS_TABLE *ins;
 	WORD buffer[BUF_SIZE];
@@ -61,6 +60,7 @@ typedef struct
 
 void ASM_init(ASM*);
 void ASM_parse(ASM*, const char *);
+void ASM_prepareLinkage(ASM*, int);
 void ASM_finalize(ASM*);
 long ASM_write(ASM*, FILE *);
 long ASM_writeLinkable(ASM*, FILE *);
@@ -71,8 +71,10 @@ void SYM_init(SYM_TABLE*);
 void SYM_setValue(SYM_TABLE*, const char *, WORD, int);
 void SYM_setExpression(SYM_TABLE*, WORD, const char *);
 void SYM_replace(SYM_TABLE*, WORD *);
+void SYM_setOffset(SYM_TABLE*, int);
+int  SYM_resolveExternals(SYM_TABLE*, ASM *, int);
 long SYM_write(SYM_TABLE*, FILE *);
-long ASM_writeLinkable(ASM*, FILE *);
+int  SYM_read(SYM_TABLE*, FILE *);
 void SYM_dispose(SYM_TABLE*);
 
 void INS_init(INS_TABLE*);
@@ -83,7 +85,7 @@ void INS_dispose(INS_TABLE*);
 void S_init(SYM*);
 void S_dispose(SYM*);
 
-char *replaceCurPos(const char *, WORD);
+char *replaceCurPos(const char *, const char *);
 char *readMemory(const char *, int *);
 
 #endif

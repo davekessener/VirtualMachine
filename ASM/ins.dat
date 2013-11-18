@@ -30,3 +30,4 @@
 29 OFF c
 30 IN r,c
 31 OUT c,r
+32 LDIR a

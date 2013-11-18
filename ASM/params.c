@@ -4,8 +4,8 @@
 
 void readParameter(PARAMS *this, int argc, char **argv)
 {
-	const char *fn;
 	char **cmds;
+	int i;
 	PTABLE tbl;
 	PTABLE_init(&tbl);
 
@@ -33,7 +33,7 @@ void readParameter(PARAMS *this, int argc, char **argv)
 	}
 	else
 	{
-		if(PARG(paramVerbose)) this->flags |= FLAG_VERBOSE;
+		if(PARG(paramVerbose)) this->flags |= FLAG_VERB;
 		if(PARG(paramObject)) this->flags |= FLAG_OBJ;
 		if(PARG(paramLink)) this->flags |= FLAG_LNK;
 		if(PARG(paramOut))
@@ -48,7 +48,7 @@ void readParameter(PARAMS *this, int argc, char **argv)
 
 		cmds = PTABLE_getValues(&tbl, NULL);
 
-		if(cmd != NULL)
+		if(cmds != NULL)
 		{
 			for(i = 0 ; cmds[i] ; i++);
 

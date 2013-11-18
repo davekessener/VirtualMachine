@@ -1,20 +1,23 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include "include.h"
 #include "params.h"
 #include "tokenizer.h"
 #include "preprocessor.h"
 #include "assembler.h"
 
-#define BUF_SIZE 1024
-
 FILE *openfout(const char *);
+int runAssembler(ASM *, const char *);
 
 int main(int argc, char *argv[])
 {
+	FILE *fout;
 	ASM *assm;
 	INS_TABLE instr;
 	PARAMS p;
 	char name_buf[BUF_SIZE];
+	int i, j, offset;
+	WORD main_addr[2];
 
 	INS_init(&instr);
 
@@ -47,6 +50,7 @@ int main(int argc, char *argv[])
 	for(i = 0 ; i < p.ic ; i++)
 	{
 		ASM_init(assm + i);
+		assm[i].ins = &instr;
 
 		if(p.flags & FLAG_LNK)
 		{
@@ -72,7 +76,61 @@ int main(int argc, char *argv[])
 	}
 	else
 	{
+		offset = 2;
+
+		if(p.flags & FLAG_VERB)
+		{
+			printf("INITIATING PREPROCESSOR...\n");
+		}
+
+		for(i = 0 ; i < p.ic ; i++)
+		{
+			ASM_prepareLinkage(assm + i, offset);
+			offset += assm[i].pos + assm[i].org;
+		}
+
+		if(p.flags & FLAG_VERB)
+		{
+			printf("TRYING TO RESOLVE EXTERNALS...\n");
+		}
+
+		for(i = 0 ; i < p.ic ; i++)
+		{
+			SYM_resolveExternals(&assm[i].sym, assm, p.ic);
+		}
+
+		if(p.flags & FLAG_VERB)
+		{
+			printf("SEARCHING MAIN...\n");
+		}
+
+		main_addr[0] = 7;
+		main_addr[1] = 0;
+		for(i = 0 ; i < p.ic ; i++)
+		{
+			for(j = 0 ; j < assm[i].sym.cs ; j++)
+			{
+				if(strcmp(assm[i].sym.syms[j].name, ":main") == 0)
+				{
+					main_addr[1] = assm[i].sym.syms[j].val;
+					goto found_main;
+				}
+			}
+		}
+
+		fprintf(stderr, "ERR: No entry point. Please provide label ':main'.\nAbort.\n");
+		return EXIT_FAILURE;
+
+		found_main:
+
+		if(p.flags & FLAG_VERB)
+		{
+			printf("FINALIZING...\n");
+		}
+
 		fout = openfout(p.output);
+
+		fwrite(main_addr, sizeof(WORD), 2, fout);
 
 		for(i = 0 ; i < p.ic ; i++)
 		{
@@ -82,6 +140,8 @@ int main(int argc, char *argv[])
 
 		fclose(fout);
 	}
+
+	INS_dispose(&instr);
 
 	for(i = 0 ; i < p.ic ; i++)
 	{
@@ -94,6 +154,7 @@ int main(int argc, char *argv[])
 int runAssembler(ASM *assm, const char *fn)
 {
 	PREPROCESSOR pp;
+	char *tmp;
 	int err;
 
 	PREPROCESSOR_init(&pp);

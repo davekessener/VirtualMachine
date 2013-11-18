@@ -1,9 +1,3 @@
-/* Evaluation routine that parses the input string
- * and converts it into postfix notation that can be
- * read and evaluated by the stackmachine
- * File: evaluate.h for evaluate.c
- * Daniel Kessener, HAW
- */
 #ifndef __EVALUATE_H
 #define __EVALUATE_H
 
@@ -17,10 +11,8 @@
 #include "stackmachine.h"
 #undef SM_LIB
 
-// If this is included by 'evaluate.c'
 #ifdef EVAL_C
 
-// Possible token-ids
 enum
 {
 	TOK_NONE, 

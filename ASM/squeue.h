@@ -4,8 +4,7 @@
 #include <string.h>
 #include <assert.h>
 #include <malloc.h>
-
-#define BUF_SIZE 1024
+#include "include.h"
 
 typedef struct
 {

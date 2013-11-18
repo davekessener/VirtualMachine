@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "include.h"
 #include "tokenizer.h"
 #include "squeue.h"
 
@@ -16,7 +17,6 @@
 #define PP_STATE_MCB (1<<6)
 
 #define MAX_RECURSION 32
-#define BUF_SIZE 1024
 
 typedef struct
 {

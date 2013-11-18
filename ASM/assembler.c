@@ -6,6 +6,7 @@ void ASM_init(ASM *this)
 	this->error = 0;
 	this->flags = ASM_F_NONE;
 	this->ins   = NULL;
+	this->cpc   = 0;
 	
 	SYM_init(&this->sym);
 }
@@ -14,7 +15,7 @@ void ASM_parse(ASM *this, const char *line)
 {
 	TOKENIZER t;
 	INST *inst = NULL;
-	char name_buf[BUF_SIZE], arg_buf[BUF_SIZE], *tmp;
+	char name_buf[BUF_SIZE], arg_buf[BUF_SIZE], buf[BUF_SIZE], *tmp;
 	int args[2], i, j, k, curPos;
 
 	assert(this->ins);
@@ -32,8 +33,9 @@ void ASM_parse(ASM *this, const char *line)
 		if(memcmp(line, ".dw", 3) == 0)
 		{
 			//sscanf(line + 3, " %d", &i);
-			i = executeNumberEvaluator(line + 4);
-			this->buffer[this->pos++] = i;
+			SYM_setExpression(&this->sym, this->pos, line + 4);
+//			i = executeNumberEvaluator(line + 4);
+			this->buffer[this->pos++] = 0;
 		}
 		else if(memcmp(line, ".org", 4) == 0)
 		{
@@ -53,9 +55,9 @@ void ASM_parse(ASM *this, const char *line)
 			this->org = 0;
 			this->flags &= ~ASM_F_ORG;
 		}
-		else if(memcmp(line, ".extern" 7) == 0)
+		else if(memcmp(line, ".extern", 7) == 0)
 		{
-			SYM_setValue(&this->cym, line + 8, 0, SYM_F_EXTERN);
+			SYM_setValue(&this->sym, line + 8, 0, SYM_F_EXTERN);
 		}
 		else
 		{
@@ -141,7 +143,9 @@ void ASM_parse(ASM *this, const char *line)
 			{
 				case INS_ARG_NONE: break;
 				case INS_ARG_CONST:
-					tmp = replaceCurPos(arg_buf + i * BUF_SIZE / 2, curPos);
+					sprintf(buf, ":__%d", this->cpc++);
+					tmp = replaceCurPos(arg_buf + i * BUF_SIZE / 2, buf);
+					SYM_setValue(&this->sym, buf, curPos + this->org, (this->flags & ASM_F_ORG)  ? SYM_F_ABS : SYM_F_NONE);
 					SYM_setExpression(&this->sym, this->pos, tmp);
 					free(tmp);
 					this->buffer[this->pos++] = 0;
@@ -175,6 +179,11 @@ void ASM_parse(ASM *this, const char *line)
 			}
 		}
 	}
+}
+
+void ASM_prepareLinkage(ASM *this, int offset)
+{
+	SYM_setOffset(&this->sym, offset);
 }
 
 void ASM_finalize(ASM *this)
@@ -314,6 +323,50 @@ void SYM_replace(SYM_TABLE *this, WORD *data)
 
 		//printf("%d\n", data[this->occ[i]]);
 	}
+}
+
+void SYM_setOffset(SYM_TABLE *this, int offset)
+{
+	int i;
+	for(i = 0 ; i < this->cs ; i++)
+	{
+		if(!(this->syms[i].flags & SYM_F_ABS) && !(this->syms[i].flags & SYM_F_EXTERN))
+		{
+			this->syms[i].val += (WORD) offset;
+		}
+	}
+}
+
+int  SYM_resolveExternals(SYM_TABLE *this, ASM *assm, int c)
+{
+	int i, j, k;
+	for(i = 0 ; i < this->cs ; i++)
+	{
+		if(this->syms[i].flags & SYM_F_EXTERN)
+		{
+			for(j = 0 ; j < c ; j++)
+			{
+				for(k = 0 ; k < assm[j].sym.cs ; k++)
+				{
+					if(!(assm[j].sym.syms[k].flags & SYM_F_EXTERN) && 
+							strcmp(this->syms[i].name, assm[j].sym.syms[k].name) == 0)
+					{
+						this->syms[i].val = assm[j].sym.syms[k].val;
+						this->syms[i].flags &= ~SYM_F_EXTERN;
+
+						goto brk;
+					}
+				}
+			}
+	
+			fprintf(stderr, "ERR: Couldn't resolve external label '%s'.\nAbort.\n", this->syms[i].name);
+			exit(1);
+	
+brk: ;
+		}
+	}
+
+	return 0;
 }
 
 long SYM_write(SYM_TABLE *this, FILE *fout)
@@ -530,16 +583,14 @@ void INS_dispose(INS_TABLE *this)
 
 // # ---------------------------------------------------------------------------
 
-char *replaceCurPos(const char *src, WORD p)
+char *replaceCurPos(const char *src, const char *pos)
 {
 	TOKENIZER t;
-	char buf[BUF_SIZE], pos[32], *tmp;
+	char buf[BUF_SIZE], *tmp;
 	buf[0] = '\0';
 
 	TOKENIZER_init(&t);
 	TOKENIZER_set(&t, src);
-
-	sprintf(pos, "%d", p);
 
 	while((tmp = TOKENIZER_readToken(&t)) != NULL)
 	{
