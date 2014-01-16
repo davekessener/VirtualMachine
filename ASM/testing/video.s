@@ -21,7 +21,12 @@
 	ld r9,(hl)
 	ld bc,:CURSOR
 	ld hl,(bc)
-	add hl,VIDEO_RAM
+	ld bc,hl
+	and bc,0x1f
+	add bc,VIDEO_RAM
+	shr hl,8
+	mul hl,32
+	add hl,bc
 	ld bc,(sp+1)
 	or bc,r9
 	ld (hl),bc
@@ -53,7 +58,7 @@
 	jz a,$+5
 	jmp $+8
 	add bc,0x0100
-	and bc,0x1fff
+	and bc,0x1f1f
 	ld (hl),bc
 	out P_SCREEN, SCREEN_C_TXT_CURSOR_ADVANCE
 	ret

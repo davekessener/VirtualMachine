@@ -25,7 +25,7 @@
 	and a,0x8000
 	jz a,$+5
 	jmp $+8
-	push 'A'
+	push r0
 	call :putch
 	pop r0
 	reti
