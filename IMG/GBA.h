@@ -2,6 +2,7 @@
 #define _GBA_H
 
 #include <iostream>
+#include <fstream>
 #include <string.h>
 #include "IMG.h"
 #include "LZ77.h"
@@ -86,7 +87,7 @@ namespace IMG
 		int   TileCount;
 		int   BehaviorBackgroundLength;
 		int   LZ77ImageSize;
-		FILE *ROM;
+		const std::fstream *ROM;
 	} MAP;
 	
 	typedef struct _tile_simple
@@ -97,9 +98,9 @@ namespace IMG
 	} TILE;
 }
 
-	bool InitializeMap(FILE *, IMG::OFFSET, IMG::_map *);
+	bool InitializeMap(std::fstream&, IMG::OFFSET, IMG::_map *);
 	void ReleaseMap(IMG::_map *);
-	IMG::OFFSET GetMapHeaderOffset(FILE *, int, int);
+	IMG::OFFSET GetMapHeaderOffset(std::fstream&, int, int);
 	bool ConvertPallet(IMG::_map::_palette *, IMG::WORD *);
 	bool ConvRSStoANSI(char *, char *, int);
 

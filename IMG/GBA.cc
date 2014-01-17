@@ -2,18 +2,21 @@
 
 using namespace IMG;
 
-void inline LOADFROM(FILE *f, void *d, size_t c, int o)
+void inline LOADFROM(std::fstream& f, void *d, size_t c, int o)
 {
-	fseek(f, o, SEEK_SET);
-	fread(d, 1, c, f);
+	f.seekg(o, std::ios::beg);
+	f.read((char *) d, c);
+//	fseek(f, o, SEEK_SET);
+//	fread(d, 1, c, f);
 }
 
-void inline SET(FILE *f, int o)
+void inline SET(std::fstream& f, int o)
 {
-	fseek(f, o, SEEK_SET);
+	f.seekg(o, std::ios::beg);
+//	fseek(f, o, SEEK_SET);
 }
 
-bool InitializeMap(FILE *ROM, OFFSET Offset, _map *Map)
+bool InitializeMap(std::fstream& ROM, OFFSET Offset, _map *Map)
 {
 #ifdef DEBUG
 	std::cout << "Entered map initialization routine." << std::endl;
@@ -21,7 +24,7 @@ bool InitializeMap(FILE *ROM, OFFSET Offset, _map *Map)
 
 	Map->Offset = Offset;
 //	Map->Alpha = 40;
-	Map->ROM = ROM;
+	Map->ROM = &ROM;
 
 	//  #=============================#
 	//  #---------- Header -----------#
@@ -151,8 +154,12 @@ bool InitializeMap(FILE *ROM, OFFSET Offset, _map *Map)
 
 	//  #-- Load LZ77 images into RAM
 	Buffer = (BYTE *) malloc(Length1 + Length2);
-	LOADFROM(tmp1, Buffer, Length1, 0);
-	LOADFROM(tmp2, Buffer + Length1, Length2, 0);
+	fseek(tmp1, 0, SEEK_SET);
+	fread(Buffer, 1, Length1, tmp1);
+	fseek(tmp2, 0, SEEK_SET);
+	fread(Buffer + Length1, 1, Length2, tmp2);
+//	LOADFROM(tmp1, Buffer, Length1, 0);
+//	LOADFROM(tmp2, Buffer + Length1, Length2, 0);
 	fclose(tmp1);
 	fclose(tmp2);
 //	remove("LZ77_1.tmp");
@@ -215,9 +222,9 @@ bool InitializeMap(FILE *ROM, OFFSET Offset, _map *Map)
 //	return RetVal;
 //}
 
-OFFSET GetMapHeaderOffset(FILE *GBA, int iBank, int iMap)
+OFFSET GetMapHeaderOffset(std::fstream& GBA, int iBank, int iMap)
 {
-	if(!GBA)
+	if(!GBA.is_open())
 		return INVALID_OFFSET;
 
 	OFFSET oMaps;
@@ -243,6 +250,322 @@ void ReleaseMap(_map *Map)
 //		DeleteDC(Map->WorkDCs[i]);
 //	for(int i = 0 ; i < 13 ; i++)
 //		DeleteObject(Map->RawImages[i]);
+}
+
+bool ConvertPallet(_map::_palette *Pallet, WORD *Buffer)
+{
+	for(int i = 0 ; i < 16 ; i++)
+	{
+		Pallet->Colors_raw[i]	= Buffer[i];
+		Pallet->Colors[i].Red	= GBAR(Pallet->Colors_raw[i]);
+		Pallet->Colors[i].Green	= GBAG(Pallet->Colors_raw[i]);
+		Pallet->Colors[i].Blue	= GBAB(Pallet->Colors_raw[i]);
+		Pallet->CR_Colors[i]	= GBAtoRGB(Pallet->Colors_raw[i]);
+	}
+
+	return true;
+}
+
+bool ConvRSStoANSI(char *src, char* dest, int MaxLength)
+{
+	int Tmp = MaxLength;
+	while(--Tmp && *(dest - 1) != '\0')
+	{
+		char Char = ' ';
+		BYTE t;
+
+		switch((t = (BYTE) *src++))
+		{
+		case(0xD5):
+			Char = 'a';
+			break;
+		case(0xD6):
+			Char = 'b';
+			break;
+		case(0xD7):
+			Char = 'c';
+			break;
+		case(0xD8):
+			Char = 'd';
+			break;
+		case(0xD9):
+			Char = 'e';
+			break;
+		case(0xDA):
+			Char = 'f';
+			break;
+		case(0xDB):
+			Char = 'g';
+			break;
+		case(0xDC):
+			Char = 'h';
+			break;
+		case(0xDD):
+			Char = 'i';
+			break;
+		case(0xDE):
+			Char = 'j';
+			break;
+		case(0xDF):
+			Char = 'k';
+			break;
+		case(0xE0):
+			Char = 'l';
+			break;
+		case(0xE1):
+			Char = 'm';
+			break;
+		case(0xE2):
+			Char = 'n';
+			break;
+		case(0xE3):
+			Char = 'o';
+			break;
+		case(0xE4):
+			Char = 'p';
+			break;
+		case(0xE5):
+			Char = 'q';
+			break;
+		case(0xE6):
+			Char = 'r';
+			break;
+		case(0xE7):
+			Char = 's';
+			break;
+		case(0xE8):
+			Char = 't';
+			break;
+		case(0xE9):
+			Char = 'u';
+			break;
+		case(0xEA):
+			Char = 'v';
+			break;
+		case(0xEB):
+			Char = 'w';
+			break;
+		case(0xEC):
+			Char = 'x';
+			break;
+		case(0xED):
+			Char = 'y';
+			break;
+		case(0xEE):
+			Char = 'z';
+			break;
+		case(0xBB):
+			Char = 'A';
+			break;
+		case(0xBC):
+			Char = 'B';
+			break;
+		case(0xBD):
+			Char = 'C';
+			break;
+		case(0xBE):
+			Char = 'D';
+			break;
+		case(0xBF):
+			Char = 'E';
+			break;
+		case(0xC0):
+			Char = 'F';
+			break;
+		case(0xC1):
+			Char = 'G';
+			break;
+		case(0xC2):
+			Char = 'H';
+			break;
+		case(0xC3):
+			Char = 'I';
+			break;
+		case(0xC4):
+			Char = 'J';
+			break;
+		case(0xC5):
+			Char = 'K';
+			break;
+		case(0xC6):
+			Char = 'L';
+			break;
+		case(0xC7):
+			Char = 'M';
+			break;
+		case(0xC8):
+			Char = 'N';
+			break;
+		case(0xC9):
+			Char = 'O';
+			break;
+		case(0xCA):
+			Char = 'P';
+			break;
+		case(0xCB):
+			Char = 'Q';
+			break;
+		case(0xCC):
+			Char = 'R';
+			break;
+		case(0xCD):
+			Char = 'S';
+			break;
+		case(0xCE):
+			Char = 'T';
+			break;
+		case(0xCF):
+			Char = 'U';
+			break;
+		case(0xD0):
+			Char = 'V';
+			break;
+		case(0xD1):
+			Char = 'W';
+			break;
+		case(0xD2):
+			Char = 'X';
+			break;
+		case(0xD3):
+			Char = 'Y';
+			break;
+		case(0xD4):
+			Char = 'Z';
+			break;
+		case(0xA1):
+			Char = '0';
+			break;
+		case(0xA2):
+			Char = '1';
+			break;
+		case(0xA3):
+			Char = '2';
+			break;
+		case(0xA4):
+			Char = '3';
+			break;
+		case(0xA5):
+			Char = '4';
+			break;
+		case(0xA6):
+			Char = '5';
+			break;
+		case(0xA7):
+			Char = '6';
+			break;
+		case(0xA8):
+			Char = '7';
+			break;
+		case(0xA9):
+			Char = '8';
+			break;
+		case(0xAA):
+			Char = '9';
+			break;
+		case(0xAB):
+			Char = '!';
+			break;
+		case(0x5B):
+			Char = '%';
+			break;
+		case(0x2D):
+			Char = '&';
+			break;
+		case(0xBA):
+			Char = '/';
+			break;
+		case(0x5C):
+			Char = '(';
+			break;
+		case(0x5D):
+			Char = ')';
+			break;
+		case(0x35):
+			Char = '=';
+			break;
+		case(0xAC):
+			Char = '?';
+			break;
+		case(0xB8):
+			Char = ',';
+			break;
+		case(0xAD):
+			Char = '.';
+			break;
+		case(0xAE):
+			Char = '-';
+			break;
+		case(0x2E):
+			Char = '+';
+			break;
+		case(0xB4):
+			Char = '\'';
+			break;
+		case(0xF0):
+			Char = ':';
+			break;
+		case(0x36):
+			Char = ';';
+			break;
+		case(0x85):
+			Char = '<';
+			break;
+		case(0x86):
+			Char = '>';
+			break;
+		case(0x00):
+			Char = ' ';
+			break;
+		case(0x1B):
+			Char = 'é';
+			break;
+		case(0xFE):
+			Char = '\\';
+			break;
+		case(0xFA):
+			Char = '\\';
+			break;
+		case(0xF4):
+			Char = 'ä';
+			break;
+		case(0xF5):
+			Char = 'ö';
+			break;
+		case(0xF6):
+			Char = 'ü';
+			break;
+		case(0x15):
+			Char = 'ß';
+			break;
+		case(0xB0):
+			Char = '.';
+			break;
+		case(0xF3):
+			Char = 'Ü';
+			break;
+		case(0xF2):
+			Char = 'Ö';
+			break;
+		case(0xF1):
+			Char = 'Ä';
+			break;
+		case(0xFF):
+			Char = '\0';
+			break;
+		default:
+#ifdef DEBUG
+			fprintf(stderr, "ERR: Invalid RSS character '0x%02X'\n", t);
+#endif
+			Char = '\0';
+			break;
+		}
+
+		*dest++ = Char;
+	}
+
+	dest[MaxLength - 1] = '\0';
+
+	return (Tmp > 0 ? true : false);
 }
 
 //void WriteBack(_map *Map)
@@ -575,318 +898,3 @@ void ReleaseMap(_map *Map)
 //	}
 //}
 
-bool ConvertPallet(_map::_palette *Pallet, WORD *Buffer)
-{
-	for(int i = 0 ; i < 16 ; i++)
-	{
-		Pallet->Colors_raw[i]	= Buffer[i];
-		Pallet->Colors[i].Red	= GBAR(Pallet->Colors_raw[i]);
-		Pallet->Colors[i].Green	= GBAG(Pallet->Colors_raw[i]);
-		Pallet->Colors[i].Blue	= GBAB(Pallet->Colors_raw[i]);
-		Pallet->CR_Colors[i]	= GBAtoRGB(Pallet->Colors_raw[i]);
-	}
-
-	return true;
-}
-
-bool ConvRSStoANSI(char *src, char* dest, int MaxLength)
-{
-	int Tmp = MaxLength;
-	while(--Tmp && *(dest - 1) != '\0')
-	{
-		char Char = ' ';
-		BYTE t;
-
-		switch((t = (BYTE) *src++))
-		{
-		case(0xD5):
-			Char = 'a';
-			break;
-		case(0xD6):
-			Char = 'b';
-			break;
-		case(0xD7):
-			Char = 'c';
-			break;
-		case(0xD8):
-			Char = 'd';
-			break;
-		case(0xD9):
-			Char = 'e';
-			break;
-		case(0xDA):
-			Char = 'f';
-			break;
-		case(0xDB):
-			Char = 'g';
-			break;
-		case(0xDC):
-			Char = 'h';
-			break;
-		case(0xDD):
-			Char = 'i';
-			break;
-		case(0xDE):
-			Char = 'j';
-			break;
-		case(0xDF):
-			Char = 'k';
-			break;
-		case(0xE0):
-			Char = 'l';
-			break;
-		case(0xE1):
-			Char = 'm';
-			break;
-		case(0xE2):
-			Char = 'n';
-			break;
-		case(0xE3):
-			Char = 'o';
-			break;
-		case(0xE4):
-			Char = 'p';
-			break;
-		case(0xE5):
-			Char = 'q';
-			break;
-		case(0xE6):
-			Char = 'r';
-			break;
-		case(0xE7):
-			Char = 's';
-			break;
-		case(0xE8):
-			Char = 't';
-			break;
-		case(0xE9):
-			Char = 'u';
-			break;
-		case(0xEA):
-			Char = 'v';
-			break;
-		case(0xEB):
-			Char = 'w';
-			break;
-		case(0xEC):
-			Char = 'x';
-			break;
-		case(0xED):
-			Char = 'y';
-			break;
-		case(0xEE):
-			Char = 'z';
-			break;
-		case(0xBB):
-			Char = 'A';
-			break;
-		case(0xBC):
-			Char = 'B';
-			break;
-		case(0xBD):
-			Char = 'C';
-			break;
-		case(0xBE):
-			Char = 'D';
-			break;
-		case(0xBF):
-			Char = 'E';
-			break;
-		case(0xC0):
-			Char = 'F';
-			break;
-		case(0xC1):
-			Char = 'G';
-			break;
-		case(0xC2):
-			Char = 'H';
-			break;
-		case(0xC3):
-			Char = 'I';
-			break;
-		case(0xC4):
-			Char = 'J';
-			break;
-		case(0xC5):
-			Char = 'K';
-			break;
-		case(0xC6):
-			Char = 'L';
-			break;
-		case(0xC7):
-			Char = 'M';
-			break;
-		case(0xC8):
-			Char = 'N';
-			break;
-		case(0xC9):
-			Char = 'O';
-			break;
-		case(0xCA):
-			Char = 'P';
-			break;
-		case(0xCB):
-			Char = 'Q';
-			break;
-		case(0xCC):
-			Char = 'R';
-			break;
-		case(0xCD):
-			Char = 'S';
-			break;
-		case(0xCE):
-			Char = 'T';
-			break;
-		case(0xCF):
-			Char = 'U';
-			break;
-		case(0xD0):
-			Char = 'V';
-			break;
-		case(0xD1):
-			Char = 'W';
-			break;
-		case(0xD2):
-			Char = 'X';
-			break;
-		case(0xD3):
-			Char = 'Y';
-			break;
-		case(0xD4):
-			Char = 'Z';
-			break;
-		case(0xA1):
-			Char = '0';
-			break;
-		case(0xA2):
-			Char = '1';
-			break;
-		case(0xA3):
-			Char = '2';
-			break;
-		case(0xA4):
-			Char = '3';
-			break;
-		case(0xA5):
-			Char = '4';
-			break;
-		case(0xA6):
-			Char = '5';
-			break;
-		case(0xA7):
-			Char = '6';
-			break;
-		case(0xA8):
-			Char = '7';
-			break;
-		case(0xA9):
-			Char = '8';
-			break;
-		case(0xAA):
-			Char = '9';
-			break;
-		case(0xAB):
-			Char = '!';
-			break;
-		case(0x5B):
-			Char = '%';
-			break;
-		case(0x2D):
-			Char = '&';
-			break;
-		case(0xBA):
-			Char = '/';
-			break;
-		case(0x5C):
-			Char = '(';
-			break;
-		case(0x5D):
-			Char = ')';
-			break;
-		case(0x35):
-			Char = '=';
-			break;
-		case(0xAC):
-			Char = '?';
-			break;
-		case(0xB8):
-			Char = ',';
-			break;
-		case(0xAD):
-			Char = '.';
-			break;
-		case(0xAE):
-			Char = '-';
-			break;
-		case(0x2E):
-			Char = '+';
-			break;
-		case(0xB4):
-			Char = '\'';
-			break;
-		case(0xF0):
-			Char = ':';
-			break;
-		case(0x36):
-			Char = ';';
-			break;
-		case(0x85):
-			Char = '<';
-			break;
-		case(0x86):
-			Char = '>';
-			break;
-		case(0x00):
-			Char = ' ';
-			break;
-		case(0x1B):
-			Char = 'é';
-			break;
-		case(0xFE):
-			Char = '\\';
-			break;
-		case(0xFA):
-			Char = '\\';
-			break;
-		case(0xF4):
-			Char = 'ä';
-			break;
-		case(0xF5):
-			Char = 'ö';
-			break;
-		case(0xF6):
-			Char = 'ü';
-			break;
-		case(0x15):
-			Char = 'ß';
-			break;
-		case(0xB0):
-			Char = '.';
-			break;
-		case(0xF3):
-			Char = 'Ü';
-			break;
-		case(0xF2):
-			Char = 'Ö';
-			break;
-		case(0xF1):
-			Char = 'Ä';
-			break;
-		case(0xFF):
-			Char = '\0';
-			break;
-		default:
-#ifdef DEBUG
-			fprintf(stderr, "ERR: Invalid RSS character '0x%02X'\n", t);
-#endif
-			Char = '\0';
-			break;
-		}
-
-		*dest++ = Char;
-	}
-
-	dest[MaxLength - 1] = '\0';
-
-	return (Tmp > 0 ? true : false);
-}

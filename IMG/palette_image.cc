@@ -2,11 +2,11 @@
 
 using namespace IMG;
 
-palette_image::palette_image(int width, int height, int bpp) : 
+palette_image::palette_image(int width, int height, int _bpp) : 
 	basic_image<uint8_t>(width, height), 
-	bpp((bpp != 1 && bpp != 4 && bpp != 8) ? 8 : bpp),
-	palette(1 << this->bpp)
+	bpp((_bpp != 1 && _bpp != 4 && _bpp != 8) ? 8 : _bpp)
 {
+	palette = Palette(1 << bpp);
 }
 
 palette_image::palette_image(const LZ77& lz77) : basic_image<uint8_t>(8, lz77.s * 2 / 8), palette(), bpp(4)
@@ -24,7 +24,7 @@ palette_image::palette_image(const palette_image& pimg) : basic_image<uint8_t>(p
 {
 }
 
-void palette_image::toFile(FILE *f) const
+void palette_image::toFile(std::fstream& f) const
 {
 	bitmap_header_t bmh;
 	DIB_t dib;
@@ -37,14 +37,17 @@ void palette_image::toFile(FILE *f) const
 	bmh.offset += (1 << bpp) * sizeof(RGBA);
 	bmh.file_size = bmh.offset + dib.size;
 
-	fwrite(&bmh, sizeof(bitmap_header_t), 1, f);
-	fwrite(&dib, sizeof(DIB_t), 1, f);
+	f.write((const char *) &bmh, sizeof(bitmap_header_t));
+	f.write((const char *) &dib, sizeof(DIB_t));
+//	fwrite(&bmh, sizeof(bitmap_header_t), 1, f);
+//	fwrite(&dib, sizeof(DIB_t), 1, f);
 
 	const RGBA &rref = palette[0];
-	fwrite(&rref, sizeof(RGBA), palette.Size(), f);
+	f.write((const char *) &rref, palette.Size() * sizeof(RGBA));
+//	fwrite(&rref, sizeof(RGBA), palette.Size(), f);
 
 	int i = (1 << bpp) - palette.Size();
-	while(i--) putc(0, f);
+	while(i--) f.put(0); //putc(0, f);
 
 	uint8_t *d = new uint8_t[dib.size];
 	int bpr = dib.size / height;
@@ -70,7 +73,8 @@ void palette_image::toFile(FILE *f) const
 //		}
 	}
 
-	fwrite(d, sizeof(uint8_t), dib.size, f);
+	f.write((const char *) d, dib.size);
+//	fwrite(d, sizeof(uint8_t), dib.size, f);
 }
 
 palette_image& palette_image::setPalette(const Palette& pal)

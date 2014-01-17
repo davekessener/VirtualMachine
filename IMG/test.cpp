@@ -1,4 +1,5 @@
 #include <iostream>
+#include <iomanip>
 
 template<class T>
 class arr
@@ -28,22 +29,10 @@ class iarr : public arr<int>
 		arr<double> darr;
 };
 
-iarr::operator int(void) const
-{
-	std::cout << "Conversion to 'int' == " << getSize() << "." << std::endl;
-	return getSize();
-}
-
-iarr::iarr(int os) : arr<int>(os), os((os % 4) * 3), darr(this->os)
-{
-}
-
-iarr::iarr(const iarr& riarr) : arr<int>(riarr), darr(23)
-{
-}
-
 int main(int argc, char *argv[])
 {
+	std::cout << "A hex number: 0x" << std::internal << std::setfill('0') << std::setw(6) << std::hex << 42413 << std::endl;
+
 	arr<int> *a = new arr<int>(7);
 	arr<int> a2(42);
 	iarr a3(17);
@@ -59,6 +48,21 @@ int main(int argc, char *argv[])
 
 	return 0;
 }
+
+iarr::operator int(void) const
+{
+	std::cout << "Conversion to 'int' == " << getSize() << "." << std::endl;
+	return getSize();
+}
+
+iarr::iarr(int os) : arr<int>(os), os((os % 4) * 3), darr(this->os)
+{
+}
+
+iarr::iarr(const iarr& riarr) : arr<int>(riarr), darr(23)
+{
+}
+
 
 template<class T>
 arr<T>::arr(int s) : s(s)

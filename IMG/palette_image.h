@@ -2,6 +2,7 @@
 #define PALETTE_IMAGE_H
 
 #include <iostream>
+#include <fstream>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -22,10 +23,10 @@ namespace IMG
 				int s;
 			};
 
-			palette_image(int width, int height, int bpp = 4);
+			palette_image(int width = 0, int height = 0, int bpp = 4);
 			palette_image(const LZ77& lz77);
 			palette_image(const palette_image&);
-			void toFile(FILE *) const;
+			void toFile(std::fstream&) const;
 			palette_image& setPalette(const Palette& palette);
 			operator rgba_image( ) const;
 		private:

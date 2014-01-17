@@ -1,11 +1,11 @@
-//#include "basic_image.h"
-
-//using namespace IMG;
-
 template<class T>
 basic_image<T>::basic_image(int width, int height) : width(width), height(height)
 {
 	image = (width * height > 0) ? new T[width * height] : NULL;
+	if(image)
+	{
+		memset(image, 0, width * height * sizeof(T));
+	}
 }
 
 template<class T>
@@ -23,7 +23,7 @@ basic_image<T>::basic_image(const basic_image<T>& img) : width(img.width), heigh
 }
 
 template<class T>
-void basic_image<T>::toFile(FILE *f) const
+void basic_image<T>::toFile(std::fstream& f) const
 {
 	if(image == NULL) return;
 
@@ -33,8 +33,10 @@ void basic_image<T>::toFile(FILE *f) const
 	prepareDIB(&dib);
 	prepareBMH(&bmh, &dib);
 
-	fwrite(&bmh, sizeof(bitmap_header_t), 1, f);
-	fwrite(&dib, sizeof(DIB_t), 1, f);
+	f.write((const char *) &bmh, sizeof(bitmap_header_t));
+	f.write((const char *) &dib, sizeof(DIB_t));
+//	fwrite(&bmh, sizeof(bitmap_header_t), 1, f);
+//	fwrite(&dib, sizeof(DIB_t), 1, f);
 
 	uint32_t b = (width * sizeof(T)) % 4, e = 0;
 	if(b > 0)
@@ -43,13 +45,16 @@ void basic_image<T>::toFile(FILE *f) const
 
 		for(int i = 0 ; i < height ; i++)
 		{
-			fwrite(image + i * width, sizeof(T), width, f);
-			fwrite(&e, b, 1, f); // buffer!
+			f.write((const char *) (image + i * width), width * sizeof(T));
+			f.write((const char *) &e, b);
+//			fwrite(image + i * width, sizeof(T), width, f);
+//			fwrite(&e, b, 1, f); // buffer!
 		}
 	}
 	else
 	{
-		fwrite(image, sizeof(T), width * height, f);
+		f.write((const char *) image, width * height * sizeof(T));
+//		fwrite(image, sizeof(T), width * height, f);
 	}
 }
 

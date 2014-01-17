@@ -2,6 +2,7 @@
 #define BASIC_IMAGE_H
 
 #include <iostream>
+#include <fstream>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -14,10 +15,10 @@ namespace IMG
 	class basic_image
 	{
 		public:
-			basic_image(int width, int height);
+			basic_image(int width = 0, int height = 0);
 			basic_image(const basic_image<T>&);
 			~basic_image( );
-			virtual void toFile(FILE *) const;
+			virtual void toFile(std::fstream&) const;
 			basic_image<T>& bitBlt(int x, int y, int dx, int dy, const basic_image<T>& src, int sx, int sy, T transcolor = 0, bool transparent = false);
 			inline int Width( ) const { return width; }
 			inline int Height( ) const { return height; }

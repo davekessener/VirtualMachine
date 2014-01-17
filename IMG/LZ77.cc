@@ -2,15 +2,16 @@
 
 using namespace IMG;
 
-int DecompressLZ77(FILE *in, FILE *out)
+int DecompressLZ77(std::fstream& in, FILE *out)
 {
 	DWORD l = 0;
 	BYTE *buf, h;
 	int p, i;
 
-	if(getc(in) != 0x10) return 0;
+	if(in.get() != 0x10) return 0;
 
-	fread(&l, 1, 3, in);
+	in.read((char *) &l, 3);
+//	fread(&l, 1, 3, in);
 	buf = new BYTE[l];
 
 #ifdef DEBUG
@@ -20,7 +21,7 @@ int DecompressLZ77(FILE *in, FILE *out)
 	p = 0;
 	while(p < l)
 	{
-		h = getc(in);
+		h = in.get();
 
 		for(i = 7 ; i >= 0 ; i--)
 		{
@@ -32,9 +33,9 @@ int DecompressLZ77(FILE *in, FILE *out)
 				BYTE len;
 
 //				fread(&raw, 1, sizeof(WORD), in);
-//				raw = getc(in) * 0x100 + getc(in);
-				raw = getc(in) << 8;
-				raw += getc(in);
+//				raw = in.get() * 0x100 + in.get();
+				raw = in.get() << 8;
+				raw += in.get();
 
 				len = ((raw & 0xf000) >> 12) + 3;
 				back = (raw & 0x0fff) + 1;
@@ -51,7 +52,7 @@ int DecompressLZ77(FILE *in, FILE *out)
 			}
 			else
 			{
-				buf[p++] = getc(in);
+				buf[p++] = in.get();
 			}
 		}
 	}

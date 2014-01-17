@@ -2,7 +2,7 @@
 
 using namespace IMG;
 
-Palette::Palette(int size) : size((unsigned) size)
+Palette::Palette(int _size) : size((unsigned) _size)
 {
 	palette = size > 0 ? new RGBA[size] : NULL;
 
