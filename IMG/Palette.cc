@@ -12,6 +12,12 @@ Palette::Palette(int size) : size((unsigned) size)
 	}
 }
 
+Palette::Palette(RGBA *data, int size) : size(size)
+{
+	palette = new RGBA[size];
+	memcpy(palette, data, size * sizeof(RGBA));
+}
+
 Palette::Palette(const Palette& pal) : size(pal.size)
 {
 	palette = size > 0 ? new RGBA[size] : NULL;
@@ -84,5 +90,21 @@ RGBA& Palette::operator[](int i)
 RGBA Palette::operator[](int i) const
 {
 	return get(i);
+}
+
+Palette& Palette::operator=(const Palette& p)
+{
+	size = p.size;
+	palette = size > 0 ? new RGBA[size] : NULL;
+
+	if(size > 0)
+	{
+		memcpy(palette, p.palette, size * sizeof(RGBA));
+	}
+}
+
+int Palette::Size(void) const
+{
+	return size;
 }
 

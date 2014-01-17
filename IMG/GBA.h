@@ -52,7 +52,7 @@ namespace IMG
 			BYTE	BorderWidth;
 			BYTE	BorderHeight;
 		} Fooder;
-		struct _pallet
+		struct _palette
 		{
 			WORD Colors_raw[16];
 			struct _color
@@ -100,7 +100,7 @@ namespace IMG
 	bool InitializeMap(FILE *, IMG::OFFSET, IMG::_map *);
 	void ReleaseMap(IMG::_map *);
 	IMG::OFFSET GetMapHeaderOffset(FILE *, int, int);
-	bool ConvertPallet(IMG::_map::_pallet *, IMG::WORD *);
+	bool ConvertPallet(IMG::_map::_palette *, IMG::WORD *);
 	bool ConvRSStoANSI(char *, char *, int);
 
 #endif

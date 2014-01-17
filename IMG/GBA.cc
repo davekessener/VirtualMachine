@@ -94,7 +94,7 @@ bool InitializeMap(FILE *ROM, OFFSET Offset, _map *Map)
 		TileSet.TilesOffset					= TOOFFSET(TileSetData + 3 * 4);
 		TileSet.BehaviorBackgroundOffset	= TOOFFSET(TileSetData + 5 * 4);
 
-		//  #-- Load pallets
+		//  #-- Load palettes
 		for(int j = 7 * i ; j < 6 * i + 7 ; j++)
 		{
 			WORD Buffer[16];
@@ -560,7 +560,7 @@ void ReleaseMap(_map *Map)
 //
 //	for(int r = 0 ; r < 13 ; r++)
 //	{
-//		_map::_pallet &Pallet = Map->Pallets[r];
+//		_map::_palette &Pallet = Map->Pallets[r];
 //		Unused1 = (HBITMAP) SelectObject(RawImage, Map->RawImages[r]);
 //		LZ77 = Map->LZ77Image;
 //		for(int i = 0 ; i < Height ; i++)
@@ -575,7 +575,7 @@ void ReleaseMap(_map *Map)
 //	}
 //}
 
-bool ConvertPallet(_map::_pallet *Pallet, WORD *Buffer)
+bool ConvertPallet(_map::_palette *Pallet, WORD *Buffer)
 {
 	for(int i = 0 ; i < 16 ; i++)
 	{

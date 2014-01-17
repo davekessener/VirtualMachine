@@ -12,6 +12,7 @@ namespace IMG
 	{
 		public:
 			Palette(int = 16);
+			Palette(RGBA *, int);
 			Palette(const Palette&);
 			~Palette();
 			Palette& setColor(int, RGBA);
@@ -19,6 +20,8 @@ namespace IMG
 			RGBA get(int) const;
 			RGBA& operator[](int);
 			RGBA operator[](int) const;
+			Palette& operator=(const Palette&);
+			int Size( ) const;
 		private:
 			RGBA *palette;
 			int size;
