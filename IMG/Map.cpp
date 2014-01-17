@@ -75,11 +75,27 @@ Map<T>& Map<T>::insert(KEY key, const T& value)
 }
 
 template<class T>
+Vector<Map<>::KEY> Map<T>::getKeySet(void) const
+{
+	Vector<KEY> r(index);
+
+	for(int i = 0 ; i < index ; i++)
+	{
+		r.push(keyvals[i].first());
+	}
+
+	return r;
+}
+
+template<class T>
 T& Map<T>::operator[](KEY key)
 {
 	int idx = getKeyIndex(key);
 
-	if(idx < 0) idx = resize();
+	if(idx < 0)
+	{
+		idx = resize();
+	}
 
 	return keyvals[idx].second();
 }

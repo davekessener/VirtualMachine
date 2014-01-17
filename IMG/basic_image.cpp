@@ -35,9 +35,13 @@ void basic_image<T>::toFile(std::fstream& f) const
 
 	f.write((const char *) &bmh, sizeof(bitmap_header_t));
 	f.write((const char *) &dib, sizeof(DIB_t));
-//	fwrite(&bmh, sizeof(bitmap_header_t), 1, f);
-//	fwrite(&dib, sizeof(DIB_t), 1, f);
 
+	write(f);
+}
+
+template<class T>
+void basic_image<T>::write(std::fstream& f) const
+{
 	uint32_t b = (width * sizeof(T)) % 4, e = 0;
 	if(b > 0)
 	{
@@ -47,20 +51,19 @@ void basic_image<T>::toFile(std::fstream& f) const
 		{
 			f.write((const char *) (image + i * width), width * sizeof(T));
 			f.write((const char *) &e, b);
-//			fwrite(image + i * width, sizeof(T), width, f);
-//			fwrite(&e, b, 1, f); // buffer!
 		}
 	}
 	else
 	{
 		f.write((const char *) image, width * height * sizeof(T));
-//		fwrite(image, sizeof(T), width * height, f);
 	}
 }
 
 template<class T>
 basic_image<T>& basic_image<T>::bitBlt(int x, int y, int dx, int dy, const basic_image<T>& source, int sx, int sy, T transcolor, bool transparent)
 {
+	if(image == NULL) return *this;
+
 	int sdx = dx < 0 ? -dx - 1 : 0, sdy = dy < 0 ? -dy - 1 : 0;
 	int  rx = dx < 0 ? -1 : 1,   ry = dy < 0 ? -1 : 1;
 	if(dx < 0) dx = -dx;
@@ -91,6 +94,42 @@ basic_image<T>& basic_image<T>::bitBlt(int x, int y, int dx, int dy, const basic
 }
 
 template<class T>
+basic_image<T>& basic_image<T>::trunc(int x, int y, int dx, int dy)
+{
+	if(image == NULL) return *this;
+
+	if(x < 0) x = 0;
+	if(y < 0) y = 0;
+	if(dx < 0) dx = width - x;
+	if(dy < 0) dy = height - y;
+
+	T *tmp = new T[dx * dy];
+
+	for(int ty = 0 ; ty < dy ; ty++)
+	{
+		memcpy(tmp + ty * dx, image + (ty + y) * width + x, dx * sizeof(T));
+	}
+
+	delete[] image;
+
+	image = tmp;
+	width = dx;
+	height = dy;
+
+	return *this;
+}
+
+template<class T>
+basic_image<T>& basic_image<T>::clear(void)
+{
+	if(image == NULL) return *this;
+
+	memset(image, 0, width * height * sizeof(T));
+
+	return *this;
+}
+
+template<class T>
 basic_image<T>::~basic_image(void)
 {
 	delete[] image;
@@ -99,7 +138,7 @@ basic_image<T>::~basic_image(void)
 template<class T>
 int basic_image<T>::Size(void) const
 {
-	return width * height * ELEM_SIZE;
+	return width * height * sizeof(T);
 }
 
 // # ---------------------------------------------------------------------------

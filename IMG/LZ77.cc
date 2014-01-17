@@ -15,7 +15,7 @@ int DecompressLZ77(std::fstream& in, FILE *out)
 	buf = new BYTE[l];
 
 #ifdef DEBUG
-	std::cout << "Reading LZ77(" << l << ") ...";
+//	std::cout << "Reading LZ77(" << l << ") [...]";
 #endif
 
 	p = 0;
@@ -65,7 +65,7 @@ int DecompressLZ77(std::fstream& in, FILE *out)
 	delete[] buf;
 
 #ifdef DEBUG
-	std::cout << "[DONE!]" << std::endl;
+//	std::cout << "[DONE!]" << std::endl;
 #endif
 
 	return l;

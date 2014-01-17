@@ -19,7 +19,8 @@ void inline SET(std::fstream& f, int o)
 bool InitializeMap(std::fstream& ROM, OFFSET Offset, _map *Map)
 {
 #ifdef DEBUG
-	std::cout << "Entered map initialization routine." << std::endl;
+//	printf("Trying to read map @0x%06X [...]\n", Offset);
+//	std::cout << "Entered map initialization routine." << std::endl;
 #endif
 
 	Map->Offset = Offset;
@@ -53,7 +54,7 @@ bool InitializeMap(std::fstream& ROM, OFFSET Offset, _map *Map)
 	ConvRSStoANSI(Header.Name.Buffer, Header.Name.Value, 20);
 
 #ifdef DEBUG
-	std::cout << "Read Header successfully!" << std::endl;
+//	std::cout << "Read Header successfully!" << std::endl;
 #endif
 
 
@@ -77,7 +78,7 @@ bool InitializeMap(std::fstream& ROM, OFFSET Offset, _map *Map)
 	Fooder.BorderHeight				= FooderData[6 * 4 + 1];
 
 #ifdef DEBUG
-	std::cout << "Read Fooder successfully!" << std::endl;
+//	std::cout << "Read Fooder successfully!" << std::endl;
 #endif
 
 	//  #=============================#
@@ -107,7 +108,7 @@ bool InitializeMap(std::fstream& ROM, OFFSET Offset, _map *Map)
 	}
 
 #ifdef DEBUG
-	std::cout << "Read TileSets successfully!" << std::endl;
+//	std::cout << "Read TileSets successfully!" << std::endl;
 #endif
 
 
@@ -132,7 +133,7 @@ bool InitializeMap(std::fstream& ROM, OFFSET Offset, _map *Map)
 	free(Buffer);
 
 #ifdef DEBUG
-	std::cout << "Read OrderData successfully!" << std::endl;
+//	std::cout << "Read OrderData successfully!" << std::endl;
 #endif
 
 
@@ -170,7 +171,7 @@ bool InitializeMap(std::fstream& ROM, OFFSET Offset, _map *Map)
 	Buffer = NULL;
 
 #ifdef DEBUG
-	std::cout << "Read LZ77 successfully!" << std::endl;
+//	std::cout << "Read LZ77 successfully!" << std::endl;
 #endif
 
 
@@ -204,7 +205,8 @@ bool InitializeMap(std::fstream& ROM, OFFSET Offset, _map *Map)
 	free(Buffer);
 
 #ifdef DEBUG
-	std::cout << "Read Tiles successfully!" << std::endl;
+//	printf("[DONE!] Read map @0x%06X successfully!\n", Offset);
+//	std::cout << "Read Tiles successfully!" << std::endl;
 #endif
 
 	return true;
@@ -229,10 +231,12 @@ OFFSET GetMapHeaderOffset(std::fstream& GBA, int iBank, int iMap)
 
 	OFFSET oMaps;
 	LOADFROM(GBA, &oMaps, 4, BankOffset + 4 * iBank);
+	if((oMaps & 0xff000000) != 0x08000000) return INVALID_OFFSET;
 	oMaps = TOOFFSET(&oMaps);
 
 	OFFSET oMap;
 	LOADFROM(GBA, &oMap, 4, oMaps + 4 * iMap);
+	if((oMap & 0xff000000) != 0x08000000) return INVALID_OFFSET;
 	oMap = TOOFFSET(&oMap);
 
 	return oMap;

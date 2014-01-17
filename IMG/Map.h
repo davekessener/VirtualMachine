@@ -4,6 +4,7 @@
 #include <iostream>
 #include <stdint.h>
 #include "Pair.h"
+#include "Vector.h"
 
 #define MAP_DEF_LEN 16
 
@@ -21,6 +22,7 @@ class Map
 		bool hasValue(const T& value) const;
 		Map& insert(KEY key, T *value);
 		Map& insert(KEY key, const T& value);
+		Vector<KEY> getKeySet( ) const;
 		T& operator[](KEY);
 		const T& operator[](KEY) const;
 		Map& operator=(const Map&);
