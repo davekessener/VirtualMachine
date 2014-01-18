@@ -30,14 +30,14 @@ class pVector
 template<class T>
 pVector<T>::pVector(int _length) : idx_a(0), idx_e(0), length(_length <= 0 ? PVEC_DEF_LEN : _length)
 {
-	std::cout << "pVector<T>::pVector(int = " << _length << ");" << std::endl;
+	//std::cout << "pVector<T>::pVector(int = " << _length << ");" << std::endl;
 	_v = new T*[length];
 }
 
 template<class T>
 pVector<T>::~pVector(void)
 {
-	std::cout << "pVector<T>::~pVector(void);" << std::endl;
+	//std::cout << "pVector<T>::~pVector(void);" << std::endl;
 	delete[] _v;
 }
 
@@ -48,8 +48,8 @@ pVector<T>& pVector<T>::push(T *t)
 
 	resize();
 
-	std::cout << "pVector<T>::push(T* = ";
-	printf("%p);\n", t);
+	//std::cout << "pVector<T>::push(T* = ";
+	//printf("%p);\n", t);
 }
 
 template<class T>
@@ -57,7 +57,7 @@ T *pVector<T>::poll(void)
 {
 	T *t = _v[idx_a++];
 
-	printf("pVector<T>::poll(); = %p\n", t);
+	//printf("pVector<T>::poll(); = %p\n", t);
 
 	resize();
 
@@ -69,7 +69,7 @@ T *pVector<T>::pop(void)
 {
 	T *t = _v[--idx_e];
 
-	printf("pVector<T>::pop(); = %p\n", t);
+	//printf("pVector<T>::pop(); = %p\n", t);
 
 	resize();
 
@@ -132,7 +132,7 @@ std::string pVector<T>::toString(void) const
 template<class T>
 void pVector<T>::resize(void)
 {
-	std::cout << "pVector<T>::resize();";
+	//std::cout << "pVector<T>::resize();";
 
 	if(idx_a == idx_e && idx_a > 0)
 	{
@@ -147,7 +147,7 @@ void pVector<T>::resize(void)
 
 		memcpy(_v + idx_a, tmp + idx_a, (idx_e - idx_a) * sizeof(T *));
 		
-		std::cout << " to " << length;
+		//std::cout << " to " << length;
 
 		delete[] tmp;
 	}
@@ -179,7 +179,7 @@ void pVector<T>::resize(void)
 
 			length -= length / 2;
 
-			std::cout << " to " << length;
+			//std::cout << " to " << length;
 		}
 		else
 		{
@@ -187,7 +187,7 @@ void pVector<T>::resize(void)
 		}
 	}
 
-	std::cout << std::endl;
+	//std::cout << std::endl;
 }
 
 #endif

@@ -14,6 +14,7 @@
 #include "flow_image.h"
 #include "Map.h"
 #include "Vector.h"
+#include "pVector.h"
 #include "Queue.h"
 #include "GBA.h"
 

@@ -1,9 +1,5 @@
 #include "Extractor.h"
 
-namespace IMG {
-int SGL = 0;
-}
-
 int Extractor::run(int argc, char *argv[])
 {
 	std::cout << '\'' << argv[0] << "' runs." << std::endl;
@@ -15,9 +11,12 @@ int Extractor::run(int argc, char *argv[])
 	Vector<UID> uids;
 	std::fstream ROM("pkmn.gba", std::ios::in | std::ios::binary);
 
-	for(int bank_no = 1 ; bank_no <= 10 ; bank_no++)
+	int map_nos[] = {5, 123, 60, 66, 4, 6, 8, 10, 6, 8, 20, 10, 8, 2, 10, 4, 2, 2, 2, 1, 1, 2, 2, 3, 2, 3, 2, 1, 1, 1, 1, 7, 5, 5, 8, 8, 5, 5, 1, 1, 1, 2, 1};
+	int bank_nos = sizeof(map_nos) / sizeof(int);
+
+	for(int bank_no = 0 ; bank_no <= bank_nos ; bank_no++)
 	{
-		for(int map_no = 0 ; map_no < 40 ; map_no++)
+		for(int map_no = 0 ; map_no < map_nos[bank_no] ; map_no++)
 		{
 			IMG::OFFSET o = GetMapHeaderOffset(ROM, bank_no, map_no);
 
@@ -38,25 +37,16 @@ int Extractor::run(int argc, char *argv[])
 			{
 				if(bank_map[keys[0]].hasKey(keys[1]))
 				{
-//					char buf[20];
-//					sprintf(buf, "0x%06X", keys[0]);
-//					sprintf(buf + 10, "0x%06X", keys[1]);
-//					std::cout << "@> Already read image w/IDs [" 
-//						<< buf << ", " 
-//						<< (buf + 10) << "]" << std::endl;
 					ReleaseMap(&map);
 					continue;
 				}
 				else
 				{
-//					bank_map[keys[0]].push(keys[1]);
 				}
 			}
 			else
 			{
 				Map<IMG::rgba_image> *m = new Map<IMG::rgba_image>;
-//				Vector<UID> *v = new Vector<UID>;
-//				v->push(keys[1]);
 				bank_map.insert(keys[0], m);
 			}
 
@@ -73,65 +63,60 @@ int Extractor::run(int argc, char *argv[])
 
 			bank_map[keys[0]].insert(keys[1], img);
 
-//			write_to_disk(map);
-			std::cout << "@> Map '" << get_map_id(map) << "' read." << std::endl;
-			
+//			std::cout << "@> Map ";
+//			printf("%c%ix%i %.8p",
+//				map_no < 10 ? ' ' : '\0', bank_no, map_no, img);
+//			std::cout << " '" << get_map_id(map) << "' read." << std::endl;
+
 			ReleaseMap(&map);
 		}
 	}
 
 	ROM.close();
 
-	std::cout << std::endl << std::endl << "######################################################################" << std::endl;
+#define WIDTH 8
 
-	IMG::SGL = 1;
-
-#define WDTH 8
-	IMG::rgba_image tmpI(16 * WDTH, 16);
 	Vector<UID> v = bank_map.getKeySet();
-
 	for(int i = 0 ; i < v.Length() ; i++)
 	{
-		char buf[20];
-		sprintf(buf, "tileset_%06X.bmp", v[i]);
+		char buf[20]; sprintf(buf, "tileset_%06X.bmp", v[i]);
+		IMG::flow_image<IMG::RGBA> outI(buf, WIDTH * 16);
+		IMG::rgba_image window(WIDTH * 16, 16);
 
-		IMG::flow_image<IMG::RGBA> outT(buf, 16 * WDTH);
-
-		Queue<IMG::rgba_image> q;
-		q.push(&main_set[v[i]]);
+		pVector<IMG::rgba_image> images;
+		images.push(&main_set[v[i]]);
 
 		Vector<UID> w = bank_map[v[i]].getKeySet();
 		for(int j = 0 ; j < w.Length() ; j++)
 		{
-			q.push(&bank_map[v[i]][w[j]]);
+			images.push(&bank_map[v[i]][w[j]]);
 		}
 
-		while(!q.isEmpty())
+		IMG::rgba_image *img = images.poll();
+		int d = 0;
+		while(img && !images.Empty())
 		{
-			IMG::rgba_image *img = q.poll();
+			window.clear();
 
-			printf("Point received: %p\n", img);
-			printf("Processing image of size %i*%i\n", img->Width(), img->Height());
-
-			for(int d = 0 ; d * 16 < img->Height() ;)
+			for(int j = 0 ; j < WIDTH ; j++)
 			{
-				tmpI.clear();
+				window.bitBlt(j * 16, 0, 16, 16, *img, 0, d * 16);
 
-				for(int j = 0 ; j < WDTH ; j++)
+				if(++d * 16 >= img->Height())
 				{
-					tmpI.bitBlt(j * 16, 0, 16, 16, *img, 0, d * 16);
-					if(++d * 16 == img->Height()) break;
-				}
+					delete img; img = NULL;
 
-				outT.draw(tmpI);
+					if(images.Empty()) break;
+
+					img = images.poll();
+					d = 0;
+				}
 			}
 
-			delete img;
-
-			printf("[DONE!]\n");
+			outI.draw(window);
 		}
 
-		outT.close();
+		outI.close();
 	}
 
 	return 0;

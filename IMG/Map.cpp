@@ -77,7 +77,7 @@ Map<T>& Map<T>::insert(KEY key, const T& value)
 template<class T>
 Vector<Map<>::KEY> Map<T>::getKeySet(void) const
 {
-	Vector<KEY> r(index);
+	Vector<KEY> r(index + 3);
 
 	for(int i = 0 ; i < index ; i++)
 	{

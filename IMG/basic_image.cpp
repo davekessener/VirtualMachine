@@ -22,16 +22,9 @@ basic_image<T>::basic_image(const basic_image<T>& img) : width(img.width), heigh
 	}
 }
 
-extern int SGL;
-
 template<class T>
 basic_image<T>::~basic_image(void)
 {
-	if(SGL)
-	{
-		std::cout << "DESTR. for basic_image @";
-		printf("%p\n", this);
-	}
 	delete[] image;
 }
 
