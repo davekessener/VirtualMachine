@@ -22,6 +22,19 @@ basic_image<T>::basic_image(const basic_image<T>& img) : width(img.width), heigh
 	}
 }
 
+extern int SGL;
+
+template<class T>
+basic_image<T>::~basic_image(void)
+{
+	if(SGL)
+	{
+		std::cout << "DESTR. for basic_image @";
+		printf("%p\n", this);
+	}
+	delete[] image;
+}
+
 template<class T>
 void basic_image<T>::toFile(std::fstream& f) const
 {
@@ -127,12 +140,6 @@ basic_image<T>& basic_image<T>::clear(void)
 	memset(image, 0, width * height * sizeof(T));
 
 	return *this;
-}
-
-template<class T>
-basic_image<T>::~basic_image(void)
-{
-	delete[] image;
 }
 
 template<class T>

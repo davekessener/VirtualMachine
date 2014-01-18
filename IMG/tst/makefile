@@ -8,7 +8,7 @@ TARGET=test
 %.o: %.cc $(TEMPLATES)
 	$(CC) -c $(CFLAGS) $< -o $@
 
-all: $(OBJ)
+all: clean $(OBJ)
 	$(CC) $(OBJ) -o $(TARGET)
 
 clean:

@@ -1,5 +1,9 @@
 #include "Extractor.h"
 
+namespace IMG {
+int SGL = 0;
+}
+
 int Extractor::run(int argc, char *argv[])
 {
 	std::cout << '\'' << argv[0] << "' runs." << std::endl;
@@ -78,6 +82,10 @@ int Extractor::run(int argc, char *argv[])
 
 	ROM.close();
 
+	std::cout << std::endl << std::endl << "######################################################################" << std::endl;
+
+	IMG::SGL = 1;
+
 #define WDTH 8
 	IMG::rgba_image tmpI(16 * WDTH, 16);
 	Vector<UID> v = bank_map.getKeySet();
@@ -117,6 +125,8 @@ int Extractor::run(int argc, char *argv[])
 
 				outT.draw(tmpI);
 			}
+
+			delete img;
 
 			printf("[DONE!]\n");
 		}

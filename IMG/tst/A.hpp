@@ -1,26 +1,61 @@
 #ifndef A_HPP
 #define A_HPP
 
-template<class T>
+#include <iostream>
+
+template<int N>
 class A
 {
 	public:
-		inline A(const T& _t) : t(_t) {}
-		inline A(const A<T>& a) : t(a.t) {}
-		void print( );
-		T t;
+		A(double);
+		A( );
+		A(const A<N>&);
+		~A( );
+		double percentage( ) const;
+		A& operator=(const A<N>&);
+	private:
+		double pct;
+		static const int SQR = N * N;
 };
 
-template<class T>
-void A<T>::print(void)
+template<int N>
+A<N>::A(double _pct) : pct(_pct)
 {
-	uint8_t *p = (uint8_t *) &t;
-	
-	for(int i = sizeof(T) - 1 ; i >= 0 ; i--)
-	{
-		printf("%02X%c", p[i], i ? ' ' : '\n');
-	}
+	std::cout << "Initializing " << percentage() << "% of " << SQR << "!" << std::endl;
 }
+
+template<int N>
+A<N>::A(void) : pct(0.0)
+{
+	std::cout << "Initializing default for " << SQR << "!" << std::endl;
+}
+
+template<int N>
+A<N>::A(const A<N>& a) : pct(a.pct)
+{
+	std::cout << "Initializing copy of " << percentage() << "% of " << SQR << "!" << std::endl;
+}
+
+template<int N>
+A<N>::~A(void)
+{
+	std::cout << "Finalizing " << percentage() << "% of " << SQR << "!" << std::endl;
+}
+
+template<int N>
+double A<N>::percentage(void) const
+{
+	return (((int) (pct * 10000.0 + 0.5)) / 100.0);
+}
+
+template<int N>
+A<N>& A<N>::operator=(const A<N>& a)
+{
+	std::cout << "Assigning " << a.percentage() << "% to " << percentage() << "% of " << SQR << "!" << std::endl;
+	pct = a.pct;
+}
+
+
 
 #endif
 
