@@ -54,7 +54,7 @@ int Extractor::run(int argc, char *argv[])
 
 			if(!main_set.hasKey(keys[0]))
 			{
-				IMG::rgba_image *tm = new IMG::rgba_image(16, map.TileSets[0].TileCount * 16);
+				IMG::rgba_image *tm = new IMG::rgba_image(16 * 2, map.TileSets[0].TileCount * 16);
 				tm->bitBlt(0, 0, tm->Width(), tm->Height(), *img, 0, 0);
 				main_set.insert(keys[0], tm);
 			}
@@ -80,8 +80,8 @@ int Extractor::run(int argc, char *argv[])
 	for(int i = 0 ; i < v.Length() ; i++)
 	{
 		char buf[20]; sprintf(buf, "tileset_%06X.bmp", v[i]);
-		IMG::flow_image<IMG::RGBA> outI(buf, WIDTH * 16);
-		IMG::rgba_image window(WIDTH * 16, 16);
+		IMG::flow_image<IMG::RGBA> outI(buf, WIDTH * 2 * 16);
+		IMG::rgba_image window(WIDTH * 2 * 16, 16);
 
 		pVector<IMG::rgba_image> images;
 		images.push(&main_set[v[i]]);
@@ -100,7 +100,8 @@ int Extractor::run(int argc, char *argv[])
 
 			for(int j = 0 ; j < WIDTH ; j++)
 			{
-				window.bitBlt(j * 16, 0, 16, 16, *img, 0, d * 16);
+				window.bitBlt( j          * 16, 0, 16, 16, *img,  0, d * 16);
+				window.bitBlt((j + WIDTH) * 16, 0, 16, 16, *img, 16, d * 16);
 
 				if(++d * 16 >= img->Height())
 				{
@@ -125,7 +126,7 @@ int Extractor::run(int argc, char *argv[])
 IMG::rgba_image *Extractor::generate_tilemap(IMG::MAP& map)
 {
 	IMG::palette_image TileSet(IMG::palette_image::LZ77(map.LZ77Image, map.LZ77ImageSize));
-	IMG::rgba_image *TileMap = new IMG::rgba_image(16, map.TileCount * 16);
+	IMG::rgba_image *TileMap = new IMG::rgba_image(16 * 2, map.TileCount * 16);
 	IMG::Palette palette(13 * 16);
 
 	for(int i = 0 ; i < 13 ; i++)
@@ -146,7 +147,7 @@ IMG::rgba_image *Extractor::generate_tilemap(IMG::MAP& map)
 							TileSet,
 							0,
 							map.Tiles[i].BlockNr[j] * 8);
-			TileMap->bitBlt((j & 1) * 8, ((j & 2) ? 8 : 0) + i * 16, 8, 8, (IMG::rgba_image) Tile, 0, 0, 
+			TileMap->bitBlt((j & 1) * 8 + (j >= 4 ? 16 : 0), ((j & 2) ? 8 : 0) + i * 16, 8, 8, (IMG::rgba_image) Tile, 0, 0, 
 				map.Pallets[map.Tiles[i].PalletNr[j]].CR_Colors[0], j >= 4);
 		}
 	}
