@@ -6,7 +6,7 @@
 #include "Screen.h"
 #include "Timer.h"
 #include "Keyboard.h"
-#include "NBT.h"
+#include "NBTTag.h"
 #include <fstream>
 
 using namespace std;
