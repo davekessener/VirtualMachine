@@ -1,0 +1,10 @@
+TST/*
+*.gba
+*.bmp
+*.png
+*.xcf
+*.tmp
+*.swp
+*.o
+.gitignore
+
