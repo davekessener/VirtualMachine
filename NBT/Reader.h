@@ -3,9 +3,12 @@
 
 #include <iostream>
 #include <fstream>
+#include <algorithm>
 #include <assert.h>
+#include <stdio.h>
+#include <string.h>
+#include "_NBT.h"
 #include "gzstream.h"
-#include "NBT.h"
 
 namespace NBT
 {
@@ -13,17 +16,30 @@ namespace NBT
 	{
 		public:
 			template<typename T>
-			T read();
-			basic_nbt_reader& read(BYTE *d, size_t n)
+			T read() const;
+			void read(BYTE *d, size_t n) const
 			{
-				do_read(d, n);
+				do_read(reinterpret_cast<char *>(d), n);
 			}
 		protected:
-			virtual void do_read(char *, size_t) = 0;
+			virtual void do_read(char *, size_t) const = 0;
 	};
 
 	template<typename T>
-	T basic_nbt_reader::read(void)
+	class nbt_reader : public basic_nbt_reader
+	{
+		public:
+			nbt_reader(T& t) : is(t) { }
+		protected:
+			void do_read(char *, size_t) const;
+		private:
+			T &is;
+	};
+
+// # ---------------------------------------------------------------------------
+
+	template<typename T>
+	T basic_nbt_reader::read(void) const
 	{
 		T t;
 		do_read(reinterpret_cast<char *>(&t), sizeof(T));
@@ -35,35 +51,17 @@ namespace NBT
 		return t;
 	}
 
-	template<typename T>
-	class nbt_reader : public basic_nbt_reader
-	{
-		public:
-			nbt_reader(T& t) : is(t) { }
-		protected:
-			void do_read(char *, size_t);
-		private:
-			T &is;
-	};
+// # ---------------------------------------------------------------------------
 
-	template<>
-	void nbt_reader<std::istream>::do_read(char *d, size_t n)
-	{
-		assert(d);
-
-		is.read(d, n);
-	}
-
-	template<>
-	void nbt_reader<gzip::igzstream>::do_read(char *d, size_t n)
-	{
-		assert(d);
-
-		while(n--) is >> *d++;
-	}
+#ifndef READER_IMP
+	extern template class nbt_reader<std::istream>;
+	extern template class nbt_reader<gzip::igzstream>;
+#endif
 
 	typedef nbt_reader<std::istream> nbt_std_reader;
 	typedef nbt_reader<gzip::igzstream> nbt_gzip_reader;
+
+	typedef basic_nbt_reader nbtistream;
 }
 
 #endif

@@ -4,32 +4,31 @@ using namespace std;
 
 struct A
 {
-	void doSomething()
+	void doSomething() const
 	{
 		do_do();
 	}
-	virtual void do_do() = 0;
+	virtual void do_do() const = 0;
 };
 
 struct B : public A
 {
 	B(int _v) : v(_v) { }
-	void do_do()
+	void do_do() const
 	{
 		cout << "Doing it in B(" << v << ")" << endl;
 	}
 	int v;
 };
 
-void exec(A *a)
+void exec(const A& a)
 {
-	a->doSomething();
+	a.doSomething();
 }
 
 int main(void)
 {
-	B b(3);
-	exec(&b);
+	exec(B(3));
 
 	return 0;
 }
