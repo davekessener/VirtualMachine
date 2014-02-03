@@ -20,7 +20,7 @@ namespace NBT
 	class NBTBase
 	{
 		public:
-			NBTBase(void) : name(NULL) { std::cerr << "!!! Base constructor" << std::endl; }
+			NBTBase(void) : name(NULL) { }
 			virtual ~NBTBase(void)
 			{
 				free(name);
