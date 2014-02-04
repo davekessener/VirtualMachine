@@ -2,6 +2,7 @@
 #include <iomanip>
 #include <cstdint>
 #include <initializer_list>
+#include <vector>
 #include <functional>
 #include <fstream>
 #include <NBT/NBT.h>
@@ -16,12 +17,12 @@ using namespace std;
 #define KEY_CTRL_D 4
 #define KEY_ESC 27
 
-void test(void)
+void test_(void)
 {
-	//ifstream in("test.nbt", ios::in | ios::binary);
-	gzip::igzstream in("test.nbt.gz");
-	ofstream out("rewrite.nbt", ios::out | ios::binary);
-	//gzip::ogzstream out("rewrite.nbt.gz.dat");
+	ifstream in("test.nbt", ios::in | ios::binary);
+	//gzip::igzstream in("test.nbt.gz");
+	//ofstream out("rewrite.nbt", ios::out | ios::binary);
+	gzip::ogzstream out("rewrite.nbt.gz.dat");
 
 	NBT::TAG_Compound_ptr_t nbt = NBT::Read(in);
 
@@ -31,7 +32,7 @@ void test(void)
 	in.close();
 }
 
-void test_write(void)
+void test(void)
 {
 	ofstream out("wrtest.nbt", ios::out | ios::binary);
 
@@ -46,7 +47,8 @@ void test_write(void)
 	NBT::NBT_ptr_t nbt1  = NBT::NBT_ptr_t(new NBT::TAG_Compound("one", {itag, dtag}));
 	NBT::NBT_ptr_t nbt2  = NBT::NBT_ptr_t(new NBT::TAG_Compound("two", {list}));
 	NBT::NBT_ptr_t nbt3  = NBT::NBT_ptr_t(new NBT::TAG_Compound("three", {nbt2, arr}));
-	NBT::NBT_ptr_t nbttagcompound = NBT::NBT_ptr_t(new NBT::TAG_Compound({itag, dtag, nbt1, nbt3, list, arr}));
+	vector<NBT::NBT_ptr_t> vec = {itag, dtag, nbt1, nbt3, list, arr};
+	NBT::NBT_ptr_t nbttagcompound = NBT::NBT_ptr_t(new NBT::TAG_Compound(vec.cbegin(), vec.cend()));//{itag, dtag, nbt1, nbt3, list, arr}));
 
 	nbttagcompound->write(out);
 

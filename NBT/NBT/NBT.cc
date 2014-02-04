@@ -52,7 +52,7 @@ namespace NBT
 	void NBTBase::setName(const char *s)
 	{
 		if(name) free(name);
-		name = reinterpret_cast<BYTE *>(strdup(s));
+		name = reinterpret_cast<BYTE *>(strdup(s ? s : ""));
 	}
 
 // # ---------------------------------------------------------------------------
@@ -120,18 +120,6 @@ namespace NBT
 		length = t - values;
 	}
 
-	template<BYTE ID, typename T1, typename T2>
-	void NBTArray<ID, T1, T2>::init(const char *s, T1 l, const T2 *v)
-	{
-		NBTBase::setName(s);
-
-		delete[] values;
-
-		length = l;
-		values = l ? new T2[l] : NULL;
-		if(l && v) memcpy(values, v, l * sizeof(T2));
-	}
-
 // # ---------------------------------------------------------------------------
 
 	template<BYTE ID>
@@ -185,39 +173,14 @@ namespace NBT
 		length = t - tags;
 	}
 
-	template<BYTE ID>
-	void NBTList<ID>::init(const char *s, BYTE id, DWORD l, NBT_ptr_t *v)
-	{
-		NBTBase::setName(s);
-
-		assert(id < 12);
-
-		delete[] tags;
-
-		length = l;
-		tagIds = id;
-		tags = l ? new NBT_ptr_t[l] : NULL;
-
-		if(v && l)
-		{
-			tagIds = (*v)->getID();
-			for(int i = 0 ; i < l ; i++)
-			{
-				assert(tagIds == v[i]->getID());
-
-				tags[i] = v[i];
-			}
-		}
-	}
-
 // # ---------------------------------------------------------------------------
 
 	template<BYTE ID>
 	void NBTTagCompound<ID>::_write(const nbtostream& os)
 	{
-		for(int i = 0 ; i < length ; i++)
+		for(auto p : tags)
 		{
-			tags[i]->write(os);
+			p.second->write(os);
 		}
 
 		os.write<BYTE>(0);
@@ -226,7 +189,7 @@ namespace NBT
 	template<BYTE ID>
 	void NBTTagCompound<ID>::_read(const nbtistream& is)
 	{
-		std::vector<NBTBase *> tmp;
+		tags.clear();
 
 		while(true)
 		{
@@ -234,18 +197,12 @@ namespace NBT
 
 			if(!b) break;
 
-			tmp.push_back(b);
+			const char *s = b->getName();
+
+			assert(s&&*s);
+
+			tags[std::string(s)] = NBT_ptr_t(b);
 		}
-
-		delete[] tags;
-
-		NBT_ptr_t *t = tags = tmp.size() ? new NBT_ptr_t[tmp.size()] : NULL;
-		for(NBTBase *nbt : tmp)
-		{
-			*t++ = NBT_ptr_t(nbt);
-		}
-
-		length = t - tags;
 	}
 
 	template<BYTE ID>
@@ -253,34 +210,15 @@ namespace NBT
 	{
 		NBTBase::setName(s);
 
-		delete[] tags;
-
-		NBT_ptr_t *t = tags = v.size() ? new NBT_ptr_t[v.size()] : NULL;
+		tags.clear();
 
 		for(NBT_ptr_t nbt : v)
 		{
-			*t++ = nbt;
-		}
+			const char *s = nbt->getName();
 
-		length = t - tags;
-	}
+			assert(s&&*s);
 
-	template<BYTE ID>
-	void NBTTagCompound<ID>::init(const char *s, int l, NBT_ptr_t *v)
-	{
-		NBTBase::setName(s);
-
-		delete[] tags;
-
-		length = l;
-		tags = l ? new NBT_ptr_t[l] : NULL;
-
-		if(l && v)
-		{
-			for(int i = 0 ; i < l ; i++)
-			{
-				tags[i] = v[i];
-			}
+			tags[std::string(s)] = nbt;
 		}
 	}
 

@@ -1,6 +1,6 @@
 CC=g++
 CFLAGS=-std=c++0x -ggdb -DDEBUG
-LIBS=-lz
+LIBS=
 SRC=$(wildcard *.cc)
 OBJ=$(SRC:.cc=.o)
 TEMPLATES=$(wildcard *.cpp)

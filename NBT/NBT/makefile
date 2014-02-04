@@ -8,7 +8,7 @@ TARGET=libnbt.so
 %.o: %.cc $(TEMPLATES)
 	$(CC) -c $(CFLAGS) -I.. $< -o $@
 
-all: $(OBJ)
+$(TARGET): $(OBJ)
 	$(CC) -shared -Wl,-soname,$(TARGET) -o $(TARGET) $(OBJ) $(LIBS)
 
 clean:

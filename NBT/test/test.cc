@@ -1,54 +1,28 @@
 #include <iostream>
+#include <vector>
 #include <memory>
 
 using namespace std;
 
-class A
+struct A
 {
-	public:
-		void doSomething()
-		{
-			cout << "Doing something (A): " << endl;
-			fn();
-		}
-	protected:
-		virtual void fn() = 0;
+	A() { cout << "Con" << endl; }
+	~A() { cout << "Des" << endl; }
+	void doSomething()
+	{
+		cout << "Doing something." << endl;
+	}
 };
-
-class B : public A
-{
-	public:
-		void greet()
-		{
-			cout << "Hi there, handsome." << endl;
-		}
-	protected:
-		void fn()
-		{
-			cout << "Having fun." << endl;
-		}
-};
-
-class C : public A
-{
-	protected:
-		void fn()
-		{
-			cout << "Being sad." << endl;
-		}
-};
-
-typedef shared_ptr<A> A_ptr;
 
 int main(void)
 {
-	A_ptr pa1(new B);
-	A_ptr pa2(new C);
+	A *a = new A;
+	shared_ptr<A> a_p(a);
+	vector<shared_ptr<A>> v = {a_p};
 
-	pa1->doSomething();
-	pa2->doSomething();
+	vector<shared_ptr<A>>::iterator i = v.begin();
 
-	dynamic_pointer_cast<B>(pa1)->greet();
+	(*i)->doSomething();
 
 	return 0;
 }
