@@ -17,12 +17,12 @@ namespace NBT
 
 	void NBTBase::write(const nbtostream& os)
 	{
-		os.write(getID());
-		os.write<WORD>(strlen(reinterpret_cast<char *>(name)));
+		os.write<BYTE>(getID());
+		os.write<WORD>(strlen(static_cast<char *>(name)));
 
 		if(*name)
 		{
-			os.write(name, strlen(reinterpret_cast<char *>(name)));
+			os.write(name, strlen(static_cast<char *>(name)));
 		}
 
 		_write(os);
@@ -52,7 +52,7 @@ namespace NBT
 	void NBTBase::setName(const char *s)
 	{
 		if(name) free(name);
-		name = reinterpret_cast<BYTE *>(strdup(s));
+		name = static_cast<BYTE *>(strdup(s));
 	}
 
 // # ---------------------------------------------------------------------------
@@ -60,7 +60,7 @@ namespace NBT
 	template<BYTE ID, typename T>
 	void NBTSimple<ID, T>::_write(const nbtostream& os)
 	{
-		os.write(value);
+		os.write<T>(value);
 	}
 
 	template<BYTE ID, typename T>
@@ -81,11 +81,11 @@ namespace NBT
 	template<BYTE ID, typename T1, typename T2>
 	void NBTArray<ID, T1, T2>::_write(const nbtostream& os)
 	{
-		os.write(length);
+		os.write<T1>(length);
 
 		for(int i = 0 ; i < length ; i++)
 		{
-			os.write(values[i]);
+			os.write<T2>(values[i]);
 		}
 	}
 

@@ -14,7 +14,7 @@ namespace NBT
 		os.write(d, n);
 
 #ifndef __WRITER_DEBUG
-		QWORD qw = 0; memcpy(&qw, d, n); std::reverse(reinterpret_cast<BYTE *>(&qw), reinterpret_cast<BYTE *>(&qw) + n);
+		QWORD qw = 0; memcpy(&qw, d, n); std::reverse(static_cast<BYTE *>(&qw), static_cast<BYTE *>(&qw) + n);
 		fprintf(stderr, "%% Wrote (%d): 0x%0*lx\n", (int) n, 2 * (int) n, qw);
 #endif
 	}
@@ -25,7 +25,7 @@ namespace NBT
 		assert(d);
 
 #ifndef __WRITER_DEBUG
-		QWORD qw = 0; memcpy(&qw, d, n); std::reverse(reinterpret_cast<BYTE *>(&qw), reinterpret_cast<BYTE *>(&qw) + n);
+		QWORD qw = 0; memcpy(&qw, d, n); std::reverse(static_cast<BYTE *>(&qw), static_cast<BYTE *>(&qw) + n);
 		fprintf(stderr, "%% Wrote (%d): 0x%0*lx\n", (int) n, 2 * (int) n, qw);
 #endif
 

@@ -14,7 +14,7 @@ namespace NBT
 		is.read(d, n);
 
 #ifndef __READER_DEBUG
-		QWORD qw = 0; memcpy(&qw, d, n); std::reverse(reinterpret_cast<BYTE *>(&qw), reinterpret_cast<BYTE *>(&qw) + n);
+		QWORD qw = 0; memcpy(&qw, d, n); std::reverse(static_cast<BYTE *>(&qw), static_cast<BYTE *>(&qw) + n);
 		fprintf(stderr, "%% Read (%d): 0x%0*lx\n", (int) n, 2 * (int) n, qw);
 #endif
 	}
@@ -30,7 +30,7 @@ namespace NBT
 		while(n--) is >> *d++;
 
 #ifndef __READER_DEBUG
-		QWORD qw = 0; memcpy(&qw, _d, _n); std::reverse(reinterpret_cast<BYTE *>(&qw), reinterpret_cast<BYTE *>(&qw) + _n);
+		QWORD qw = 0; memcpy(&qw, _d, _n); std::reverse(static_cast<BYTE *>(&qw), static_cast<BYTE *>(&qw) + _n);
 		fprintf(stderr, "%% Read (%d): 0x%0*lx\n", _n, 2 * _n, qw);
 #endif
 	}

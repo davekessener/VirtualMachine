@@ -19,7 +19,7 @@ namespace NBT
 			void write(T) const;
 			void write(BYTE *d, size_t n) const
 			{
-				do_write(reinterpret_cast<char *>(d), n);
+				do_write(static_cast<char *>(d), n);
 			}
 		protected:
 			virtual void do_write(char *, size_t) const = 0;
@@ -42,10 +42,10 @@ namespace NBT
 	void basic_nbt_writer::write(T t) const
 	{
 #ifndef RETAIN_ENDIANNESS
-		std::reverse(reinterpret_cast<BYTE *>(&t), reinterpret_cast<BYTE *>(&t) + sizeof(T));
+		std::reverse(static_cast<BYTE *>(&t), static_cast<BYTE *>(&t) + sizeof(T));
 #endif
 
-		do_write(reinterpret_cast<char *>(&t), sizeof(T));
+		do_write(static_cast<char *>(&t), sizeof(T));
 	}
 
 // # ---------------------------------------------------------------------------

@@ -62,11 +62,11 @@ gzstreambuf* gzstreambuf::open(const char* name, int open_mode)
     
 	if(mode & std::ios::in)
 	{
-        fmode = reinterpret_cast<const char *>("rb");
+        fmode = static_cast<const char *>("rb");
 	}
     else if(mode & std::ios::out)
 	{
-        fmode = reinterpret_cast<const char *>("wb");
+        fmode = static_cast<const char *>("wb");
 	}
 	else
 	{

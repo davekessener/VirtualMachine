@@ -102,7 +102,7 @@ namespace NBT
 	{
 		public:
 			inline NBTString(const char *s, const char *v) : 
-				NBTArray<ID, WORD, BYTE>(s, (WORD) (v ? strlen(v) : 0), reinterpret_cast<const BYTE *>(v)) { }
+				NBTArray<ID, WORD, BYTE>(s, (WORD) (v ? strlen(v) : 0), static_cast<const BYTE *>(v)) { }
 			inline NBTString( ) : NBTArray<ID, WORD, BYTE>("", 0, NULL) { }
 	};
 
