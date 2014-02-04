@@ -42,7 +42,8 @@ void test(void)
 	NBT::NBT_ptr_t s2tag = NBT::NBT_ptr_t(new NBT::TAG_String("", "hitmonchan"));
 	NBT::NBT_ptr_t s3tag = NBT::NBT_ptr_t(new NBT::TAG_String("", "hitmontop"));
 	NBT::NBT_ptr_t s4tag = NBT::NBT_ptr_t(new NBT::TAG_String("", "quilava"));
-	NBT::NBT_ptr_t list  = NBT::NBT_ptr_t(new NBT::TAG_List("pokemon", {stag, s2tag, s3tag, s4tag}));
+	vector<NBT::NBT_ptr_t> svec = {stag, s2tag, s3tag, s4tag};
+	NBT::NBT_ptr_t list  = NBT::NBT_ptr_t(new NBT::TAG_List("pokemon", svec.cbegin(), svec.cend()));
 	NBT::NBT_ptr_t arr   = NBT::NBT_ptr_t(new NBT::TAG_Int_Array("ids", {111, 222, 333, 444, 555, 666, 777}));
 	NBT::NBT_ptr_t nbt1  = NBT::NBT_ptr_t(new NBT::TAG_Compound("one", {itag, dtag}));
 	NBT::NBT_ptr_t nbt2  = NBT::NBT_ptr_t(new NBT::TAG_Compound("two", {list}));
