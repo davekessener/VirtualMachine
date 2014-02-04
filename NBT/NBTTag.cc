@@ -4,70 +4,6 @@
 
 namespace NBT
 {
-	NBTBase *NBTHelper::Default(BYTE id)
-	{
-		if(!id) return NULL;
-
-		assert(id < 12);
-
-		return cons[id]();
-	}
-
-	NBT_ptr_t NBTHelper::Read(std::istream& is)
-	{
-		NBTBase *nbt = Read(nbt_std_reader(is));
-
-		assert(nbt);
-
-		return NBT_ptr_t(nbt);
-	}
-
-	NBT_ptr_t NBTHelper::Read(gzip::igzstream& is)
-	{
-		NBTBase *nbt = Read(nbt_gzip_reader(is));
-
-		assert(nbt);
-
-		return NBT_ptr_t(nbt);
-	}
-
-	NBTBase *NBTHelper::Read(const nbtistream& is)
-	{
-		BYTE id = is.read<BYTE>();
-
-		NBTBase *nbt = Default(id);
-
-		if(nbt) nbt->read(is);
-
-		return nbt;
-	}
-
-	NBTHelper& NBTHelper::instance(void)
-	{
-		static NBTHelper nbth;
-		return nbth;
-	}
-
-	NBTHelper::NBTHelper(void)
-	{
-		cons[TAG_Byte::ID]       = []()->NBTBase * { return new TAG_Byte; };
-		cons[TAG_Short::ID]      = []()->NBTBase * { return new TAG_Short; };
-		cons[TAG_Int::ID]        = []()->NBTBase * { return new TAG_Int; };
-		cons[TAG_Long::ID]       = []()->NBTBase * { return new TAG_Long; };
-		cons[TAG_Float::ID]      = []()->NBTBase * { return new TAG_Float; };
-		cons[TAG_Double::ID]     = []()->NBTBase * { return new TAG_Double; };
-		cons[TAG_Byte_Array::ID] = []()->NBTBase * { return new TAG_Byte_Array; };
-		cons[TAG_String::ID]     = []()->NBTBase * { return new TAG_String; };
-		cons[TAG_List::ID]       = []()->NBTBase * { return new TAG_List; };
-		cons[TAG_Compound::ID]   = []()->NBTBase * { return new TAG_Compound; };
-		cons[TAG_Int_Array::ID]  = []()->NBTBase * { return new TAG_Int_Array; };
-	}
-
-	NBTHelper::~NBTHelper(void)
-	{
-	}
-
-// # ===========================================================================
 
 	void NBTBase::write(std::ostream& os)
 	{
@@ -110,8 +46,6 @@ namespace NBT
 		if(l) is.read(name, l);
 		name[l] = '\0';
 
-//		std::cerr << "# Reading tag named '" << name << "'\n";
-
 		_read(is);
 	}
 
@@ -133,7 +67,6 @@ namespace NBT
 	void NBTSimple<ID, T>::_read(const nbtistream& is)
 	{
 		value = is.read<T>();
-//		std::cerr << "# Reading simple value " << value << std::endl;
 	}
 
 	template<BYTE ID, typename T>
@@ -164,12 +97,9 @@ namespace NBT
 		length = is.read<T1>();
 		values = length ? new T2[length] : NULL;
 
-//		std::cerr << "# Read " << (int)length << " values:" << std::endl;
-
 		for(int i = 0 ; i < length ; i++)
 		{
 			values[i] = is.read<T2>();
-//			std::cerr << "##\t" << values[i] << std::endl;
 		}
 	}
 
@@ -228,11 +158,9 @@ namespace NBT
 
 		tags = length ? new NBT_ptr_t[length] : NULL;
 
-//		std::cerr << "# Reading list(" << (int)length << ") of type " << (int)tagIds << ":\n";
-
 		for(int i = 0 ; i < length ; i++)
 		{
-			tags[i] = NBT_ptr_t(NBTHelper::instance().Default(tagIds));
+			tags[i] = NBT_ptr_t(NBTHelper::Instance().Default(tagIds));
 			tags[i]->_read(is);
 		}
 	}
@@ -300,17 +228,14 @@ namespace NBT
 	{
 		std::vector<NBTBase *> tmp;
 
-//		std::cerr << "# Reading tag compound" << std::endl;
-
 		while(true)
 		{
-			NBTBase *b = NBTHelper::instance().Read(is);
+			NBTBase *b = NBTHelper::Instance().Read(is);
+
 			if(!b) break;
-//			std::cerr << "##\tRead tag of type " << (int)b->getID() << std::endl;
+
 			tmp.push_back(b);
 		}
-
-//		std::cerr << "##\t[DONE]\n";
 
 		delete[] tags;
 
@@ -358,6 +283,73 @@ namespace NBT
 			}
 		}
 	}
+
+// # ===========================================================================
+
+	NBTBase *NBTHelper::Default(BYTE id)
+	{
+		if(!id) return NULL;
+
+		assert(id < 12);
+
+		return cons[id]();
+	}
+
+	NBT_ptr_t NBTHelper::Read(std::istream& is)
+	{
+		NBTBase *nbt = Read(nbt_std_reader(is));
+
+		assert(nbt);
+
+		return NBT_ptr_t(nbt);
+	}
+
+	NBT_ptr_t NBTHelper::Read(gzip::igzstream& is)
+	{
+		NBTBase *nbt = Read(nbt_gzip_reader(is));
+
+		assert(nbt);
+
+		return NBT_ptr_t(nbt);
+	}
+
+	NBTBase *NBTHelper::Read(const nbtistream& is)
+	{
+		BYTE id = is.read<BYTE>();
+
+		NBTBase *nbt = Default(id);
+
+		if(nbt) nbt->read(is);
+
+		return nbt;
+	}
+
+	NBTHelper& NBTHelper::Instance(void)
+	{
+		static NBTHelper nbth;
+		return nbth;
+	}
+
+	NBTHelper::NBTHelper(void)
+	{
+		cons[TAG_Byte::ID]       = []()->NBTBase * { return new TAG_Byte; };
+		cons[TAG_Short::ID]      = []()->NBTBase * { return new TAG_Short; };
+		cons[TAG_Int::ID]        = []()->NBTBase * { return new TAG_Int; };
+		cons[TAG_Long::ID]       = []()->NBTBase * { return new TAG_Long; };
+		cons[TAG_Float::ID]      = []()->NBTBase * { return new TAG_Float; };
+		cons[TAG_Double::ID]     = []()->NBTBase * { return new TAG_Double; };
+		cons[TAG_Byte_Array::ID] = []()->NBTBase * { return new TAG_Byte_Array; };
+		cons[TAG_String::ID]     = []()->NBTBase * { return new TAG_String; };
+		cons[TAG_List::ID]       = []()->NBTBase * { return new TAG_List; };
+		cons[TAG_Compound::ID]   = []()->NBTBase * { return new TAG_Compound; };
+		cons[TAG_Int_Array::ID]  = []()->NBTBase * { return new TAG_Int_Array; };
+	}
+
+	NBTHelper::~NBTHelper(void)
+	{
+	}
+
+// # ===========================================================================
 
 	template class NBTSimple<1, BYTE>; 
 	template class NBTSimple<2, WORD>;

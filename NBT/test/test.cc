@@ -1,34 +1,54 @@
 #include <iostream>
+#include <memory>
 
 using namespace std;
 
-struct A
+class A
 {
-	void doSomething() const
-	{
-		do_do();
-	}
-	virtual void do_do() const = 0;
+	public:
+		void doSomething()
+		{
+			cout << "Doing something (A): " << endl;
+			fn();
+		}
+	protected:
+		virtual void fn() = 0;
 };
 
-struct B : public A
+class B : public A
 {
-	B(int _v) : v(_v) { }
-	void do_do() const
-	{
-		cout << "Doing it in B(" << v << ")" << endl;
-	}
-	int v;
+	public:
+		void greet()
+		{
+			cout << "Hi there, handsome." << endl;
+		}
+	protected:
+		void fn()
+		{
+			cout << "Having fun." << endl;
+		}
 };
 
-void exec(const A& a)
+class C : public A
 {
-	a.doSomething();
-}
+	protected:
+		void fn()
+		{
+			cout << "Being sad." << endl;
+		}
+};
+
+typedef shared_ptr<A> A_ptr;
 
 int main(void)
 {
-	exec(B(3));
+	A_ptr pa1(new B);
+	A_ptr pa2(new C);
+
+	pa1->doSomething();
+	pa2->doSomething();
+
+	dynamic_pointer_cast<B>(pa1)->greet();
 
 	return 0;
 }

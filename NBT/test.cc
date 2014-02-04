@@ -20,7 +20,7 @@ void test(void)
 	ifstream in("test.nbt", ios::in | ios::binary);
 	ofstream out("rewrite.nbt", ios::out | ios::binary);
 
-	NBT::NBT_ptr_t nbt = NBT::NBTHelper::instance().Read(in);
+	NBT::TAG_Compound_ptr_t nbt = NBT::Read(in);
 
 	nbt->write(out);
 

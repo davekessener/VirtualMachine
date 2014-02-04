@@ -27,7 +27,7 @@ namespace NBT
 			}
 			void write(std::ostream&);
 			void write(gzip::ogzstream&);
-			void write(const nbtostream&);
+  			void write(const nbtostream&);
 			void read(std::istream&);
 			void read(gzip::igzstream&);
 			void read(const nbtistream&);
@@ -40,8 +40,6 @@ namespace NBT
 
 			template<BYTE> friend class NBTList;
 	};
-
-	typedef std::shared_ptr<NBTBase> NBT_ptr_t;
 
 // # ---------------------------------------------------------------------------
 
@@ -168,7 +166,7 @@ namespace NBT
 			NBT_ptr_t Read(gzip::igzstream&);
 			NBTBase *Default(BYTE);
 			NBTBase *Read(const nbtistream&);
-			static NBTHelper& instance( );
+			static NBTHelper& Instance( );
 		private:
 			NBTHelper( );
 			~NBTHelper( );
@@ -178,21 +176,13 @@ namespace NBT
 			std::map<BYTE, std::function<NBTBase *(void)>> cons;
 	};
 
+	template<class T>
+	TAG_Compound_ptr_t Read(T& t)
+	{
+		return std::dynamic_pointer_cast<TAG_Compound>(NBTHelper::Instance().Read(t));
+	}
+
 // # ===========================================================================
-
-	typedef NBTSimple		<1, BYTE> 			TAG_Byte;
-	typedef NBTSimple		<2, WORD> 			TAG_Short;
-	typedef NBTSimple		<3, DWORD> 			TAG_Int;
-	typedef NBTSimple		<4, QWORD> 			TAG_Long;
-	typedef NBTSimple		<5, float>	 		TAG_Float;
-	typedef NBTSimple		<6, double> 		TAG_Double;
-	typedef NBTArray		<7, DWORD, BYTE> 	TAG_Byte_Array;
-	typedef NBTString		<8> 				TAG_String;
-	typedef NBTList			<9> 				TAG_List;
-	typedef NBTTagCompound	<10> 				TAG_Compound;
-	typedef NBTArray		<11, DWORD, DWORD> 	TAG_Int_Array;
-
-// # ---------------------------------------------------------------------------
 
 #ifndef NBT_IMP
 	extern template class NBTSimple<1, BYTE>; 
