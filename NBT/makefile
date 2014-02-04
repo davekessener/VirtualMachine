@@ -1,21 +1,24 @@
 CC=g++
 CFLAGS=-std=c++0x -ggdb -DDEBUG
-LIBS=-lz
+LIBS=-L./GZ -L./NBT -lgz -lnbt
 SRC=$(wildcard *.cc)
 OBJ=$(SRC:.cc=.o)
-TEMPLATES=$(wildcard *.cpp)
+HEADERS=$(wildcard *.h)
 TARGET=nbtedit
 
-%.o: %.cc $(TEMPLATES)
-	$(CC) -c $(CFLAGS) $< -o $@
+%.o: %.cc $(HEADERS)
+	$(CC) -c $(CFLAGS) -I. $< -o $@
 
 all: $(OBJ)
+	$(MAKE) -C GZ/
+	$(MAKE) -C NBT/
 	$(CC) $(OBJ) -o $(TARGET) $(LIBS)
 
-test:
-	cd test
-	make
+run: all
+	export LD_LIBRARY_PATH="./NBT;./GZ" && ./$(TARGET)
 
 clean:
+	-$(MAKE) clean -C GZ/
+	-$(MAKE) clean -C NBT/
 	-rm $(OBJ) $(TARGET)
 

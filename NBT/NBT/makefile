@@ -1,21 +1,16 @@
 CC=g++
-CFLAGS=-std=c++0x -ggdb -DDEBUG
-LIBS=-lz
+CFLAGS=-fPIC -std=c++0x
 SRC=$(wildcard *.cc)
 OBJ=$(SRC:.cc=.o)
-TEMPLATES=$(wildcard *.cpp)
-TARGET=nbtedit
+LIBS=-L../GZ -lgz
+TARGET=libnbt.so
 
 %.o: %.cc $(TEMPLATES)
-	$(CC) -c $(CFLAGS) $< -o $@
+	$(CC) -c $(CFLAGS) -I.. $< -o $@
 
 all: $(OBJ)
-	$(CC) $(OBJ) -o $(TARGET) $(LIBS)
-
-test:
-	cd test
-	make
+	$(CC) -shared -Wl,-soname,$(TARGET) -o $(TARGET) $(OBJ) $(LIBS)
 
 clean:
-	-rm $(OBJ) $(TARGET)
+	-rm *.o $(TARGET)
 

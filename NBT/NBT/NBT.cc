@@ -1,5 +1,5 @@
 #define NBT_IMP
-#include "NBTTag.h"
+#include "NBT.h"
 #undef NBT_IMP
 
 namespace NBT
@@ -18,11 +18,11 @@ namespace NBT
 	void NBTBase::write(const nbtostream& os)
 	{
 		os.write<BYTE>(getID());
-		os.write<WORD>(strlen(static_cast<char *>(name)));
+		os.write<WORD>(strlen(reinterpret_cast<char *>(name)));
 
 		if(*name)
 		{
-			os.write(name, strlen(static_cast<char *>(name)));
+			os.write(name, strlen(reinterpret_cast<char *>(name)));
 		}
 
 		_write(os);
@@ -52,7 +52,7 @@ namespace NBT
 	void NBTBase::setName(const char *s)
 	{
 		if(name) free(name);
-		name = static_cast<BYTE *>(strdup(s));
+		name = reinterpret_cast<BYTE *>(strdup(s));
 	}
 
 // # ---------------------------------------------------------------------------

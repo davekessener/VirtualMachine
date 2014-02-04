@@ -1,5 +1,5 @@
-#ifndef NBT_
-#define NBT_
+#ifndef NBT_COMMON_H
+#define NBT_COMMON_H
 
 #include <cstdint>
 #include <memory>

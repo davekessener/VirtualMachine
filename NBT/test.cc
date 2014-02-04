@@ -3,11 +3,12 @@
 #include <cstdint>
 #include <initializer_list>
 #include <functional>
+#include <fstream>
+#include <NBT/NBT.h>
+#include <GZ/gzstream.h>
 #include "Screen.h"
 #include "Timer.h"
 #include "Keyboard.h"
-#include "NBTTag.h"
-#include <fstream>
 
 using namespace std;
 
@@ -17,8 +18,10 @@ using namespace std;
 
 void test(void)
 {
-	ifstream in("test.nbt", ios::in | ios::binary);
+	//ifstream in("test.nbt", ios::in | ios::binary);
+	gzip::igzstream in("test.nbt.gz");
 	ofstream out("rewrite.nbt", ios::out | ios::binary);
+	//gzip::ogzstream out("rewrite.nbt.gz.dat");
 
 	NBT::TAG_Compound_ptr_t nbt = NBT::Read(in);
 

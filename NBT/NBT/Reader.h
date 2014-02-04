@@ -7,8 +7,8 @@
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
-#include "NBT.h"
-#include "gzstream.h"
+#include <GZ/gzstream.h>
+#include "common.h"
 
 namespace NBT
 {
@@ -19,7 +19,7 @@ namespace NBT
 			T read() const;
 			void read(BYTE *d, size_t n) const
 			{
-				do_read(static_cast<char *>(d), n);
+				do_read(reinterpret_cast<char *>(d), n);
 			}
 		protected:
 			virtual void do_read(char *, size_t) const = 0;
@@ -42,10 +42,10 @@ namespace NBT
 	T basic_nbt_reader::read(void) const
 	{
 		T t;
-		do_read(static_cast<char *>(&t), sizeof(T));
+		do_read(reinterpret_cast<char *>(&t), sizeof(T));
 
 #ifndef RETAIN_ENDIANNESS
-		std::reverse(static_cast<BYTE *>(&t), static_cast<BYTE *>(&t) + sizeof(T));
+		std::reverse(reinterpret_cast<BYTE *>(&t), reinterpret_cast<BYTE *>(&t) + sizeof(T));
 #endif
 
 		return t;
