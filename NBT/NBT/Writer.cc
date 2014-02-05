@@ -14,8 +14,12 @@ namespace NBT
 		os.write(d, n);
 
 #ifndef __WRITER_DEBUG
-		QWORD qw = 0; memcpy(&qw, d, n); std::reverse(reinterpret_cast<BYTE *>(&qw), reinterpret_cast<BYTE *>(&qw) + n);
-		fprintf(stderr, "%% Wrote (%d): 0x%0*lx\n", (int) n, 2 * (int) n, qw);
+		BYTE *_b = new BYTE[n];
+		memcpy(_b, d, n);
+		fprintf(stderr, "%% Wrote (%d): ", (int) n);
+		for(int i = 0 ; i < n ; ++i) fprintf(stderr, "%02hhx ", _b[i]);
+		delete[] _b;
+		std::cerr << std::endl;
 #endif
 	}
 
@@ -25,8 +29,12 @@ namespace NBT
 		assert(d);
 
 #ifndef __WRITER_DEBUG
-		QWORD qw = 0; memcpy(&qw, d, n); std::reverse(reinterpret_cast<BYTE *>(&qw), reinterpret_cast<BYTE *>(&qw) + n);
-		fprintf(stderr, "%% Wrote (%d): 0x%0*lx\n", (int) n, 2 * (int) n, qw);
+		BYTE *_b = new BYTE[n];
+		memcpy(_b, d, n);
+		fprintf(stderr, "%% Wrote (%d): ", (int) n);
+		for(int i = 0 ; i < n ; ++i) fprintf(stderr, "%02hhx ", _b[i]);
+		delete[] _b;
+		std::cerr << std::endl;
 #endif
 
 		while(n--) os << *d++;

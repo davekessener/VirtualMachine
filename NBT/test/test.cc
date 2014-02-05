@@ -1,28 +1,19 @@
 #include <iostream>
 #include <vector>
 #include <memory>
+#include <map>
+#include "A.h"
 
 using namespace std;
 
-struct A
-{
-	A() { cout << "Con" << endl; }
-	~A() { cout << "Des" << endl; }
-	void doSomething()
-	{
-		cout << "Doing something." << endl;
-	}
-};
-
 int main(void)
 {
-	A *a = new A;
-	shared_ptr<A> a_p(a);
-	vector<shared_ptr<A>> v = {a_p};
+	A<3> a;
+	a.addS("hello, world!");
+	a.addS("hi there, handsome");
+	a.addS("whatevs");
 
-	vector<shared_ptr<A>>::iterator i = v.begin();
-
-	(*i)->doSomething();
+	cout << a.getAt(1) << endl;
 
 	return 0;
 }

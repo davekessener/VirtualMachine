@@ -4,6 +4,7 @@
 
 namespace NBT
 {
+// # ===========================================================================
 
 	void NBTBase::write(std::ostream& os)
 	{
@@ -81,25 +82,25 @@ namespace NBT
 	template<BYTE ID, typename T1, typename T2>
 	void NBTArray<ID, T1, T2>::_write(const nbtostream& os)
 	{
-		os.write<T1>(length);
+		os.write<T1>(static_cast<T1>(vec_t::size()));
 
-		for(int i = 0 ; i < length ; i++)
+		for(T2 v : *this)
 		{
-			os.write<T2>(values[i]);
+			os.write<T2>(v);
 		}
 	}
 
 	template<BYTE ID, typename T1, typename T2>
 	void NBTArray<ID, T1, T2>::_read(const nbtistream& is)
 	{
-		if(values) delete[] values;
+		vec_t::clear();
 
-		length = is.read<T1>();
-		values = length ? new T2[length] : NULL;
+		size_t length = static_cast<size_t>(is.read<T1>());
+		vec_t::reserve(length);
 
-		for(int i = 0 ; i < length ; i++)
+		while(length--)
 		{
-			values[i] = is.read<T2>();
+			vec_t::push_back(is.read<T2>());
 		}
 	}
 
@@ -108,16 +109,14 @@ namespace NBT
 	{
 		NBTBase::setName(s);
 
-		delete[] values;
+		vec_t::clear();
 
-		T2 *t = values = v.size() ? new T2[v.size()] : NULL;
+		vec_t::reserve(v.size());
 
 		for(T2 t2 : v)
 		{
-			*t++ = t2;
+			vec_t::push_back(t2);
 		}
-
-		length = t - values;
 	}
 
 // # ---------------------------------------------------------------------------
@@ -126,13 +125,13 @@ namespace NBT
 	void NBTList<ID>::_write(const nbtostream& os)
 	{
 		os.write<BYTE>(tagIds ? tagIds : 1);
-		os.write<DWORD>(length);
+		os.write<DWORD>(static_cast<DWORD>(vec_t::size()));
 
-		for(int i = 0 ; i < length ; i++)
+		for(NBT_ptr_t nbt : *this)
 		{
-			assert(tagIds == tags[i]->getID());
+			assert(tagIds == nbt->getID());
 
-			tags[i]->_write(os);
+			nbt->_write(os);
 		}
 	}
 
@@ -140,16 +139,16 @@ namespace NBT
 	void NBTList<ID>::_read(const nbtistream& is)
 	{
 		tagIds = is.read<BYTE>();
-		length = is.read<decltype(length)>();
+		size_t length = static_cast<size_t>(is.read<DWORD>());
 
-		if(tags) delete[] tags;
+		vec_t::clear();
+		vec_t::reserve(length);
 
-		tags = length ? new NBT_ptr_t[length] : NULL;
-
-		for(int i = 0 ; i < length ; i++)
+		while(length--)
 		{
-			tags[i] = NBT_ptr_t(NBTHelper::Instance().Default(tagIds));
-			tags[i]->_read(is);
+			NBT_ptr_t nbt(NBTHelper::Instance().Default(tagIds));
+			nbt->_read(is);
+			vec_t::push_back(nbt);
 		}
 	}
 
@@ -158,19 +157,16 @@ namespace NBT
 	{
 		NBTBase::setName(s);
 
-		delete[] tags;
-
-		NBT_ptr_t *t = tags = v.size() ? new NBT_ptr_t[v.size()] : NULL;
+		vec_t::clear();
+		vec_t::reserve(v.size());
 
 		tagIds = v.size() ? (*v.begin())->getID() : 0;
 		for(NBT_ptr_t nbt : v)
 		{
 			assert(tagIds == nbt->getID());
 
-			*t++ = nbt;
+			vec_t::push_back(nbt);
 		}
-
-		length = t - tags;
 	}
 
 // # ---------------------------------------------------------------------------
@@ -178,7 +174,7 @@ namespace NBT
 	template<BYTE ID>
 	void NBTTagCompound<ID>::_write(const nbtostream& os)
 	{
-		for(auto p : tags)
+		for(auto p : *this)
 		{
 			p.second->write(os);
 		}
@@ -189,7 +185,7 @@ namespace NBT
 	template<BYTE ID>
 	void NBTTagCompound<ID>::_read(const nbtistream& is)
 	{
-		tags.clear();
+		map_t::clear();
 
 		while(true)
 		{
@@ -201,7 +197,7 @@ namespace NBT
 
 			assert(s&&*s);
 
-			tags[std::string(s)] = NBT_ptr_t(b);
+			map_t::operator[](std::string(s)) = NBT_ptr_t(b);
 		}
 	}
 
@@ -210,7 +206,7 @@ namespace NBT
 	{
 		NBTBase::setName(s);
 
-		tags.clear();
+		map_t::clear();
 
 		for(NBT_ptr_t nbt : v)
 		{
@@ -218,7 +214,7 @@ namespace NBT
 
 			assert(s&&*s);
 
-			tags[std::string(s)] = nbt;
+			map_t::operator[](std::string(s)) = nbt;
 		}
 	}
 

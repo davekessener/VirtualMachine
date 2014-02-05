@@ -14,8 +14,12 @@ namespace NBT
 		is.read(d, n);
 
 #ifndef __READER_DEBUG
-		QWORD qw = 0; memcpy(&qw, d, n); std::reverse(reinterpret_cast<BYTE *>(&qw), reinterpret_cast<BYTE *>(&qw) + n);
-		fprintf(stderr, "%% Read (%d): 0x%0*lx\n", (int) n, 2 * (int) n, qw);
+		BYTE *_b = new BYTE[n];
+		memcpy(_b, d, n); 
+		fprintf(stderr, "%% Read (%d): ", (int) n);
+		for(int i = 0 ; i < n ; ++i) fprintf(stderr, "%02hhx ", _b[i]);
+		delete[] _b;
+		std::cerr << std::endl;
 #endif
 	}
 
@@ -24,14 +28,20 @@ namespace NBT
 	{
 		assert(d);
 
+#ifndef __READER_DEBUG
 		char *_d = d;
 		int _n = (int) n;
+#endif
 
 		while(n--) is.get(*d++);
 
 #ifndef __READER_DEBUG
-		QWORD qw = 0; memcpy(&qw, _d, _n); std::reverse(reinterpret_cast<BYTE *>(&qw), reinterpret_cast<BYTE *>(&qw) + _n);
-		fprintf(stderr, "%% Read (%d): 0x%0*lx\n", _n, 2 * _n, qw);
+		BYTE *_b = new BYTE[_n];
+		memcpy(_b, _d, _n); 
+		fprintf(stderr, "%% Read (%d): ", _n);
+		for(int i = 0 ; i < _n ; ++i) fprintf(stderr, "%02hhx ", _b[i]);
+		delete[] _b;
+		std::cerr << std::endl;
 #endif
 	}
 	

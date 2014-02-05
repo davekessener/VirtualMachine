@@ -17,12 +17,21 @@ using namespace std;
 #define KEY_CTRL_D 4
 #define KEY_ESC 27
 
-void test_(void)
+void test_write();
+void test_read();
+
+void test(void)
 {
-	ifstream in("test.nbt", ios::in | ios::binary);
+	test_write();
+	test_read();
+}
+
+void test_read(void)
+{
+	ifstream in("wrtest.nbt", ios::in | ios::binary);
 	//gzip::igzstream in("test.nbt.gz");
-	//ofstream out("rewrite.nbt", ios::out | ios::binary);
-	gzip::ogzstream out("rewrite.nbt.gz.dat");
+	ofstream out("rewrite.nbt", ios::out | ios::binary);
+	//gzip::ogzstream out("rewrite.nbt.gz.dat");
 
 	NBT::TAG_Compound_ptr_t nbt = NBT::Read(in);
 
@@ -32,7 +41,7 @@ void test_(void)
 	in.close();
 }
 
-void test(void)
+void test_write(void)
 {
 	ofstream out("wrtest.nbt", ios::out | ios::binary);
 

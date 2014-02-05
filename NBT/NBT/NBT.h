@@ -34,7 +34,7 @@ namespace NBT
 			void read(gzip::igzstream&);
 			void read(const nbtistream&);
 			void setName(const char *);
-			inline const char *getName(void) { return reinterpret_cast<const char *>(name); }
+			const char *getName(void) { return reinterpret_cast<const char *>(name); }
 			virtual BYTE getID( ) = 0;
 		protected:
 			virtual void _write(const nbtostream&) = 0;
@@ -50,7 +50,7 @@ namespace NBT
 	class _NBTBase : public NBTBase
 	{
 		public:
-			inline BYTE getID(void)
+			BYTE getID(void)
 			{
 				return id;
 			}
@@ -66,8 +66,10 @@ namespace NBT
 	class NBTSimple : public _NBTBase<ID>
 	{
 		public:
-			inline NBTSimple(T t) { init("", t); }
-			inline NBTSimple(const char *s = "", T t = T()) { init(s, t); }
+			NBTSimple(T t) { init("", t); }
+			NBTSimple(const char *s = "", T t = T()) { init(s, t); }
+			T get(void) { return value; }
+			void set(T t) { value = t; }
 		protected:
 			void _write(const nbtostream&);
 			void _read(const nbtistream&);
@@ -79,20 +81,17 @@ namespace NBT
 // # ---------------------------------------------------------------------------
 
 	template<BYTE ID, typename T1, typename T2>
-	class NBTArray : public _NBTBase<ID>
+	class NBTArray : public _NBTBase<ID>, public std::vector<T2>
 	{
+		typedef std::vector<T2> vec_t;
 		public:
-			inline NBTArray(const char *s = "") : length(0), values(NULL) { NBTBase::setName(s); }
+			NBTArray(const char *s = "") { NBTBase::setName(s); }
 			template<typename T>
-			inline NBTArray(const char *s, T t1, T t2) : length(0), values(NULL) { init(s, t1, t2); }
-			inline NBTArray(const char *s, std::initializer_list<T2> v) : length(0), values(NULL) { init(s, v); }
+			NBTArray(const char *s, T t1, T t2) { init(s, t1, t2); }
+			NBTArray(const char *s, std::initializer_list<T2> v) { init(s, v); }
 			template<typename T>
-			inline NBTArray(T t1, T t2) : length(0), values(NULL) { init("", t1, t2); }
-			inline NBTArray(std::initializer_list<T2> v) : length(0), values(NULL) { init("", v); }
-			inline ~NBTArray(void)
-			{
-				delete[] values;
-			}
+			NBTArray(T t1, T t2) { init("", t1, t2); }
+			NBTArray(std::initializer_list<T2> v) { init("", v); }
 		protected:
 			void _write(const nbtostream&);
 			void _read(const nbtistream&);
@@ -100,40 +99,35 @@ namespace NBT
 			template<typename T>
 			void init(const char *, T, T);
 			void init(const char *, std::initializer_list<T2>);
-			T1 length;
-			T2 *values;
 	};
 
 	template<BYTE ID>
 	class NBTString : public NBTArray<ID, WORD, BYTE>
 	{
 		public:
-			inline NBTString(const char *s, const char *v) : 
+			NBTString(const char *s, const char *v) : 
 				NBTArray<ID, WORD, BYTE>(
 						s, 
 						reinterpret_cast<const BYTE *>(v),
 						reinterpret_cast<const BYTE *>(v ? v + strlen(v) : NULL)) { }
-			inline NBTString(const char *s = "") : NBTArray<ID, WORD, BYTE>(s) { }
+			NBTString(const char *s = "") : NBTArray<ID, WORD, BYTE>(s) { }
 	};
 
 // # ---------------------------------------------------------------------------
 
 	template<BYTE ID>
-	class NBTList : public _NBTBase<ID>
+	class NBTList : public _NBTBase<ID>, public std::vector<NBT_ptr_t>
 	{
+		typedef std::vector<NBT_ptr_t> vec_t;
 		public:
-			inline NBTList(const char *s = "", BYTE id = 0) : tags(NULL), tagIds(id) { NBTBase::setName(s); }
+			NBTList(const char *s = "", BYTE id = 0) : tagIds(id) { NBTBase::setName(s); }
 			template<typename T>
-			inline NBTList(const char *s, T t1, T t2) : tags(NULL), tagIds(0) { init(s, t1, t2); }
-			inline NBTList(const char *s, std::initializer_list<NBT_ptr_t> v) : tags(NULL), tagIds(0) { init(s, v); }
-			inline NBTList(BYTE id) : tags(NULL), tagIds(id) { NBTBase::setName(""); }
+			NBTList(const char *s, T t1, T t2) : tagIds(0) { init(s, t1, t2); }
+			NBTList(const char *s, std::initializer_list<NBT_ptr_t> v) : tagIds(0) { init(s, v); }
+			NBTList(BYTE id) : tagIds(id) { NBTBase::setName(""); }
 			template<typename T>
-			inline NBTList(T t1, T t2) : tags(NULL), tagIds(0) { init("", t1, t2); }
-			inline NBTList(std::initializer_list<NBT_ptr_t> v) : tags(NULL), tagIds(0) { init("", v); }
-			inline ~NBTList(void)
-			{
-				delete[] tags;
-			}
+			NBTList(T t1, T t2) : tagIds(0) { init("", t1, t2); }
+			NBTList(std::initializer_list<NBT_ptr_t> v) : tagIds(0) { init("", v); }
 		protected:
 			void _write(const nbtostream&);
 			void _read(const nbtistream&);
@@ -142,26 +136,28 @@ namespace NBT
 			void init(const char *, T, T);
 			void init(const char *, std::initializer_list<NBT_ptr_t>);
 			BYTE tagIds;
-			DWORD length;
-			NBT_ptr_t *tags;
 	};
 
 // # ---------------------------------------------------------------------------
 
 	template<BYTE ID>
-	class NBTTagCompound : public _NBTBase<ID>
+	class NBTTagCompound : public _NBTBase<ID>, protected std::map<std::string, NBT_ptr_t>
 	{
+		typedef std::map<std::string, NBT_ptr_t> map_t;
 		public:
-			inline NBTTagCompound(const char *s = "") { NBTBase::setName(s); }
+			NBTTagCompound(const char *s = "") { NBTBase::setName(s); }
 			template<typename T>
-			inline NBTTagCompound(const char *s, T t1, T t2) { init(s, t1, t2); }
-			inline NBTTagCompound(const char *s, std::initializer_list<NBT_ptr_t> v) { init(s, v); }
+			NBTTagCompound(const char *s, T t1, T t2) { init(s, t1, t2); }
+			NBTTagCompound(const char *s, std::initializer_list<NBT_ptr_t> v) { init(s, v); }
 			template<typename T>
-			inline NBTTagCompound(T t1, T t2) { init("", t1, t2); }
-			inline NBTTagCompound(std::initializer_list<NBT_ptr_t> v) { init("", v); }
-			inline ~NBTTagCompound(void)
-			{
-			}
+			NBTTagCompound(T t1, T t2) { init("", t1, t2); }
+			NBTTagCompound(std::initializer_list<NBT_ptr_t> v) { init("", v); }
+//			bool hasTag(const std::string&);
+//			NBT_ptr_t getTag(const std::string&);
+//			template<typename T>
+//			std::shared_ptr<T> getTag(const std::string&);
+//			template<typename T>
+//			void setTag(
 		protected:
 			void _write(const nbtostream&);
 			void _read(const nbtistream&);
@@ -170,7 +166,6 @@ namespace NBT
 			template<typename T>
 			void init(const char *, T, T);
 			void init(const char *, std::initializer_list<NBT_ptr_t>);
-			std::map<std::string, NBT_ptr_t> tags;
 	};
 
 // # ---------------------------------------------------------------------------
@@ -206,15 +201,14 @@ namespace NBT
 	{
 		NBTBase::setName(s);
 
-		delete[] values;
+		vec_t::clear();
 
-		length = 0;
+		DWORD length = 0;
 		for(I i = i1 ; i != i2 ; ++i) if(!++length) assert(false);
 
-		T2 *t = values = length ? new T2[length] : NULL;
 		while(i1 != i2)
 		{
-			*t++ = *i1++;
+			vec_t::push_back(*i1++);
 		}
 	}
 
@@ -226,18 +220,17 @@ namespace NBT
 	{
 		NBTBase::setName(s);
 
-		delete[] tags;
+		vec_t::clear();
 
-		length = 0;
+		DWORD length = 0;
 		for(I i = i1 ; i != i2 ; ++i) if(!++length) assert(false);
 
 		if(length) tagIds = (*i1)->getID();
 
-		NBT_ptr_t *t = tags = length ? new NBT_ptr_t[length] : NULL;
 		while(i1 != i2)
 		{
 			assert((*i1)->getID() == tagIds);
-			*t++ = *i1++;
+			vec_t::push_back(*i1++);
 		}
 	}
 
@@ -249,7 +242,7 @@ namespace NBT
 	{
 		NBTBase::setName(s);
 
-		tags.clear();
+		map_t::clear();
 
 		while(i1 != i2)
 		{
@@ -257,7 +250,7 @@ namespace NBT
 
 			assert(s&&*s);
 
-			tags[std::string(s)] = *i1++;
+			map_t::operator[](std::string(s)) = *i1++;
 		}
 	}
 
