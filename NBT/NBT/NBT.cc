@@ -127,8 +127,10 @@ namespace NBT
 		os.write<BYTE>(tagIds ? tagIds : 1);
 		os.write<DWORD>(static_cast<DWORD>(vec_t::size()));
 
-		for(NBT_ptr_t nbt : *this)
+		for(auto i = vec_t::begin() ; i != vec_t::end() ; ++i)
 		{
+			NBT_ptr_t nbt = *i;
+
 			assert(tagIds == nbt->getID());
 
 			nbt->_write(os);
@@ -174,9 +176,9 @@ namespace NBT
 	template<BYTE ID>
 	void NBTTagCompound<ID>::_write(const nbtostream& os)
 	{
-		for(auto p : *this)
+		for(auto i = map_t::begin() ; i != map_t::end() ; ++i)
 		{
-			p.second->write(os);
+			i->second->write(os);
 		}
 
 		os.write<BYTE>(0);

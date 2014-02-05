@@ -116,7 +116,7 @@ namespace NBT
 // # ---------------------------------------------------------------------------
 
 	template<BYTE ID>
-	class NBTList : public _NBTBase<ID>, public std::vector<NBT_ptr_t>
+	class NBTList : public _NBTBase<ID>, protected std::vector<NBT_ptr_t>
 	{
 		typedef std::vector<NBT_ptr_t> vec_t;
 		public:
@@ -145,19 +145,115 @@ namespace NBT
 	{
 		typedef std::map<std::string, NBT_ptr_t> map_t;
 		public:
-			NBTTagCompound(const char *s = "") { NBTBase::setName(s); }
+			class Names
+			{
+				public:
+					class iterator
+					{
+						public:
+							std::string operator*() { return _i->first; }
+							const std::string *operator->() { return &_i->first; }
+							iterator& operator++() { ++_i; return *this; }
+							bool operator==(const iterator& i) { return _i == i._i; }
+							bool operator!=(const iterator& i) { return !operator==(i); }
+						private:
+							friend class Names;
+							iterator(std::map<std::string, NBT_ptr_t>::iterator i) : _i(i) { }
+							std::map<std::string, NBT_ptr_t>::iterator _i;
+					};
+					iterator begin() { return iterator(_tc.begin()); }
+					iterator end() { return iterator(_tc.end()); }
+				private:
+					friend class NBTTagCompound<ID>;
+					Names(NBTTagCompound<ID>& tc) : _tc(tc) { }
+					NBTTagCompound<ID> &_tc;
+			} Names;
+			class Tags
+			{
+				public:
+					class iterator
+					{
+						public:
+							NBT_ptr_t operator*() { return _i->second; }
+							NBT_ptr_t operator->() { return _i->second; }
+							iterator& operator++() { ++_i; return *this; }
+							bool operator==(const iterator& i) { return _i == i._i; }
+							bool operator!=(const iterator& i) { return !operator==(i); }
+						private:
+							friend class Tags;
+							iterator(std::map<std::string, NBT_ptr_t>::iterator i) : _i(i) { }
+							std::map<std::string, NBT_ptr_t>::iterator _i;
+					};
+					iterator begin() { return iterator(_tc.begin()); }
+					iterator end() { return iterator(_tc.end()); }
+				private:
+					friend class NBTTagCompound<ID>;
+					Tags(NBTTagCompound<ID>& tc) : _tc(tc) { }
+					NBTTagCompound<ID> &_tc;
+			} Tags;
+		public:
+			NBTTagCompound(const char *s = "") : Names(*this), Tags(*this) { NBTBase::setName(s); }
 			template<typename T>
-			NBTTagCompound(const char *s, T t1, T t2) { init(s, t1, t2); }
-			NBTTagCompound(const char *s, std::initializer_list<NBT_ptr_t> v) { init(s, v); }
+			NBTTagCompound(const char *s, T t1, T t2) : Names(*this), Tags(*this) { init(s, t1, t2); }
+			NBTTagCompound(const char *s, std::initializer_list<NBT_ptr_t> v) : Names(*this), Tags(*this) { init(s, v); }
 			template<typename T>
-			NBTTagCompound(T t1, T t2) { init("", t1, t2); }
-			NBTTagCompound(std::initializer_list<NBT_ptr_t> v) { init("", v); }
+			NBTTagCompound(T t1, T t2) : Names(*this), Tags(*this) { init("", t1, t2); }
+			NBTTagCompound(std::initializer_list<NBT_ptr_t> v) : Names(*this), Tags(*this) { init("", v); }
 //			bool hasTag(const std::string&);
 //			NBT_ptr_t getTag(const std::string&);
 //			template<typename T>
 //			std::shared_ptr<T> getTag(const std::string&);
 //			template<typename T>
-//			void setTag(
+//			void setTag(const char *, std::shared_ptr<T>);
+//			template<typename T>
+//			void setTag(std::shared_ptr<T>);
+//			template<typename T>
+//			NBT_ptr_t set(const char *, T);
+
+	template<BYTE ID>
+	bool NBTTagCompound<ID>::hasTag(const std::string& name)
+	{
+		return map_t::count(name) > 0;
+	}
+
+	template<BYTE ID>
+	NBT_ptr_t NBTTagCompound<ID>::getTag(const std::string& name)
+	{
+		if(!hasTag(name)) return NBT_ptr_t(NULL);
+
+		return map_t::operator[](name);
+	}
+
+	template<BYTE ID>
+	template<typename T>
+	std::shared_ptr<T> NBTTagCompound<ID>::getTag(const std::string& name)
+	{
+		if(!hasTag(name)) return std::shared_ptr<T>(NULL);
+
+		return std::dynamic_pointer_cast<T>(map_t::operator[](name));
+	}
+
+	template<BYTE ID>
+	template<typename T>
+	void NBTTagCompound<ID>::setTag(const char *name, std::shared_ptr<T> p)
+	{
+		p->setName(name);
+		map_t::operator[](std::string(name)) = std::dynamic_pointer_cast<NBTBase>(p);
+	}
+
+	template<BYTE ID>
+	template<typename T>
+	void NBTTagCompound<ID>::setTag(std::shared_ptr<T> p)
+	{
+		map_t::operator[](std::string(p->getName())) = std::dynamic_pointer_cast<NBTBase>(p);
+	}
+
+	template<BYTE ID>
+	template<typename T>
+	NBT_ptr_t NBTTagCompound<ID>::set(const char *name, T t)
+	{
+	}
+
 		protected:
 			void _write(const nbtostream&);
 			void _read(const nbtistream&);

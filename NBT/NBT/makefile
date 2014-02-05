@@ -6,7 +6,7 @@ OBJ=$(SRC:.cc=.o)
 LIBS=-L../GZ -lgz
 TARGET=libnbt.so
 
-%.o: %.cc $(TEMPLATES)
+%.o: %.cc %.h $(TEMPLATES)
 	$(CC) -c $(CFLAGS) $(DEBUG) -I.. $< -o $@
 
 $(TARGET): $(OBJ)

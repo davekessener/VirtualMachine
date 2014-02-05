@@ -35,6 +35,16 @@ void test_read(void)
 
 	NBT::TAG_Compound_ptr_t nbt = NBT::Read(in);
 
+	for(NBT::TAG_Compound::Names::iterator i = nbt->Names.begin() ; i != nbt->Names.end() ; ++i)
+	{
+		cout << "NAME: " << *i << endl;
+	}
+
+	for(NBT::TAG_Compound::Tags::iterator i = nbt->Tags.begin() ; i != nbt->Tags.end() ; ++i)
+	{
+		cout << "TAG: " << i->getName() << endl;
+	}
+
 	nbt->write(out);
 
 	out.close();

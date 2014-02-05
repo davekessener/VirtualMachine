@@ -2,18 +2,23 @@
 #include <vector>
 #include <memory>
 #include <map>
-#include "A.h"
+#include <functional>
+#include <cstdlib>
 
 using namespace std;
 
+template<function<void *(int)> make>
+struct A
+{
+	template<typename T>
+	T *create() { return reinterpret_cast<T *>(make(sizeof(T))); }
+}
+
 int main(void)
 {
-	A<3> a;
-	a.addS("hello, world!");
-	a.addS("hi there, handsome");
-	a.addS("whatevs");
+	A<[](int s)->void * { return std::malloc(s); }> a;
 
-	cout << a.getAt(1) << endl;
+	int *i = a.create<int>();
 
 	return 0;
 }
