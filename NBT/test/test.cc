@@ -7,18 +7,22 @@
 
 using namespace std;
 
-template<function<void *(int)> make>
 struct A
 {
 	template<typename T>
-	T *create() { return reinterpret_cast<T *>(make(sizeof(T))); }
-}
+	A(T& t) : l(t.size()) { }
+	template<typename T>
+	A(T&& t) : l(t.size()) { }
+	int l;
+};
+
+template<class T> void foo(T& t) { }
+template<class T> void foo(T&& t) { }
 
 int main(void)
 {
-	A<[](int s)->void * { return std::malloc(s); }> a;
-
-	int *i = a.create<int>();
+	int i;
+	foo(i);
 
 	return 0;
 }

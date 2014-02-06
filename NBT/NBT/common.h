@@ -11,6 +11,10 @@ namespace NBT
 	typedef std::uint32_t DWORD;
 	typedef std::uint64_t QWORD;
 
+	typedef WORD  SHORT;
+	typedef DWORD   INT;
+	typedef QWORD  LONG;
+
 // # ---------------------------------------------------------------------------
 
 	class NBTBase;
@@ -49,6 +53,41 @@ namespace NBT
 	typedef std::shared_ptr<TAG_List>		TAG_List_ptr_t;
 	typedef std::shared_ptr<TAG_Compound>	TAG_Compound_ptr_t;
 	typedef std::shared_ptr<TAG_Int_Array>	TAG_Int_Array_ptr_t;
+
+// # ---------------------------------------------------------------------------
+
+	template<typename T>
+	struct TypeIDs;
+
+	template<> struct TypeIDs<BYTE>
+	{
+		static const BYTE ID = 1;
+	};
+
+	template<> struct TypeIDs<WORD>
+	{
+		static const BYTE ID = 2;
+	};
+
+	template<> struct TypeIDs<DWORD>
+	{
+		static const BYTE ID = 3;
+	};
+
+	template<> struct TypeIDs<QWORD>
+	{
+		static const BYTE ID = 4;
+	};
+
+	template<> struct TypeIDs<float>
+	{
+		static const BYTE ID = 5;
+	};
+
+	template<> struct TypeIDs<double>
+	{
+		static const BYTE ID = 6;
+	};
 }
 
 #endif

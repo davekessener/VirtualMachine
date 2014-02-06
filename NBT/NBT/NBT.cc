@@ -220,6 +220,35 @@ namespace NBT
 		}
 	}
 
+	// ---
+
+	template<BYTE ID>
+	bool NBTTagCompound<ID>::hasTag(const std::string& name)
+	{
+		return map_t::count(name) > 0;
+	}
+
+	template<BYTE ID>
+	NBT_ptr_t NBTTagCompound<ID>::getTag(const std::string& name)
+	{
+		if(!hasTag(name)) return NBT_ptr_t(NULL);
+
+		return map_t::operator[](name);
+	}
+
+	template<BYTE ID>
+	void NBTTagCompound<ID>::setTag(const char *name, NBT_ptr_t tag)
+	{
+		tag->setName(name);
+		map_t::operator[](std::string(name)) = tag;
+	}
+
+	template<BYTE ID>
+	void NBTTagCompound<ID>::setTag(NBT_ptr_t tag)
+	{
+		map_t::operator[](std::string(tag->getName())) = tag;
+	}
+
 // # ===========================================================================
 
 	NBTBase *NBTHelper::Default(BYTE id)

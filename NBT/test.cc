@@ -35,15 +35,14 @@ void test_read(void)
 
 	NBT::TAG_Compound_ptr_t nbt = NBT::Read(in);
 
-	for(NBT::TAG_Compound::Names::iterator i = nbt->Names.begin() ; i != nbt->Names.end() ; ++i)
-	{
-		cout << "NAME: " << *i << endl;
-	}
+	nbt->set<NBT::BYTE>("byteval", 32);
 
-	for(NBT::TAG_Compound::Tags::iterator i = nbt->Tags.begin() ; i != nbt->Tags.end() ; ++i)
-	{
-		cout << "TAG: " << i->getName() << endl;
-	}
+	NBT::TAG_Compound::ptr_t ctag = NBT::Make<NBT::TAG_Compound>();
+	ctag->set<NBT::BYTE>("id", 123);
+	ctag->set<float>("speed", 3.21);
+	ctag->setTag(NBT::Make<NBT::TAG_String>("msg", "hello, world!"));
+
+	nbt->setTag("testtag", ctag);
 
 	nbt->write(out);
 
@@ -62,7 +61,7 @@ void test_write(void)
 	NBT::NBT_ptr_t s3tag = NBT::NBT_ptr_t(new NBT::TAG_String("", "hitmontop"));
 	NBT::NBT_ptr_t s4tag = NBT::NBT_ptr_t(new NBT::TAG_String("", "quilava"));
 	vector<NBT::NBT_ptr_t> svec = {stag, s2tag, s3tag, s4tag};
-	NBT::NBT_ptr_t list  = NBT::NBT_ptr_t(new NBT::TAG_List("pokemon", svec.cbegin(), svec.cend()));
+	NBT::NBT_ptr_t list  = NBT::NBT_ptr_t(new NBT::TAG_List("pokemon", svec)); //svec.cbegin(), svec.cend()));
 	NBT::NBT_ptr_t arr   = NBT::NBT_ptr_t(new NBT::TAG_Int_Array("ids", {111, 222, 333, 444, 555, 666, 777}));
 	NBT::NBT_ptr_t nbt1  = NBT::NBT_ptr_t(new NBT::TAG_Compound("one", {itag, dtag}));
 	NBT::NBT_ptr_t nbt2  = NBT::NBT_ptr_t(new NBT::TAG_Compound("two", {list}));
