@@ -56,35 +56,52 @@ namespace NBT
 
 // # ---------------------------------------------------------------------------
 
-	template<typename T>
-	struct TypeIDs;
+	template<BYTE ID>
+	struct TypeTable;
 
-	template<> struct TypeIDs<BYTE>
+	template<> struct TypeTable<1>  { typedef TAG_Byte type; };
+	template<> struct TypeTable<2>  { typedef TAG_Short type; };
+	template<> struct TypeTable<3>  { typedef TAG_Int type; };
+	template<> struct TypeTable<4>  { typedef TAG_Long type; };
+	template<> struct TypeTable<5>  { typedef TAG_Float type; };
+	template<> struct TypeTable<6>  { typedef TAG_Double type; };
+	template<> struct TypeTable<7>  { typedef TAG_Byte_Array type; };
+	template<> struct TypeTable<8>  { typedef TAG_String type; };
+	template<> struct TypeTable<9>  { typedef TAG_List type; };
+	template<> struct TypeTable<10> { typedef TAG_Compound type; };
+	template<> struct TypeTable<11> { typedef TAG_Int_Array type; };
+
+// # ---------------------------------------------------------------------------
+
+	template<typename T>
+	struct BasicTypeIDs;
+
+	template<> struct BasicTypeIDs<BYTE>
 	{
 		static const BYTE ID = 1;
 	};
 
-	template<> struct TypeIDs<WORD>
+	template<> struct BasicTypeIDs<WORD>
 	{
 		static const BYTE ID = 2;
 	};
 
-	template<> struct TypeIDs<DWORD>
+	template<> struct BasicTypeIDs<DWORD>
 	{
 		static const BYTE ID = 3;
 	};
 
-	template<> struct TypeIDs<QWORD>
+	template<> struct BasicTypeIDs<QWORD>
 	{
 		static const BYTE ID = 4;
 	};
 
-	template<> struct TypeIDs<float>
+	template<> struct BasicTypeIDs<float>
 	{
 		static const BYTE ID = 5;
 	};
 
-	template<> struct TypeIDs<double>
+	template<> struct BasicTypeIDs<double>
 	{
 		static const BYTE ID = 6;
 	};

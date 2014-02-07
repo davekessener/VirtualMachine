@@ -4,18 +4,22 @@
 #include <map>
 #include <functional>
 #include <cstdlib>
+#include <cassert>
 
 using namespace std;
 
-template<class T> void foo(T& t) { cout << "lvalue" << endl; }
-template<class T> void foo(T&& t) { cout << "rvalue" << endl; }
+void out() {}
+
+template<typename T, typename ... R>
+void out(T t, R ... r)
+{
+	cout << t << endl;
+	out(r...);
+}
 
 int main(void)
 {
-	int i;
-	foo(i);
-	foo(int(i));
-	foo(5);
+	out("This is a % == %, now a percentage sign %% and pi == %\n", string("three"), 3, 3.14156);
 
 	return 0;
 }

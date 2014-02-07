@@ -50,10 +50,10 @@ namespace NBT
 		_read(is);
 	}
 
-	void NBTBase::setName(const char *s)
+	void NBTBase::setName(const std::string& s)
 	{
 		if(name) free(name);
-		name = reinterpret_cast<BYTE *>(strdup(s ? s : ""));
+		name = reinterpret_cast<BYTE *>(strdup(s.c_str()));
 	}
 
 // # ---------------------------------------------------------------------------
@@ -71,7 +71,7 @@ namespace NBT
 	}
 
 	template<BYTE ID, typename T>
-	void NBTSimple<ID, T>::init(const char *s, T t)
+	void NBTSimple<ID, T>::init(const std::string& s, T t)
 	{
 		NBTBase::setName(s);
 		value = t;
@@ -105,7 +105,7 @@ namespace NBT
 	}
 
 	template<BYTE ID, typename T1, typename T2>
-	void NBTArray<ID, T1, T2>::init(const char *s, std::initializer_list<T2> v)
+	void NBTArray<ID, T1, T2>::init(const std::string& s, std::initializer_list<T2> v)
 	{
 		NBTBase::setName(s);
 
@@ -155,7 +155,7 @@ namespace NBT
 	}
 
 	template<BYTE ID>
-	void NBTList<ID>::init(const char *s, std::initializer_list<NBT_ptr_t> v)
+	void NBTList<ID>::init(const std::string& s, std::initializer_list<NBT_ptr_t> v)
 	{
 		NBTBase::setName(s);
 
@@ -195,58 +195,27 @@ namespace NBT
 
 			if(!b) break;
 
-			const char *s = b->getName();
+			assert(b->getName().length());
 
-			assert(s&&*s);
-
-			map_t::operator[](std::string(s)) = NBT_ptr_t(b);
+			map_t::operator[](b->getName()) = NBT_ptr_t(b);
 		}
 	}
 
 	template<BYTE ID>
-	void NBTTagCompound<ID>::init(const char *s, std::initializer_list<NBT_ptr_t> v)
+	void NBTTagCompound<ID>::init(const std::string& name, std::initializer_list<NBT_ptr_t> v)
 	{
-		NBTBase::setName(s);
+		NBTBase::setName(name);
 
 		map_t::clear();
 
 		for(NBT_ptr_t nbt : v)
 		{
-			const char *s = nbt->getName();
+			std::string s = nbt->getName();
 
-			assert(s&&*s);
+			assert(s.length());
 
-			map_t::operator[](std::string(s)) = nbt;
+			map_t::operator[](s) = nbt;
 		}
-	}
-
-	// ---
-
-	template<BYTE ID>
-	bool NBTTagCompound<ID>::hasTag(const std::string& name)
-	{
-		return map_t::count(name) > 0;
-	}
-
-	template<BYTE ID>
-	NBT_ptr_t NBTTagCompound<ID>::getTag(const std::string& name)
-	{
-		if(!hasTag(name)) return NBT_ptr_t(NULL);
-
-		return map_t::operator[](name);
-	}
-
-	template<BYTE ID>
-	void NBTTagCompound<ID>::setTag(const char *name, NBT_ptr_t tag)
-	{
-		tag->setName(name);
-		map_t::operator[](std::string(name)) = tag;
-	}
-
-	template<BYTE ID>
-	void NBTTagCompound<ID>::setTag(NBT_ptr_t tag)
-	{
-		map_t::operator[](std::string(tag->getName())) = tag;
 	}
 
 // # ===========================================================================

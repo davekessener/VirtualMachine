@@ -37,12 +37,7 @@ void test_read(void)
 
 	nbt->set<NBT::BYTE>("byteval", 32);
 
-	NBT::TAG_Compound::ptr_t ctag = NBT::Make<NBT::TAG_Compound>();
-	ctag->set<NBT::BYTE>("id", 123);
-	ctag->set<float>("speed", 3.21);
-	ctag->setTag(NBT::Make<NBT::TAG_String>("msg", "hello, world!"));
-
-	nbt->setTag("testtag", ctag);
+	cout << "Content of 'xval': " << nbt->getCompoundTag("one")->getDouble("xval") << endl;
 
 	nbt->write(out);
 
@@ -70,6 +65,12 @@ void test_write(void)
 	NBT::NBT_ptr_t nbttagcompound = NBT::NBT_ptr_t(new NBT::TAG_Compound(vec));//{itag, dtag, nbt1, nbt3, list, arr}));
 
 	nbttagcompound->write(out);
+
+	NBT::TAG_List::ptr_t lst = std::dynamic_pointer_cast<NBT::TAG_List>(list);
+	for(NBT::TAG_List::iterator<NBT::TAG_String> i = lst->begin<NBT::TAG_String>() ; i != lst->end<NBT::TAG_String>() ; ++i)
+	{
+		cout << "Name: " << (*i)->get() << endl;
+	}
 
 	out.close();
 }
