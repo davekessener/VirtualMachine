@@ -90,12 +90,12 @@ namespace NBT
 			typedef std::shared_ptr<NBTArray<ID, T1, T2>> ptr_t;
 
 			NBTArray(const char *s = "") { NBTBase::setName(s); }
-			template<template<typename> class C>
+			template<template<typename T, typename = std::allocator<T>> class C>
 			NBTArray(const char *s, C<NBT_ptr_t>& c) { init(s, c.begin(), c.end()); }
 			template<typename T>
 			NBTArray(const char *s, T t1, T t2) { init(s, t1, t2); }
 			NBTArray(const char *s, std::initializer_list<T2> v) { init(s, v); }
-			template<template<typename> class C>
+			template<template<typename T, typename = std::allocator<T>> class C>
 			NBTArray(C<NBT_ptr_t>& c) { init("", c.begin(), c.end()); }
 			template<typename T>
 			NBTArray(T t1, T t2) { init("", t1, t2); }
@@ -133,13 +133,13 @@ namespace NBT
 			typedef std::shared_ptr<NBTList<ID>> ptr_t;
 
 			NBTList(const char *s = "", BYTE id = 0) : tagIds(id) { NBTBase::setName(s); }
-			template<template<typename> class C>
+			template<template<typename T, typename = std::allocator<T>> class C>
 			NBTList(const char *s, C<NBT_ptr_t>& c) :tagIds(0) { init(s, c.begin(), c.end()); }
 			template<typename T>
 			NBTList(const char *s, T t1, T t2) : tagIds(0) { init(s, t1, t2); }
 			NBTList(const char *s, std::initializer_list<NBT_ptr_t> v) : tagIds(0) { init(s, v); }
 			NBTList(BYTE id) : tagIds(id) { NBTBase::setName(""); }
-			template<template<typename> class C>
+			template<template<typename T, typename = std::allocator<T>> class C>
 			NBTList(C<NBT_ptr_t>& c) : tagIds(0) { init("", c.begin(), c.end()); }
 			template<typename T>
 			NBTList(T t1, T t2) : tagIds(0) { init("", t1, t2); }
@@ -211,16 +211,23 @@ namespace NBT
 			} Tags;
 		public:
 			NBTTagCompound(const char *s = "") : Names(*this), Tags(*this) { NBTBase::setName(s); }
+			
 			template<typename T>
 			NBTTagCompound(const char *s, T t1, T t2) : Names(*this), Tags(*this) { init(s, t1, t2); }
-			template<template<typename> class C>
-			NBTTagCompound(const char *s, C<NBT_ptr_t>& c) : Names(*this), Tags(*this) { init(s, c.begin(), c.end()); }
+			
+			template<template<typename T, typename = std::allocator<T>> class C>
+			NBTTagCompound(const char *s, C<NBT_ptr_t> c) : Names(*this), Tags(*this) { init(s, c.begin(), c.end()); }
+			
 			NBTTagCompound(const char *s, std::initializer_list<NBT_ptr_t> v) : Names(*this), Tags(*this) { init(s, v); }
+			
 			template<typename T>
 			NBTTagCompound(T t1, T t2) : Names(*this), Tags(*this) { init("", t1, t2); }
-			template<template<typename> class C>
+			
+			template<template<typename T, typename = std::allocator<T>> class C>
 			NBTTagCompound(C<NBT_ptr_t>& c) : Names(*this), Tags(*this) { init("", c.begin(), c.end()); }
+			
 			NBTTagCompound(std::initializer_list<NBT_ptr_t> v) : Names(*this), Tags(*this) { init("", v); }
+
 			bool hasTag(const std::string&);
 			NBT_ptr_t getTag(const std::string&);
 			template<typename T> std::shared_ptr<T> getTag(const std::string&);
@@ -238,7 +245,8 @@ namespace NBT
 			void _read(const nbtistream&);
 		private:
 			void init(const char *);
-			template<typename T> void init(const char *, T);
+			void init(const char *, std::initializer_list<NBT_ptr_t>);
+			template<typename T> void init(const char *, T, T);
 	};
 
 	template<BYTE ID>

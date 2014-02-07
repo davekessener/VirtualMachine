@@ -7,22 +7,15 @@
 
 using namespace std;
 
-struct A
-{
-	template<typename T>
-	A(T& t) : l(t.size()) { }
-	template<typename T>
-	A(T&& t) : l(t.size()) { }
-	int l;
-};
-
-template<class T> void foo(T& t) { }
-template<class T> void foo(T&& t) { }
+template<class T> void foo(T& t) { cout << "lvalue" << endl; }
+template<class T> void foo(T&& t) { cout << "rvalue" << endl; }
 
 int main(void)
 {
 	int i;
 	foo(i);
+	foo(int(i));
+	foo(5);
 
 	return 0;
 }

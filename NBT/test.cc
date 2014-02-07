@@ -67,7 +67,7 @@ void test_write(void)
 	NBT::NBT_ptr_t nbt2  = NBT::NBT_ptr_t(new NBT::TAG_Compound("two", {list}));
 	NBT::NBT_ptr_t nbt3  = NBT::NBT_ptr_t(new NBT::TAG_Compound("three", {nbt2, arr}));
 	vector<NBT::NBT_ptr_t> vec = {itag, dtag, nbt1, nbt3, list, arr};
-	NBT::NBT_ptr_t nbttagcompound = NBT::NBT_ptr_t(new NBT::TAG_Compound(vec.cbegin(), vec.cend()));//{itag, dtag, nbt1, nbt3, list, arr}));
+	NBT::NBT_ptr_t nbttagcompound = NBT::NBT_ptr_t(new NBT::TAG_Compound(vec));//{itag, dtag, nbt1, nbt3, list, arr}));
 
 	nbttagcompound->write(out);
 
