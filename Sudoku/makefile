@@ -3,13 +3,14 @@ CFLAGS=-std=c++0x -ggdb -DDEBUG
 LIBS=-lncursesw
 SRC=$(wildcard *.cc)
 OBJ=$(SRC:.cc=.o)
-TEMPLATES=$(wildcard *.cpp)
-TARGET=test
+HEADERS=$(wildcard *.h)
+DEPS=
+TARGET=sudoku
 
-%.o: %.cc $(TEMPLATES)
-	$(CC) -c $(CFLAGS) $< -o $@
+%.o: %.cc $(HEADERS)
+	$(CC) -c $(CFLAGS) -I. $< -o $@
 
-all: $(OBJ)
+$(TARGET): $(OBJ) $(DEPS)
 	$(CC) $(OBJ) -o $(TARGET) $(LIBS)
 
 clean:

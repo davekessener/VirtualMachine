@@ -1,149 +1,82 @@
-#include <unistd.h>
-#include <fcntl.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <termios.h>
-#include <sys/ioctl.h>
-#include <linux/keyboard.h>
-#include <linux/kd.h>
+#include <iostream>
+#include <initializer_list>
+#include <map>
+#include <cstdint>
 
-int is_keyboard(int fd)
+using namespace std;
+
+int gblVar = 0x64;
+
+namespace A
 {
-	int data;
-
-	data = 0;
-	if(ioctl(fd, KDGKBTYPE, &data) != 0)
+	enum class Color : uint8_t
 	{
-		return 0;
-	}
+		RED,
+		GREEN,
+		BLUE
+	};
 
-	if(data == KB_84)
+	class B
 	{
-		printf("84-key keyboard found.\n");
-		return 1;
-	}
-	else if(data == KB_101)
-	{
-		printf("101-key keyboard found.\n");
-		return 1;
-	}
+		class _c
+		{
+			public:
+				_c();
+				~_c();
+			private:
+				friend class B;
+		};
 
-	return 0;
+		public:
+			typedef _c C;
+
+			B();
+			~B();
+		private:
+			C c;
+	};
 }
 
-int main(int argc, char *argv[])
+namespace A
 {
-	struct termios old_term, new_term;
-	int kb = -1;
-	char *files_to_try[] = {"/dev/tty", "/dev/console", NULL};
-	int old_mode = -1;
-	int i;
-
-	for(i = 0 ; files_to_try[i] != NULL ; ++i)
+	B::_c::_c(void)
 	{
-		kb = open(files_to_try[i], O_RDONLY);
-		if(kb < 0) continue;
-
-		if(is_keyboard(kb))
-		{
-			printf("Using keyboard %s.\n", files_to_try[i]);
-			break;
-		}
-
-		close(kb);
-	}
-
-	if(files_to_try[i] == NULL)
-	{
-		for(kb = 0 ; kb < 3 ; ++kb)
-		{
-			if(is_keyboard(kb)) break;
-		}
-
-		if(kb == 3)
-		{
-			printf("Unable to find a file descriptor associated "
-					"with the keyboard.\n"
-					"Perhaps this isn't a virtual terminal?\n");
-
-			return EXIT_FAILURE;
-		}
+		cout << "Constructor C" << endl;
 	}
 	
-	if(ioctl(kb, KDGKBMODE, &old_mode) != 0)
+	B::_c::~_c(void)
 	{
-		printf("Unable to query keyboard mode.\n");
-		goto error;
+		cout << "Destructor C" << endl;
 	}
-
-	if(tcgetattr(kb, &old_term) != 0)
-	{
-		printf("Unable to query terminal settings.\n");
-		goto error;
-	}
-
-	new_term = old_term;
-	new_term.c_iflag = 0;
-	new_term.c_lflag &= ~(ECHO | ICANON | ISIG);
-
-	if(tcsetattr(kb, TCSAFLUSH, &new_term) != 0)
-	{
-		printf("Unable to change terminal settings.\n");
-		goto error;
-	}
-
-	if(ioctl(kb, KDSKBMODE, K_MEDIUMRAW) != 0)
-	{
-		printf("Unable to set mediumraw mode.\n");
-		goto error;
-	}
-
-	printf("Reading keycodes. Press escape to exit.\n");
-
-	for(;;)
-	{
-		unsigned char data;
-
-		if(read(kb, &data, 1) < 1)
-		{
-			printf("Unable to read data.\n");
-			goto error;
-		}
-
-		printf("%.8s: 0x%02X (%d)\n",
-			(data & 0x80) ? "Released" : "Pressed",
-			(unsigned int) data & 0x7f,
-			(unsigned int) data & 0x7f);
-
-			if((data & 0x7f) == 1)
-			{
-				printf("Escape pressed.\nExit.\n");
-				break;
-			}
-	}
-
-	ioctl(kb, KDSKBMODE, old_mode);
-	tcsetattr(kb, 0, &old_term);
-
-	if(kb >= 3) close(kb);
-
-	return EXIT_SUCCESS;
-
-
-error:
 	
-	printf("Cleanup:\n");
-
-	fflush(stdout);
-
-	if(old_mode != -1)
+	B::B(void) : c()
 	{
-		ioctl(kb, KDSKBMODE, old_mode);
-		tcsetattr(kb, 0, &old_term);
+		cout << "Constructor B" << endl;
 	}
+	
+	B::~B(void)
+	{
+		cout << "Destructor B" << endl;
+	}
+}
 
-	if(kb >= 3) close(kb);
+void foo(initializer_list<pair<string, int>> l)
+{
+	for(auto p : l)
+	{
+		cout << p.first << " == " << p.second << endl;
+	}
+}
 
-	return EXIT_FAILURE;
+int main(void)
+{
+	map<string, int> m;
+	m["one"] = 1;
+	m["two"] = 2;
+	m["three"] = 3;
+
+	foo(initializer_list<pair<string, int>>(m.begin(), m.end()));
+
+	return 0;
 }
 

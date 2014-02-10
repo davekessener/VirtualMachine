@@ -1,7 +1,7 @@
 #include "Editor.h"
 
-int Editor::run(int argc, char *argv[])
+int Editor::run(const std::vector<std::string>& args)
 {
-	return EXIT_SUCCESS;
+	return 0;
 }
 

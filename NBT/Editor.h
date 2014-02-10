@@ -2,11 +2,13 @@
 #define EDITOR_H
 
 #include <iostream>
+#include <vector>
 
 class Editor
 {
 	public:
-		static int run(int, char **);
+		static int run(const std::vector<std::string>&);
+	private:
 };
 
 #endif
