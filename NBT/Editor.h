@@ -3,6 +3,9 @@
 
 #include <iostream>
 #include <vector>
+#include "Screen.h"
+#include "Keyboard.h"
+#include "Banner.h"
 
 class Editor
 {

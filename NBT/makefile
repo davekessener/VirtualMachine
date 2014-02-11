@@ -1,6 +1,6 @@
 CC=g++
-CFLAGS=-std=c++0x -ggdb -DDEBUG
-LIBS=-L./GZ -L./NBT -lgz -lnbt -lncursesw
+CFLAGS=-std=c++0x -Wl,--no-as-needed -ggdb -DDEBUG
+LIBS=-L./GZ -L./NBT -lgz -lnbt -lncursesw -lpthread
 SRC=$(wildcard *.cc)
 OBJ=$(SRC:.cc=.o)
 HEADERS=$(wildcard *.h)

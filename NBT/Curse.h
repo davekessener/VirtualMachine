@@ -2,7 +2,26 @@
 #define CURSE_H
 
 #include <cstdint>
+#include <cstdio>
+#include <cstdarg>
 #include <map>
+
+#ifdef CURSE_MAIN
+#include <functional>
+#include <cassert>
+#include <cwchar>
+#include <cstring>
+#include <locale.h>
+
+#include <ncurses.h>
+#endif
+
+#ifdef getch
+#undef getch
+#endif
+#ifdef ncurses
+#undef ncurses
+#endif
 
 namespace ncurses
 {
@@ -16,7 +35,6 @@ namespace ncurses
 	enum class BufferAttribute : std::uint8_t
 	{
 		ECHO,
-		DELAY,
 		SHOW_CURSOR
 	};
 
@@ -39,14 +57,17 @@ namespace ncurses
 				_curse_config& operator=(const _curse_config&);
 				bool getAttr(BufferAttribute) const;
 				CharBufferMode getBufferMode( ) const;
+				int getTimeout( ) const;
 				void setAttr(BufferAttribute, bool);
 				void setBufferMode(CharBufferMode);
+				void setTimeout(int);
 			private:
 				friend class Curse;
 				_curse_config( );
-				_curse_config(CharBufferMode, AttrMap&);
+				_curse_config(CharBufferMode, AttrMap&, int);
 				AttrMap attr;
 				CharBufferMode bmode;
+				int _timeout;
 		};
 		struct _size
 		{
@@ -81,20 +102,28 @@ namespace ncurses
 			Size getScreenSize( ) const;
 			Position getCursorPosition( ) const;
 			void moveCursor(int, int);
+			void eraseToEndOfLine( );
 			void putch(int);
 			void print(const char *);
 			void printw(const wchar_t *);
 			void printf(const char *, ...);
 			void printfw(const wchar_t *, ...);
+			void vprintf(const char *, va_list);
+			void vprintfw(const wchar_t *, va_list);
 			wchar_t getch( );
 			int getline(char *, int = -1);
 			int getlinew(wchar_t *, int = -1);
-			CharBufferMode getBufferMode( );
-			bool isBufferAttributeSet(BufferAttribute);
+			inline bool isRunning() const { return _is_running; }
+			CharBufferMode getBufferMode( ) const;
+			bool isBufferAttributeSet(BufferAttribute) const;
 			Configuration backupConfiguration( );
 			void restoreConfiguration( );
 			void restoreConfiguration(const Configuration&);
+			void flush( );
+			void pause( );
+			void setTimeout(int);
 			static Curse& instance( );
+			static const wchar_t ErrChar = (wchar_t) -1;
 		private:
 			Curse( );
 			Curse(const Curse&);
@@ -102,7 +131,8 @@ namespace ncurses
 			~Curse( );
 			Curse& operator=(const Curse&);
 			Curse& operator=(Curse&&);
-			bool isRunning;
+			bool _is_running;
+			int _timeout;
 			CharBufferMode buffermode;
 			Configuration::AttrMap attributes;
 			Configuration config;

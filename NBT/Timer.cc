@@ -1,6 +1,6 @@
 #include "Timer.h"
 
-Timer::Timer(void) : _t(start())
+Timer::Timer(void) : _t(curTimeMilliSec())
 {
 }
 
@@ -10,12 +10,12 @@ Timer::~Timer(void)
 
 void Timer::reset(void)
 {
-	_t = start();
+	_t = curTimeMilliSec();
 }
 
 int Timer::elapsed(void)
 {
-	int s = start() - _t;
+	long long s = curTimeMilliSec() - _t;
 	if(s < 0) s += 0x100000 * 1000;
 	return s;
 }
@@ -25,7 +25,7 @@ void Timer::sleep(int ms)
 	usleep(ms * 1000);
 }
 
-int Timer::start(void)
+long long Timer::curTimeMilliSec(void)
 {
 	timeb tb;
 	ftime(&tb);

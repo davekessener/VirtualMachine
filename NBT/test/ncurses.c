@@ -14,6 +14,9 @@ int main(int argc, char *argv[])
 
 	static_assert(sizeof(wchar_t)==sizeof(wint_t), "ERR: wchar_t and wint_t are not convertible.");
 
+	printf("ERR == %08x\n", ERR);
+	return 0;
+
 	setlocale(LC_ALL, "");
 
 	initscr();			/* Start curses mode 		*/

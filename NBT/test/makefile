@@ -1,6 +1,6 @@
-CC=g++
-CFLAGS=-std=c++0x -ggdb -DDEBUG
-LIBS=-lncursesw
+CC=g++-4.7
+CFLAGS=-std=c++0x -Wl,--no-as-needed -ggdb -DDEBUG
+LIBS=-lncursesw -lpthread
 SRC=$(wildcard *.cc)
 OBJ=$(SRC:.cc=.o)
 TEMPLATES=$(wildcard *.cpp)
