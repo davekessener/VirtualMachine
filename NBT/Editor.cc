@@ -1,36 +1,45 @@
 #include "Editor.h"
 
-int Editor::run(const std::vector<std::string>& args)
+Editor::Editor(void) : b("-", 10, 3, 4, -1, 0)
 {
-	ncurses::Curse::instance().begin();
+}
 
-	ncurses::Screen &s = ncurses::Screen::instance();
-	ncurses::Keyboard &kb = ncurses::Keyboard::instance();
+Editor::~Editor(void)
+{
+}
 
-	ncurses::Curse::instance().setBufferMode(ncurses::CharBufferMode::CBREAK);
-	ncurses::Curse::instance().setBufferAttribute(ncurses::BufferAttribute::ECHO, ncurses::SetMode::RESET);
-	ncurses::Curse::instance().setBufferAttribute(ncurses::BufferAttribute::SHOW_CURSOR, ncurses::SetMode::RESET);
-	ncurses::Curse::instance().setTimeout(10);
+void Editor::input(int ch)
+{
+	int w, h;
+	getScreenSize(w, h);
 
-	ncurses::Banner b(std::string("Hi there, handsome!"), 10, 1, 200);
-
-	wchar_t ch;
-	while((ch = ncurses::Curse::instance().getch()) != 'q')
+	switch(ch)
 	{
-		b.update();
-		b.draw();
-		s.refresh();
-
-		switch(ch)
-		{
-			case ncurses::Curse::ErrChar:
-				continue;
-			case ':':
-				b.setMsg(kb.readCommand());
-				break;
-		}
+		case 'q':
+			quit();
+			break;
+		case ':':
+			showCursor(true);
+			setCursorPos(0, w - 1);
+			clearLine();
+			printf(":");
+			setInputFunction(ncurses::ReadLine(*this, [this](const std::string& s) 
+				{
+					b.setMsg(s, 0);
+					this->setCursorPos(0, 0);
+					this->showCursor(false);
+				}));
+			break;
 	}
+}
 
-	return 0;
+void Editor::update(int ms)
+{
+	b.update(ms);
+}
+
+void Editor::refresh(void)
+{
+	b.draw(*this);
 }
 

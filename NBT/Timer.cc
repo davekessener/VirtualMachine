@@ -1,6 +1,6 @@
 #include "Timer.h"
 
-Timer::Timer(void) : _t(curTimeMilliSec())
+Timer::Timer(void) : _t(std::chrono::steady_clock::now())
 {
 }
 
@@ -10,14 +10,18 @@ Timer::~Timer(void)
 
 void Timer::reset(void)
 {
-	_t = curTimeMilliSec();
+	_t = std::chrono::steady_clock::now();
 }
 
 int Timer::elapsed(void)
 {
-	long long s = curTimeMilliSec() - _t;
-	if(s < 0) s += 0x100000 * 1000;
-	return s;
+	std::chrono::duration<long long, std::ratio<1, 1000>> span = 
+		std::chrono::duration_cast<std::chrono::duration<long long, std::ratio<1, 1000>>>(std::chrono::steady_clock::now() - _t);
+
+	return span.count();
+//	long long s = curTimeMilliSec() - _t;
+//	if(s < 0) s += 0x100000 * 1000;
+//	return s;
 }
 
 void Timer::sleep(int ms)

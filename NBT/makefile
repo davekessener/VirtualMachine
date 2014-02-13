@@ -1,4 +1,4 @@
-CC=g++
+CC=g++-4.7
 CFLAGS=-std=c++0x -Wl,--no-as-needed -ggdb -DDEBUG
 LIBS=-L./GZ -L./NBT -lgz -lnbt -lncursesw -lpthread
 SRC=$(wildcard *.cc)

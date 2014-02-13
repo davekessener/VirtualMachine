@@ -3,6 +3,9 @@
 
 #include <unistd.h>
 #include <sys/timeb.h>
+#include <ctime>
+#include <ratio>
+#include <chrono>
 
 class Timer
 {
@@ -14,7 +17,7 @@ class Timer
 		void sleep(int);
 	private:
 		static long long curTimeMilliSec( );
-		long long _t;
+		std::chrono::steady_clock::time_point _t;
 };
 
 #endif

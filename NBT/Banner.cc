@@ -1,47 +1,63 @@
+#define CURSE_BANNER_MAIN
 #include "Banner.h"
+#undef CURSE_BANNER_MAIN
 
 namespace ncurses
 {
-	Banner::Banner(const std::string& msg, int x, int y, int delay, int len) : 
-		_msg(msg), _x(x), _y(y), _delay(delay), _pos(0), _timer()
-	{
-		std::string tmp;
-		for(int i = 0 ; i < BANNER_MINSTRLEN ; ++i) tmp += ' ';
-		_msg += tmp;
-		_strlen = len > 0 ? len : _msg.length();
-	}
+    Banner::Banner(const std::string& _msg, int _x, int _y, int _len, int _speed, int _dist) : 
+        msg(_msg), x(_x), y(_y), len(_len), speed(_speed), dist(_dist), pos(0), t(0)
+    {
+        if(speed <= 0) speed = STD_SPEED;
+        if(dist < 0) dist = STD_DIST;
+        if(len <= 0) len = msg.length() + dist;
 
-	Banner::~Banner(void)
-	{
-	}
+        if(dist)
+        {
+            char buf[dist + 1];
+            memset(buf, ' ', dist);
+            buf[dist] = '\0';
 
-	void Banner::update(void)
-	{
-		if(_timer.elapsed() > _delay)
-		{
-			_timer.reset();
-			if(++_pos == _msg.length()) _pos = 0;
-		}
-	}
+            msg += buf;
+        }
+    }
 
-	void Banner::draw(void)
-	{
-		std::string out(_msg);
+    Banner::~Banner(void)
+    {
+    }
 
-		while(out.length() - _pos <= _strlen) out += _msg;
+    void Banner::update(int ms)
+    {
+        t += ms;
+        while(t > speed)
+        {
+            t -= speed;
+            if(++pos == msg.length()) pos = 0;
+        }
+    }
 
-		out = out.substr(_pos, _strlen);
+    void Banner::draw(Curse& curse)
+    {
+        int _x, _y;
+        curse.getCursorPos(_x, _y);
+        curse.setCursorPos(x, y);
 
-		Curse::Position pos = Curse::instance().getCursorPosition();
-		Screen::instance().move(_x, _y);
-		Screen::instance().printf(out.c_str());
-		Curse::instance().moveCursor(pos.x, pos.y);
-	}
+        std::string s = msg;
+        while(s.length() < len + pos) s += msg;
 
-	void Banner::setMsg(const std::string& msg)
-	{
-		std::string tmp = msg + _msg.substr(_msg.length() - BANNER_MINSTRLEN, BANNER_MINSTRLEN);
-		if(tmp.length() > 0) _msg = tmp;
-	}
+        curse.printf(s.substr(pos, len).c_str());
+
+        curse.setCursorPos(_x, _y);
+    }
+
+    void Banner::setMsg(const std::string& s, int l)
+    {
+        if(s.length() == 0) return;
+
+        if(l == 0) l = s.length() + dist;
+        if(l > 0) len = l;
+
+        msg = s + msg.substr(0, dist);
+        pos = 0;
+    }
 }
 

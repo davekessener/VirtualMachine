@@ -2,16 +2,22 @@
 #define EDITOR_H
 
 #include <iostream>
-#include <vector>
-#include "Screen.h"
-#include "Keyboard.h"
+#include "Curse.h"
+#include "ReadLine.h"
 #include "Banner.h"
 
-class Editor
+class Editor : public ncurses::Curse
 {
 	public:
-		static int run(const std::vector<std::string>&);
+		Editor( );
+		~Editor( );
+	protected:
+		void input(int);
+		void update(int);
+		void refresh( );
 	private:
+		void updateBanner(const std::string&);
+		ncurses::Banner b;
 };
 
 #endif

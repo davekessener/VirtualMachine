@@ -1,31 +1,31 @@
-#ifndef BANNER_H
-#define BANNER_H
+#ifndef CURSE_BANNER_H
+#define CURSE_BANNER_H
 
 #include <iostream>
 #include <cstring>
 #include "Curse.h"
-#include "Screen.h"
-#include "Timer.h"
 
-#define BANNER_STDDELAY 400
-#define BANNER_MINSTRLEN 4
+#ifdef CURSE_BANNER_MAIN
+#endif
 
 namespace ncurses
 {
-	class Banner
-	{
-		public:
-			Banner(const std::string&, int, int, int = BANNER_STDDELAY, int = -1);
-			~Banner( );
-			void update( );
-			void draw( );
-			void setMsg(const std::string&);
-		private:
-			std::string _msg;
-			int _x, _y;
-			int _delay, _pos, _strlen;
-			Timer _timer;
-	};
+    class Banner
+    {
+        public:
+            Banner(const std::string&, int, int, int = 0, int = STD_SPEED, int = STD_DIST);
+            ~Banner( );
+            void update(int);
+            void draw(Curse&);
+            void setMsg(const std::string&, int = -1);
+        private:
+            std::string msg;
+            int x, y;
+            int speed, pos, len, dist, t;
+
+            static const int STD_DIST = 4;
+            static const int STD_SPEED = 200;
+    };
 }
 
 #endif
