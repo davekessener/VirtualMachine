@@ -2,6 +2,8 @@
 #define CURSE_BASE_H
 
 #include <cstdarg>
+#include <cstdlib>
+#include "Curses.h"
 
 #ifdef CURSE_BASE_MAIN
 #include <ncurses.h>
@@ -21,22 +23,16 @@
 
 namespace ncurses
 {
-	namespace Keys
-	{
-		enum
-		{
-			LEFT = 0x80000001,
-			RIGHT,
-			UP,
-			DOWN,
-			BACKSPACE
-		};
-	}
-
 	class Curse_base
 	{
 		public:
-			void start() { initscr(); keypad(); }
+			void start()
+			{
+				if(getenv("ESCDELAY") == NULL)
+					set_escdelay(25);
+				initscr();
+				keypad();
+			}
 			void end() { endwin(); }
 			void refresh();
 			void clear() { erase(); }
@@ -45,8 +41,8 @@ namespace ncurses
 			int getCursorX() { int x, y; getyx(y, x); return x; }
 			int getCursorY() { int x, y; getyx(y, x); return y; }
 			void getScreenSize(int& w, int& h) { getmaxyx(h, w); }
-			int getWidth() { int w, h; getmaxyx(h, w); return w; }
-			int getHeight() { int w, h; getmaxyx(h, w); return h; }
+			int getWidth() { int w, h; getmaxyx(w, h); return w; }
+			int getHeight() { int w, h; getmaxyx(w, h); return h; }
 			void clearLine()
 				{ int x, y; getyx(y, x); move(y, 0); clrtoeol(); move(y, x); }
 			void setCursorPos(int x, int y) { move(y, x); }
@@ -56,6 +52,15 @@ namespace ncurses
 				va_start(l, s);
 
 				vprintw(s, l);
+
+				va_end(l);
+			}
+			void wprintf(const wchar_t *s, ...)
+			{
+				va_list l;
+				va_start(l, s);
+
+				vwprintw(s, l);
 
 				va_end(l);
 			}
@@ -77,6 +82,7 @@ namespace ncurses
 			void move(int, int);
 			void printw(const char *, ...);
 			void vprintw(const char *, va_list);
+			void vwprintw(const wchar_t *, va_list);
 			void addstr(const char *);
 			void addwstr(const wchar_t *);
 			int getch( );
@@ -92,6 +98,7 @@ namespace ncurses
 			void getstr(char *);
 			void getnwstr(wchar_t *, int);
 			void getwstr(wchar_t *);
+			void set_escdelay(int);
 	};
 }
 

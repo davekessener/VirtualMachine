@@ -4,7 +4,8 @@
 
 namespace ncurses
 {
-	ReadLine::ReadLine(Curse& _curse, onDoneFn _onDone, onFailureFn _onFailure) : curse(_curse), onDone(_onDone), onFailure(_onFailure)
+	ReadLine::ReadLine(Curse& _curse, onDoneFn _onDone, cleanupFn _cleanup, onFailureFn _onFailure) :
+		curse(_curse), onDone(_onDone), cleanup(_cleanup), onFailure(_onFailure)
 	{
         buf = NULL;
 		l = i = idx = 0;
@@ -55,10 +56,15 @@ namespace ncurses
 					buf[--i] = ' ';
 				}
 				break;
+			case Keys::ESCAPE:
+				memset(buf, ' ', i);
+				i = -1;
+				break;
             case '\n':
                 buf[i] = '\0';
                 onDone(buf);
-                return true;
+				if(static_cast<bool>(cleanup)) cleanup();
+				return true;
 			default:
                 if(isSuitable(ch))
                 {
@@ -74,6 +80,13 @@ namespace ncurses
 		curse.printf(buf);
 		curse.setCursorPos(x + idx, y);
 
+		if(i < 0)
+		{
+			if(static_cast<bool>(onFailure)) onFailure();
+			if(static_cast<bool>(cleanup)) cleanup();
+			return true;
+		}
+
         return false;
 	}
 
@@ -83,7 +96,7 @@ namespace ncurses
 
 		l <<= 1;
 		buf = reinterpret_cast<char *>(realloc(buf, l));
-		memset(buf + (l >> 1), 0, l >> 1);
+		memset(buf + i, 0, l - i);
 	}
 }
 

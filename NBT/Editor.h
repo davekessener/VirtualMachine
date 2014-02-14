@@ -2,12 +2,21 @@
 #define EDITOR_H
 
 #include <iostream>
+#include <functional>
+#include <vector>
+#include <map>
+#include <sstream>
+#include <cstring>
 #include "Curse.h"
 #include "ReadLine.h"
-#include "Banner.h"
+#include "YesNoDialog.h"
 
 class Editor : public ncurses::Curse
 {
+	typedef std::vector<std::string> cmdArgs;
+	typedef std::map<char, std::string> cmdNamesMap;
+	typedef std::map<std::string, std::function<void(cmdArgs&)>> cmdMap;
+
 	public:
 		Editor( );
 		~Editor( );
@@ -16,8 +25,13 @@ class Editor : public ncurses::Curse
 		void update(int);
 		void refresh( );
 	private:
-		void updateBanner(const std::string&);
-		ncurses::Banner b;
+		void enterCommand(void);
+		void command(const std::string&);
+		cmdNamesMap cmdNames;
+		cmdMap cmds;
+		ncurses::YesNoDialog quitDialog;
+
+		static cmdArgs processCmd(const std::string&);
 };
 
 #endif

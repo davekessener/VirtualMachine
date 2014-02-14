@@ -6,7 +6,7 @@ int main(int argc, char *argv[])
 {
     Editor e;
 
-    ncurses::Curse::play(e);
+    ncurses::Curse::play(&e);
 
     return 0;
 }

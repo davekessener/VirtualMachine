@@ -40,7 +40,7 @@ namespace ncurses
 		y = stdscr ? stdscr->_cury : -1;
 	}
 
-	void Curse_base::getmaxyx(int& x, int& y)
+	void Curse_base::getmaxyx(int& y, int& x)
 	{
 		x = stdscr ? stdscr->_maxx + 1 : -1;
 		y = stdscr ? stdscr->_maxy + 1 : -1;
@@ -69,6 +69,14 @@ namespace ncurses
 	void Curse_base::vprintw(const char *s, va_list l)
 	{
 		::vwprintw(stdscr, s, l);
+	}
+
+	void Curse_base::vwprintw(const wchar_t *s, va_list l)
+	{
+		wchar_t buf[2048];
+		vswprintf(buf, sizeof(buf) / sizeof(wchar_t), s, l);
+
+		::waddnwstr(stdscr, buf, -1);
 	}
 
 	void Curse_base::addstr(const char *s)
@@ -136,6 +144,11 @@ namespace ncurses
 		::wget_wstr(stdscr, reinterpret_cast<wint_t *>(s));
 	}
 
+	void Curse_base::set_escdelay(int d)
+	{
+		::set_escdelay(d);
+	}
+
 	int Curse_base::getch(void)
 	{
 		int ch = ERR, c = ERR;
@@ -162,6 +175,9 @@ namespace ncurses
 			case KEY_BACKSPACE:
 			case 0x7f:
 				c = Keys::BACKSPACE;
+				break;
+			case '\e':
+				c = Keys::ESCAPE;
 				break;
 		}
 

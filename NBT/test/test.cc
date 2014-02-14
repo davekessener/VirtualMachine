@@ -1,21 +1,21 @@
 #include <iostream>
 #include <functional>
+#include <cstdarg>
 
-namespace A
+struct A
 {
-	enum
+	void operator()(const std::string& args)
 	{
-		B,
-		C,
-		D
-	};
-}
-
-int tst(void) { return A::D; }
+		std::cout << "Arguments: '" << args << "'." << std::endl;
+	}
+};
 
 int main(void)
 {
-	std::cout << tst() << std::endl;
+	A a;
+	std::function<void(const std::string&)> f = a;
+
+	f("7 42");
 
 	return 0;
 }

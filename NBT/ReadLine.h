@@ -15,10 +15,11 @@ namespace ncurses
     class ReadLine
     {
         typedef std::function<void(const std::string&)> onDoneFn;
+		typedef std::function<void(void)> cleanupFn;
         typedef std::function<void(void)> onFailureFn;
 
         public:
-            ReadLine(Curse&, onDoneFn, onFailureFn = onFailureFn());
+            ReadLine(Curse&, onDoneFn, cleanupFn = cleanupFn(), onFailureFn = onFailureFn());
             ~ReadLine( );
             bool operator()(int);
         private:
@@ -27,6 +28,7 @@ namespace ncurses
             Curse &curse;
             onDoneFn onDone;
             onFailureFn onFailure;
+			cleanupFn cleanup;
             char *buf;
             int l, i, idx;
             int x, y;
