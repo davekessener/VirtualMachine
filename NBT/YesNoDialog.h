@@ -22,6 +22,7 @@ namespace ncurses
 	{
 		typedef std::function<void(bool)> answerFn;
 		typedef std::function<void(bool)> drawFn;
+		typedef std::function<void(void)> cleanFn;
 
 		public:
 			YesNoDialog(const std::string&, answerFn, Choices = Choices::NONE);
@@ -36,6 +37,7 @@ namespace ncurses
 			std::string msg;
 			answerFn answer;
 			drawFn drawYes, drawNo;
+			cleanFn clean;
 			Choices select;
 			int ox, oy;
 

@@ -94,6 +94,7 @@ namespace ncurses
 
 	void Curse::drawBorder(int x1, int y1, int x2, int y2, wchar_t c_u, wchar_t c_r, wchar_t c_ul, wchar_t c_ur, wchar_t c_dl, wchar_t c_dr)
 	{
+		--x2; --y2;
 		int w = x2 - x1 + 1, h = y2 - y1 + 1;
 
 		wchar_t *b = static_cast<wchar_t *>(malloc((w + 1) * sizeof(wchar_t)));
@@ -104,6 +105,9 @@ namespace ncurses
 		for(wchar_t *_t = s + w ; _t != s ; *--_t = L' ');
 		s[w] = L'\0';
 
+		int ox, oy;
+		getCursorPos(ox, oy);
+
 		for(int y = y1 ; y <= y2 ; ++y)
 		{
 			wchar_t *_s = (y == y1 || y == y2) ? b : s;
@@ -112,6 +116,8 @@ namespace ncurses
 			setCursorPos(x1, y);
 			wprintf(_s);
 		}
+
+		setCursorPos(ox, oy);
 
 		free(s);
 		free(b);

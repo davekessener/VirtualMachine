@@ -62,7 +62,7 @@ void Editor::command(const std::string& cmd)
 void Editor::enterCommand(void)
 {
 	showCursor(true);
-	setCursorPos(0, getWidth() - 1);
+	setCursorPos(0, getHeight() - 1);
 	clearLine();
 	printf(":");
 	setInputFunction(ncurses::ReadLine(*this,

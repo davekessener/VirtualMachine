@@ -4,6 +4,8 @@
 
 namespace ncurses
 {
+	const int Attributes::UNDERSCORE = A_UNDERLINE;
+
 	void Curse_base::initscr(void)
 	{
 		::initscr();
@@ -27,6 +29,11 @@ namespace ncurses
 	void Curse_base::erase(void)
 	{
 		::werase(stdscr);
+	}
+
+	void Curse_base::chgat(int a, int c, int l)
+	{
+		::wchgat(stdscr, l, a, c, NULL);
 	}
 
 	void Curse_base::curs_set(int v)
@@ -147,6 +154,19 @@ namespace ncurses
 	void Curse_base::set_escdelay(int d)
 	{
 		::set_escdelay(d);
+	}
+
+	void Curse_base::clearRect(int x1, int y1, int x2, int y2)
+	{
+		char *s = static_cast<char *>(malloc(x2 - x1 + 1));
+		memset(s, ' ', x2 - x1);
+		s[x2 - x1] = '\0';
+
+		for(int y = y1 ; y < y2 ; ++y)
+		{
+			setCursorPos(x1, y);
+			addstr(s);
+		}
 	}
 
 	int Curse_base::getch(void)

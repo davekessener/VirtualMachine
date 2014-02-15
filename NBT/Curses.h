@@ -19,6 +19,11 @@ namespace ncurses
 		};
 	}
 
+	struct Attributes
+	{
+		static const int UNDERSCORE;
+	};
+
 	enum class Borders : std::uint8_t
 	{
 		SINGLE,
