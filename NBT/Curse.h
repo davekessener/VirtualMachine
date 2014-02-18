@@ -1,57 +1,39 @@
 #ifndef CURSE_H
 #define CURSE_H
 
-#include <functional>
-#include <cstdint>
-#include <cstring>
-#include "CurseBase.h"
-#include "Timer.h"
+#include <deque>
+#include "Terminal.h"
 
 #ifdef CURSE_MAIN
 #include <locale.h>
+#include "NCurse.h"
 #endif
 
 namespace ncurses
 {
-	class Curse : public Curse_base
+	class Curse : public display::Terminal
 	{
-		typedef Curse_base CurseBase;
-		typedef std::function<bool(int)> inputFn;
-
 		public:
 			Curse( );
 			~Curse( );
-			static void play(Curse *);
-		protected:
-			virtual void init( );
-			virtual void input(int) = 0;
-			virtual void update(int) = 0;
-			virtual void refresh( ) = 0;
-			virtual void finalize( );
-			void setInputFunction(inputFn);
-			void quit( );
-			template<Borders B>
-			void drawBorder(int, int, int, int);
-			void drawBorder(int, int, int, int, wchar_t, wchar_t, wchar_t, wchar_t, wchar_t, wchar_t);
+			void init( );
+			void finalize( );
+			void flush( );
+			void getCursorPos(int&, int&);
+			void setCursorPos(int, int);
+			void getScreenSize(int&, int&);
+			void showCursor(bool = true);
+			void eraseScreen( );
+			void eraseLine( );
+			int getChar( );
+			void pause( );
+			void printf(const char *, va_list);
+			void printfw(const wchar_t *, va_list);
+			void saveCursorPos( );
+			void restoreCursorPos( );
 		private:
-			void run( );
-			void setDefaultInput( );
-			bool running;
-			Timer timer;
-			inputFn _input;
+			std::deque<std::pair<int, int>> cursorBackup;
 	};
-
-	template<Borders B>
-	void Curse::drawBorder(int x1, int y1, int x2, int y2)
-	{
-		drawBorder(x1, y1, x2, y2, 
-			BorderTypes<B>::SIDES_HORIZONTAL,
-			BorderTypes<B>::SIDES_VERTICAL,
-			BorderTypes<B>::CORNER_TOPLEFT,
-			BorderTypes<B>::CORNER_TOPRIGHT,
-			BorderTypes<B>::CORNER_BOTTOMLEFT,
-			BorderTypes<B>::CORNER_BOTTOMRIGHT);
-	}
 }
 
 #endif

@@ -4,18 +4,24 @@
 
 struct A
 {
-	void operator()(const std::string& args)
+	bool tst(int i)
 	{
-		std::cout << "Arguments: '" << args << "'." << std::endl;
+		std::cout << "INT: " << i << std::endl;
+		return false;
+	}
+
+	std::function<bool(int)> getFn(void)
+	{
+		return std::bind(&A::tst, this, std::placeholders::_1);
 	}
 };
 
 int main(void)
 {
 	A a;
-	std::function<void(const std::string&)> f = a;
+	std::function<bool(int)> fn = a.getFn();
 
-	f("7 42");
+	fn(42);
 
 	return 0;
 }

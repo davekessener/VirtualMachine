@@ -14,6 +14,7 @@ class Timer
 		~Timer( );
 		void reset( );
 		int elapsed( );
+		int getDelta( );
 		void sleep(int);
 	private:
 		static long long curTimeMilliSec( );

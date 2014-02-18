@@ -1,12 +1,16 @@
 #include <iostream>
+#include "Terminal.h"
 #include "Curse.h"
+#include "Scene.h"
 #include "Editor.h"
 
 int main(int argc, char *argv[])
 {
-    Editor e;
+	display::Terminal::create<ncurses::Curse>();
 
-    ncurses::Curse::play(&e);
+	Editor e;
+
+	Scene::play(&e);
 
     return 0;
 }
