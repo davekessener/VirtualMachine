@@ -14,6 +14,8 @@ namespace ncurses
 
 	void Curse::init(void)
 	{
+		if(getenv("ESCDELAY") == NULL)
+			set_escdelay(25);
 		setlocale(LC_ALL, "");
 		initscr();
 		keypad();
@@ -87,6 +89,7 @@ namespace ncurses
 			case 0x7f:
 				c = display::Keys::BACKSPACE;
 				break;
+			case NKEY_ESCAPE:
 			case '\e':
 				c = display::Keys::ESCAPE;
 				break;

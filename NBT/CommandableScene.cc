@@ -38,10 +38,17 @@ bool CommandableScene::inputHandler(int in)
 	}
 	else if(keymap.count(in) > 0)
 	{
-		std::string cmd = keymap.at(in);
+		std::string cmd = keymap.at(in).first;
 		if(cmdmap.count(cmd) > 0)
 		{
-			command(cmd);
+			if(keymap.at(in).second)
+			{
+				startInput((cmd + " ").c_str());
+			}
+			else
+			{
+				command(cmd, false);
+			}
 		}
 	}
 	else
@@ -57,11 +64,13 @@ void CommandableScene::registerCommand(const std::string& cmd, commandFn_t f)
 	cmdmap[cmd] = f;
 }
 
-void CommandableScene::assignKeys(const std::string& cmd, std::initializer_list<int> keys)
+void CommandableScene::assignKeys(const std::string& cmd, std::initializer_list<int> keys, bool keepOpen)
 {
+	if(cmd.empty()) return;
+
 	for(int k : keys)
 	{
-		keymap[k] = cmd;
+		keymap[k] = std::make_pair(cmd, keepOpen);
 	}
 }
 
@@ -78,29 +87,42 @@ bool CommandableScene::isSuitable(int ch)
 	return false;
 }
 
-void CommandableScene::startInput(void)
+void CommandableScene::startInput(const char *_init)
 {
 	if(_buf) free(_buf);
 
-	_buf = static_cast<char *>(malloc(_l = STD_BUFSIZE));
-	_i = _idx = 0;
+	if(!_init)
+	{
+		_buf = static_cast<char *>(malloc(_l = STD_BUFSIZE));
+		_i = _idx = 0;
+	
+		memset(_buf, 0, _l);
+	}
+	else
+	{
+		_buf = strdup(_init);
+		_i = _idx = strlen(_buf);
+		_l = _i + 1;
+	}
 
-	memset(_buf, 0, _l);
+	undostory = history;
 
 	display::Terminal::instance().saveCursorPos();
 
 	pushInputFunction(std::bind(&CommandableScene::processInput, this, std::placeholders::_1));
 }
 
+void CommandableScene::endInput(void)
+{
+	free(_buf); _buf = NULL;
+	_i = _idx = _l = 0;
+	while(!undostory.empty()) undostory.pop();
+	while(!redostory.empty()) redostory.pop();
+	display::Terminal::instance().restoreCursorPos();
+}
+
 bool CommandableScene::processInput(int in)
 {
-	auto cleanup = [this]
-		{
-			free(_buf); _buf = NULL;
-			_i = _idx = _l = 0;
-			display::Terminal::instance().restoreCursorPos();
-		};
-
 	switch(in)
 	{
 		case display::Keys::LEFT:
@@ -110,10 +132,26 @@ bool CommandableScene::processInput(int in)
 			if(_idx < _i) ++_idx;
 			break;
 		case display::Keys::UP:
-			_idx = 0;
+			if(undostory.empty()) break;
+			redostory.push(std::string(_buf));
+			free(_buf);
+			_buf = strdup(undostory.top().c_str());
+			_i = undostory.top().length();
+			_l = _i + 1;
+			if(_l == 1) resize();
+			if(_idx > _i) _idx = _i;
+			undostory.pop();
 			break;
 		case display::Keys::DOWN:
-			_idx = _i;
+			if(redostory.empty()) break;
+			undostory.push(std::string(_buf));
+			free(_buf);
+			_buf = strdup(redostory.top().c_str());
+			_i = redostory.top().length();
+			_l = _i + 1;
+			if(_l == 1) resize();
+			if(_idx > _i) _idx = _i;
+			redostory.pop();
 			break;
 		case display::Keys::BACKSPACE:
 			if(_idx > 0)
@@ -123,13 +161,14 @@ bool CommandableScene::processInput(int in)
 				_buf[--_i] = '\0';
 				break;
 			}
+			else if(_i > 0) break;
 		case display::Keys::ESCAPE:
-			cleanup();
+			endInput();
 			return true;
 		case display::Keys::ENTER:
 			_buf[_i] = '\0';
 			command(_buf);
-			cleanup();
+			endInput();
 			return true;
 		default:
 			if(isSuitable(in))
@@ -167,11 +206,13 @@ std::vector<std::string> CommandableScene::processCommand(const std::string& cmd
 	return v;
 }
 
-void CommandableScene::command(const std::string& cmd)
+void CommandableScene::command(const std::string& cmd, bool doHistory)
 {
 	std::vector<std::string> params = processCommand(cmd);
 
 	if(params.empty()) return;
+
+	if(doHistory) history.push(cmd);
 
 	if(cmdmap.count(params.at(0)) > 0)
 	{

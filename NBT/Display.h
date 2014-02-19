@@ -18,6 +18,7 @@ namespace display
 		{
 			ERR = -1,
 			ENTER = '\n',
+			TAB = '\t',
 			LEFT = 0x80000001,
 			RIGHT,
 			UP,
@@ -31,7 +32,8 @@ namespace display
 	{
 		SINGLE,
 		DOUBLE,
-		BOLD_SINGLE
+		BOLD_SINGLE,
+		ASCII
 	};
 
 	template<Borders b>
@@ -68,6 +70,17 @@ namespace display
 		static const wchar_t CORNER_TOPRIGHT = L'\u2513';
 		static const wchar_t CORNER_BOTTOMLEFT = L'\u2517';
 		static const wchar_t CORNER_BOTTOMRIGHT = L'\u251b';
+	};
+
+	template<>
+	struct BorderTypes<Borders::ASCII>
+	{
+		static const char SIDES_VERTICAL = '|';
+		static const char SIDES_HORIZONTAL = '-';
+		static const char CORNER_TOPLEFT = '+';
+		static const char CORNER_TOPRIGHT = '+';
+		static const char CORNER_BOTTOMLEFT = '+';
+		static const char CORNER_BOTTOMRIGHT = '+';
 	};
 }
 

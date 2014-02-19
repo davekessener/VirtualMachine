@@ -2,9 +2,11 @@
 #define CURSE_H
 
 #include <deque>
+#include "Display.h"
 #include "Terminal.h"
 
 #ifdef CURSE_MAIN
+#include <cstdlib>
 #include <locale.h>
 #include "NCurse.h"
 #endif
