@@ -459,33 +459,48 @@ void Board::solve(void)
 		}
 	}
 
-	if(!doSolve()) clear();
+	const Board *that = this;
+
+	if(!doSolve([this](const Board *b)->void
+		{
+			memcpy(_field, b->_field, _w * _h * sizeof(int));
+		})) clear();
 }
 
-bool Board::doSolve(void)
+bool Board::checkValidity(void)
 {
-	auto tryBoard = [this](int x, int y, int s)->bool
+	
+}
+
+bool Board::doSolve(std::function<void(const Board *)> copySolution)
+{
+	auto tryBoard = [this, &copySolution](int x, int y, int v)->bool
 		{
 			Board b(this);
 
-			b.at(x, y) = s;
+			b.at(x, y) = v;
 
-			return b.doSolve();
+			return b.doSolve(copySolution);
 		};
 
 	for(int y = 0 ; y < _h ; ++y)
 	{
 		for(int x = 0 ; x < _w ; ++x)
 		{
-			if(at(x, y)) continue;
+			if(at(x, y))
+			{
+				if(checkValidity()) continue; else return false;
+			}
 
-			if(tryBoard(x, y, 1)) { at(x, y) = 1; continue; }
-			if(tryBoard(x, y, 2)) { at(x, y) = 2; continue; }
+			if(tryBoard(x, y, 1)) return true;
+			if(tryBoard(x, y, 2)) return true;
 
 			return false;
 		}
 	}
 
-	return isSolved();
+	copySolution(this);
+
+	return true;
 }
 

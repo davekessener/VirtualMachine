@@ -36,7 +36,8 @@ class Board
 		Board(const Board *);
 		inline int& at(int x, int y) { return _field[y + x * _h]; }
 		void destroy( );
-		bool doSolve( );
+		bool checkValidity( );
+		bool doSolve(std::function<void(const Board *)>);
 		int _w, _h;
 		int *_field;
 		int ***_sides;
