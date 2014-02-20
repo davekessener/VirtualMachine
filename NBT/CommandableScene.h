@@ -2,15 +2,17 @@
 #define CMDSCENE_H
 
 #include <iostream>
-#include <sstream>
 #include <functional>
 #include <map>
 #include <vector>
-#include <cstring>
-#include "Terminal.h"
 #include "Scene.h"
 
 #ifdef CMDSCENE_MAIN
+#include <sstream>
+#include <cstring>
+#include "Terminal.h"
+#include "Logger.h"
+
 #define STD_BUFSIZE 256
 #endif
 
@@ -27,6 +29,7 @@ class CommandableScene : public Scene
 		virtual void registerCommands( ) = 0;
 		void registerCommand(const std::string&, commandFn_t);
 		void assignKeys(const std::string&, std::initializer_list<int>, bool = false);
+		void setErrorMsg(const std::string&);
 	private:
 		void startInput(const char * = NULL);
 		void endInput( );
@@ -42,6 +45,7 @@ class CommandableScene : public Scene
 		std::stack<std::string> undostory, redostory;
 		char *_buf;
 		int _i, _l, _idx;
+		std::string errMsg;
 };
 
 #endif

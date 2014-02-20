@@ -30,7 +30,6 @@ void Editor::wake(void)
 
 void Editor::input(int in)
 {
-	if(in == 'q') quit();
 }
 
 void Editor::update(int ms)

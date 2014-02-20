@@ -19,7 +19,7 @@ $(TARGET): $(OBJ) $(DEPS)
 	$(CC) $(OBJ) -o $(TARGET) $(LIBS)
 
 run: all
-	export LD_LIBRARY_PATH="./NBT;./GZ" && ./$(TARGET)
+	export LD_LIBRARY_PATH="./NBT;./GZ" && gdb $(TARGET)
 
 clean:
 	-$(MAKE) clean -C GZ/

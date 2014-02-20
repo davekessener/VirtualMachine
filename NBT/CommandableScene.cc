@@ -19,11 +19,18 @@ void CommandableScene::init(void)
 
 void CommandableScene::refresh(void)
 {
-	if(_buf)
-	{
-		display::Terminal &terminal = display::Terminal::instance();
-		int h = terminal.getScreenHeight() - 1;
+	display::Terminal &terminal = display::Terminal::instance();
+	int h = terminal.getScreenHeight() - 1;
 
+	if(!errMsg.empty())
+	{
+		terminal.saveCursorPos();
+		terminal.setCursorPos(0, h);
+		terminal.printf("ERR: %s", errMsg.c_str());
+		terminal.restoreCursorPos();
+	}
+	else if(_buf)
+	{
 		terminal.setCursorPos(0, h);
 		terminal.printf(":%s", _buf);
 		terminal.setCursorPos(_idx + 1, h);
@@ -32,6 +39,8 @@ void CommandableScene::refresh(void)
 
 bool CommandableScene::inputHandler(int in)
 {
+	errMsg.clear();
+
 	if(in == ':')
 	{
 		startInput();
@@ -86,6 +95,14 @@ bool CommandableScene::isSuitable(int ch)
 
 	return false;
 }
+
+void CommandableScene::setErrorMsg(const std::string& err)
+{
+	errMsg = err;
+	Logger::log("[CMD] ERR: %s", err.c_str());
+}
+
+// # ---------------------------------------------------------------------------
 
 void CommandableScene::startInput(const char *_init)
 {
@@ -217,6 +234,10 @@ void CommandableScene::command(const std::string& cmd, bool doHistory)
 	if(cmdmap.count(params.at(0)) > 0)
 	{
 		cmdmap.at(params.at(0))(params);
+	}
+	else
+	{
+		setErrorMsg(std::string("Command '") + params.at(0) + "' isn't recognized.");
 	}
 }
 

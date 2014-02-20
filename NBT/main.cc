@@ -3,6 +3,7 @@
 #include "Curse.h"
 #include "Scene.h"
 #include "Editor.h"
+#include "Logger.h"
 
 #include "Game.h"
 
@@ -11,9 +12,8 @@ int main(int argc, char *argv[])
 	display::Terminal::create<ncurses::Curse>();
 
 	Editor e;
-	Game g;
 
-	Scene::play(&g);
+	Scene::play(&e);
 
     return 0;
 }
