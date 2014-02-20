@@ -469,7 +469,41 @@ void Board::solve(void)
 
 bool Board::checkValidity(void)
 {
-	
+	int __zero = 0;
+
+	for(int s = 0 ; s < 2 ; ++s)
+	{
+		for(int z = 0 ; z < (s ? _h : _w) ; ++z)
+		{
+			int *side = _sides[s][z];
+			int c = 0;
+			if(!side) side = &__zero;
+
+//			for(int i = 0 ; i < (s ? _w : _h) ; ++i)
+			for(int i = (s ? _w : _h) - 1 ; i >= 0 ; --i)
+			{
+				switch(at(s ? i : z, s ? z : i))
+				{
+					case 0:
+						if(c > *side) return false;
+						goto next;
+					case 1:
+						++c;
+						break;
+					case 2:
+						if(c && c != *side++) return false;
+						c = 0;
+						break;
+				}
+			}
+
+			if(c && c != *side++) return false;
+			if(*side) return false;
+
+next:
+			;
+		}
+	}
 }
 
 bool Board::doSolve(std::function<void(const Board *)> copySolution)
@@ -498,6 +532,8 @@ bool Board::doSolve(std::function<void(const Board *)> copySolution)
 			return false;
 		}
 	}
+
+	if(!checkValidity()) return false;
 
 	copySolution(this);
 
