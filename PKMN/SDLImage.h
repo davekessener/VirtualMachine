@@ -19,9 +19,9 @@ class SDLImage
 		void close( );
 		void blit(const SDLImage&, SDL_Rect, SDL_Rect);
 		void toScreen( );
-		explicit operator SDL_Surface *( );
+		explicit operator SDL_Texture *( ) const;
 	private:
-		SDL_Surface *img;
+		SDL_Texture *img;
 };
 
 #endif

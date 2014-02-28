@@ -23,14 +23,14 @@ void SDLImage::open(const std::string& path)
 {
 	if(img) close();
 
-	img = Screen::instance().loadOptimizedImage(path);
+	img = Screen::instance().loadImage(path);
 }
 
 void SDLImage::close(void)
 {
 	if(img)
 	{
-		SDL_FreeSurface(img);
+		SDL_DestroyTexture(img);
 		img = NULL;
 	}
 }
@@ -39,7 +39,7 @@ void SDLImage::blit(const SDLImage& _i, SDL_Rect _ro, SDL_Rect _rt)
 {
 }
 
-SDLImage::operator SDL_Surface *(void)
+SDLImage::operator SDL_Texture *(void) const
 {
 	return img;
 }
@@ -49,8 +49,7 @@ void SDLImage::toScreen(void)
 	SDL_Rect o, d;
 
 	o.x = o.y = 0;
-	o.w = img->w;
-	o.h = img->h;
+	SDL_QueryTexture(img, NULL, NULL, &o.w, &o.h);
 
 	d.x = d.y = 0;
 	d.w = Screen::SCREEN_WIDTH;

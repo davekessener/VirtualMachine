@@ -1,8 +1,8 @@
 CC=g++-4.7
 SDLCFLAGS=`sdl2-config --cflags`
 SDLLIBS=`sdl2-config --libs`
-CFLAGS=-std=c++0x -Wl,--no-as-needed -Wno-write-strings -ggdb -DDEBUG $(SDLCFLAGS)
-LIBS=$(SDLLIBS) -lpthread
+CFLAGS=-std=c++0x -Wl,--no-as-needed -ggdb -DDEBUG $(SDLCFLAGS)
+LIBS=$(SDLLIBS) -lSDL2_image -lpthread
 SRC=$(wildcard *.cc)
 OBJ=$(SRC:.cc=.o)
 HEADERS=$(wildcard *.h)
@@ -11,10 +11,13 @@ TARGET=pokemon
 %.o: %.cc $(HEADERS)
 	$(CC) -c $(CFLAGS) -I. $< -o $@
 
-$(TARGET): libnbt.a libgz.a $(OBJ)
+$(TARGET): logs libnbt.a libgz.a $(OBJ)
 	$(CC) $(OBJ) -o $(TARGET) $(LIBS)
 
-.PHONY: libnbt.a libgz.a clean
+.PHONY: logs libnbt.a libgz.a clean
+
+logs:
+	rm -f *.log
 
 libgz.a:
 	$(MAKE) -C GZ/
