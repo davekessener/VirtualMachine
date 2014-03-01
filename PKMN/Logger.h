@@ -11,7 +11,7 @@
 #include <cassert>
 #endif
 
-#define LOG(s,...) ::Logger::logFrom(__FILE__, __LINE__, s, __VA_ARGS__)
+#define LOG(...) ::Logger::logFrom(__FILE__, __LINE__, __VA_ARGS__)
 
 class Logger
 {

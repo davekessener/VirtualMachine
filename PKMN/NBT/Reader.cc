@@ -4,7 +4,7 @@
 
 #define __READER_DEBUG
 
-namespace NBT
+namespace nbt
 {
 	template<>
 	void nbt_reader<std::istream>::do_read(char *d, size_t n) const

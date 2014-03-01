@@ -3,8 +3,8 @@
 
 #include <functional>
 #include "Scene.h"
-#include "TileMap.h"
 #include "Logger.h"
+#include "Controller.h"
 
 #ifdef GAME_MAIN
 #include "Screen.h"
@@ -22,9 +22,6 @@ class Game : public Scene
 		void refresh( );
 	protected:
 	private:
-		Sprite *sprite;
-		TileMap *tileset;
-		int x, y, dx, dy;
 };
 
 #endif

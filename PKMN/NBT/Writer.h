@@ -10,7 +10,7 @@
 #include <GZ/gzstream.h>
 #include "common.h"
 
-namespace NBT
+namespace nbt
 {
 	class basic_nbt_writer
 	{

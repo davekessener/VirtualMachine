@@ -4,7 +4,7 @@ SDLException::SDLException(void) : exception(), msg(SDL_GetError())
 {
 }
 
-SDLException::SDLException(const char *s, ...)
+SDLException::SDLException(const char *s, ...) : exception()
 {
 	char buf[1024];
 

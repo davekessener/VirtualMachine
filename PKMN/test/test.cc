@@ -1,29 +1,9 @@
-#include <iostream>
-#include <vector>
+#include <NBT/NBT.h>
 
 int main(void)
 {
-	std::string p = "/this/is/a/path";
-	std::vector<std::string> v;
-
-	std::reverse(p.begin(), p.end());
-
-	for(auto i = p.begin(), j = i ; i != p.end() ; ++i)
-	{
-		if(*i != '/') continue;
-		if(i == j) { ++j; continue; }
-
-		v.push_back(std::string(j, i));
-
-		j = ++i;
-	}
-
-	v.push_back(std::string(j, i));
-
-	for(std::string s : v)
-	{
-		std::cout << '\'' << s << '\'' << std::endl;
-	}
+	nbt::TAG_Compound::ptr_t ptr = nbt::readFile("test.nbt");
+	nbt::writeFile("rewrite.nbt", ptr);
 
 	return 0;
 }

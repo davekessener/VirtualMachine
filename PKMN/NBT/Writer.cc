@@ -4,7 +4,7 @@
 
 #define __WRITER_DEBUG
 
-namespace NBT
+namespace nbt
 {
 	template<>
 	void nbt_writer<std::ostream>::do_write(char *d, size_t n) const

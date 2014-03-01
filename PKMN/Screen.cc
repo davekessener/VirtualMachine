@@ -24,7 +24,7 @@ void Screen::init(void)
 
 	if(!window) throw SDLException();
 
-	renderer = SDL_CreateRenderer(window, -1, 0);
+	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_TARGETTEXTURE);
 
 	if(!renderer) throw SDLException();
 }

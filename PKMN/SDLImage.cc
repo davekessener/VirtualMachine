@@ -11,6 +11,22 @@ SDLImage::SDLImage(const std::string& path) : img(NULL)
 	open(path);
 }
 
+SDLImage::SDLImage(int w, int h) : img(NULL)
+{
+	create(w, h);
+}
+
+void SDLImage::create(int w, int h)
+{
+	if(img) close();
+
+	SDL_Renderer *r = Screen::instance().getRenderer();
+	img = SDL_CreateTexture(r, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STATIC, w, h);
+	SDL_SetRenderTarget(r, img);
+	SDL_RenderClear(r);
+	SDL_SetRenderTarget(r, NULL);
+}
+
 SDLImage::~SDLImage(void)
 {
 	if(img)
@@ -35,8 +51,19 @@ void SDLImage::close(void)
 	}
 }
 
+void SDLImage::startBlit(void)
+{
+	SDL_SetRenderTarget(Screen::instance().getRenderer(), img);
+}
+
+void SDLImage::endBlit(void)
+{
+	SDL_SetRenderTarget(Screen::instance().getRenderer(), NULL);
+}
+
 void SDLImage::blit(const SDLImage& _i, SDL_Rect _ro, SDL_Rect _rt)
 {
+	SDL_RenderCopy(Screen::instance().getRenderer(), _i.img, &_ro, &_rt);
 }
 
 SDLImage::operator SDL_Texture *(void) const

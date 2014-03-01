@@ -1,8 +1,8 @@
 #define NBT_IMP
-#include "NBT.h"
+#include "NBTMain.h"
 #undef NBT_IMP
 
-namespace NBT
+namespace nbt
 {
 // # ===========================================================================
 

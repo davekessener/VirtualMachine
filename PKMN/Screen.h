@@ -59,6 +59,7 @@ class Screen : public display::Terminal
 		void printfw(const wchar_t *, va_list);
 	public:
 		static Screen& instance( );
+		SDL_Renderer *getRenderer( ) { return renderer; }
 		void onQuit(quitFn_t);
 		SDL_Texture *loadImage(const std::string&);
 		void toScreen(SDL_Texture *, SDL_Rect o, SDL_Rect r);

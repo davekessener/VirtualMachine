@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <memory>
 
-namespace NBT
+namespace nbt
 {
 	typedef std::uint8_t   BYTE;
 	typedef std::uint16_t  WORD;
