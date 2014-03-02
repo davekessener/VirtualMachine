@@ -31,13 +31,17 @@ Controller& Controller::instance(void)
 
 void Controller::render(void)
 {
-	MapRenderer &render = *MapRenderer::getRenderer(*maps.at(curMap));
-	render.renderAt(0, 0);
+	MapRenderer::renderMap(*maps.at(curMap), ticks);
+}
+
+void Controller::update(void)
+{
+	++ticks;
 }
 
 // # ===========================================================================
 
-Controller::Controller(const std::string& _saveFn) : saveFn(_saveFn), curMap(0)
+Controller::Controller(const std::string& _saveFn) : saveFn(_saveFn), curMap(0), ticks(0)
 {
 	nbt::TAG_Compound::ptr_t nbt = nbt::readFile(saveFn);
 	nbt::TAG_List::ptr_t maps = nbt->getTagList("Maps");

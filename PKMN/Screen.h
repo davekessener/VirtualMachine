@@ -9,6 +9,7 @@
 #include <map>
 #include <cstdlib>
 #include "Terminal.h"
+#include "common.h"
 
 #ifdef SCREEN_MAIN
 #include <SDL_image.h>
@@ -16,26 +17,6 @@
 #include <cassert>
 #include "SDLException.h"
 #endif
-
-namespace Controls
-{
-	enum
-	{
-		NONE,
-		A,
-		B,
-		X,
-		Y,
-		UP,
-		DOWN,
-		LEFT,
-		RIGHT,
-		START,
-		SELECT,
-		L,
-		R
-	};
-}
 
 class Screen : public display::Terminal
 {

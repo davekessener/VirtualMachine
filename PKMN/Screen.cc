@@ -27,6 +27,8 @@ void Screen::init(void)
 	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_TARGETTEXTURE);
 
 	if(!renderer) throw SDLException();
+
+	SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 }
 
 void Screen::finalize(void)

@@ -1,5 +1,5 @@
-#ifndef NBTFILE_IO_H
-#define NBTFILE_IO_H
+#ifndef NBT_FILEIO_H
+#define NBT_FILEIO_H
 
 #include <string>
 #include "Reader.h"

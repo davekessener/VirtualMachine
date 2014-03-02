@@ -27,7 +27,7 @@ libnbt.a:
 	$(MAKE) -C NBT/
 	cp NBT/libnbt.a .
 
-clean:
+clean: logs
 	$(MAKE) -C NBT/ clean
 	$(MAKE) -C GZ/ clean
 	-rm *.a *.o $(TARGET)

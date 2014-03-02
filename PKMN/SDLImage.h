@@ -5,6 +5,7 @@
 #include <SDL2/SDL.h>
 #include <cassert>
 #include "Screen.h"
+#include "SDLException.h"
 
 #ifdef SDLIMAGE_MAIN
 #endif
@@ -26,6 +27,7 @@ class SDLImage
 		explicit operator SDL_Texture *( ) const;
 	private:
 		SDL_Texture *img;
+		static bool isBlitting;
 };
 
 #endif

@@ -6,6 +6,7 @@
 #include <cstdint>
 #include "SDLImage.h"
 #include "Map.h"
+#include "Pool.h"
 
 #ifdef MAPRENDERER_MAIN
 #include "Logger.h"
@@ -13,6 +14,8 @@
 
 #define MR_POOL_MAXSIZE 8
 #endif
+
+class MapRenderer : public Pool<
 
 class MapRenderer
 {
@@ -22,7 +25,7 @@ class MapRenderer
 		static void init( );
 		static void quit( );
 		static MapRenderer *getRenderer(const Map&);
-		void renderAt(int, int);
+		static void renderMap(const Map&, int);
 	private:
 		MapRenderer(int, int, const layer_t&, const layer_t&, const layer_t&);
 		~MapRenderer( );

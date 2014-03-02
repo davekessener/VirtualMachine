@@ -2,6 +2,8 @@
 #include "SDLImage.h"
 #undef SDLIMAGE_MAIN
 
+bool SDLImage::isBlitting = false;
+
 SDLImage::SDLImage(void) : img(NULL)
 {
 }
@@ -21,7 +23,8 @@ void SDLImage::create(int w, int h)
 	if(img) close();
 
 	SDL_Renderer *r = Screen::instance().getRenderer();
-	img = SDL_CreateTexture(r, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STATIC, w, h);
+	img = SDL_CreateTexture(r, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, w, h);
+	SDL_SetTextureBlendMode(img, SDL_BLENDMODE_BLEND);
 	SDL_SetRenderTarget(r, img);
 	SDL_RenderClear(r);
 	SDL_SetRenderTarget(r, NULL);
@@ -53,17 +56,30 @@ void SDLImage::close(void)
 
 void SDLImage::startBlit(void)
 {
-	SDL_SetRenderTarget(Screen::instance().getRenderer(), img);
+	if(!isBlitting)
+	{
+		SDL_SetRenderTarget(Screen::instance().getRenderer(), img);
+		isBlitting = true;
+	}
+	else throw SDLException("ALREADY BLITTING!");
 }
 
 void SDLImage::endBlit(void)
 {
-	SDL_SetRenderTarget(Screen::instance().getRenderer(), NULL);
+	if(isBlitting)
+	{
+		SDL_SetRenderTarget(Screen::instance().getRenderer(), NULL);
+		isBlitting = false;
+	}
 }
 
 void SDLImage::blit(const SDLImage& _i, SDL_Rect _ro, SDL_Rect _rt)
 {
-	SDL_RenderCopy(Screen::instance().getRenderer(), _i.img, &_ro, &_rt);
+	SDL_Renderer *r = Screen::instance().getRenderer();
+
+	if(!isBlitting) SDL_SetRenderTarget(r, img);
+	SDL_RenderCopy(r, _i.img, &_ro, &_rt);
+	if(!isBlitting) SDL_SetRenderTarget(r, NULL);
 }
 
 SDLImage::operator SDL_Texture *(void) const

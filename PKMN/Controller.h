@@ -19,6 +19,7 @@ class Controller
 		static void destroy( );
 		static Controller& instance( );
 		void render( );
+		void update( );
 	private:
 		Controller(const std::string&);
 		Controller(const Controller&);
@@ -28,7 +29,7 @@ class Controller
 
 		std::string saveFn;
 		std::vector<Map *> maps;
-		int curMap;
+		int curMap, ticks;
 };
 
 #endif

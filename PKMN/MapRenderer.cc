@@ -67,9 +67,12 @@ MapRenderer *MapRenderer::getRenderer(const Map& map)
 
 // # ---------------------------------------------------------------------------
 
-void MapRenderer::renderAt(int x, int y)
+void MapRenderer::renderMap(const Map& map, int ticks)
 {
+	MapRenderer *render = getRenderer(map);
 	SDL_Rect ro, rt;
+
+	int x = 0, y = 0;
 
 	ro.x = x > 0 ? x * 16 : 0;
 	ro.y = y > 0 ? y * 16 : 0;
@@ -77,8 +80,8 @@ void MapRenderer::renderAt(int x, int y)
 	rt.x = x < 0 ? -x * 16 : 0;
 	rt.y = y < 0 ? -y * 16 : 0;
 
-	ro.w = width * 16 - ro.x;
-	ro.h = height * 16 - ro.y;
+	ro.w = render->width * 16 - ro.x;
+	ro.h = render->height * 16 - ro.y;
 
 	rt.w = Screen::SCREEN_WIDTH - rt.x;
 	rt.h = Screen::SCREEN_HEIGHT - rt.y;
@@ -88,8 +91,10 @@ void MapRenderer::renderAt(int x, int y)
 	ro.h = rt.h = min(ro.h, rt.h);
 #undef min
 
-	Screen::instance().toScreen(static_cast<SDL_Texture *>(map_bottom), ro, rt);
-//	Screen::instance().toScreen(static_cast<SDL_Texture *>(map_top), ro, rt);
+	if(ro.w < 0 || ro.h < 0) return;
+
+	Screen::instance().toScreen(static_cast<SDL_Texture *>(render->map_bottom), ro, rt);
+	Screen::instance().toScreen(static_cast<SDL_Texture *>(render->map_top), ro, rt);
 }
 
 // # ===========================================================================
@@ -107,7 +112,8 @@ MapRenderer::~MapRenderer(void)
 
 void MapRenderer::prerenderLayer(int w, int h, SDLImage& img, const layer_t& layer)
 {
-	int lc = (layer.size() + w * h - 1) / (w * h);
+	int v, s = layer.size();
+	int lc = (s + w * h - 1) / (w * h);
 	SDL_Rect ro, rt;
 
 	ro.w = ro.h = rt.w = rt.h = 16;
@@ -121,14 +127,14 @@ void MapRenderer::prerenderLayer(int w, int h, SDLImage& img, const layer_t& lay
 		{
 			for(int x = 0 ; x < w ; ++x)
 			{
-				rt.x = x * 16;
-				rt.y = y * 16;
+				if(l * w * h + y * w + x >= s) return;
 
-				if(l * w * h + y * w + x >= layer.size()) return;
-
-				int v = layer[l * w * h + y * w + x];
+				v = layer[l * w * h + y * w + x];
 
 				if(!v) continue;
+
+				rt.x = 16 * x;
+				rt.y = 16 * y;
 
 				ro.x = 16 * (v % 0x40);
 				ro.y = 16 * (v / 0x40);
