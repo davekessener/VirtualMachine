@@ -24,6 +24,7 @@ void SDLImage::create(int w, int h)
 
 	SDL_Renderer *r = Screen::instance().getRenderer();
 	img = SDL_CreateTexture(r, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, w, h);
+	if(!img) throw SDLException();
 	SDL_SetTextureBlendMode(img, SDL_BLENDMODE_BLEND);
 	SDL_SetRenderTarget(r, img);
 	SDL_RenderClear(r);

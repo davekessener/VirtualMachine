@@ -12,6 +12,8 @@ $(TARGET): $(OBJ)
 	ar rcs $(TARGET) $(OBJ)
 	ranlib $(TARGET)
 
+.PHONY: clean
+
 clean:
 	-rm *.o $(TARGET)
 

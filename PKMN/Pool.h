@@ -13,7 +13,6 @@ class PoolRetainerNew
 		PoolRetainerNew( ) : ptr(new T()) { }
 		virtual ~PoolRetainerNew( ) { }
 		return_type getReturn( ) { return ptr; }
-	protected:
 		void free( ) { delete ptr; ptr = NULL; }
 	private:
 		return_type ptr;
@@ -29,7 +28,6 @@ class PoolValidationConst : public T
 			static void order(const TT&, std::map<TT, PoolValidationConst<T>>&);
 	protected:
 	private:
-		T elem;
 };
 
 template<typename T>
@@ -45,16 +43,16 @@ class PoolValidationAge : public T
 {
 	public:
 		PoolValidationAge( ) : T(), age(-1) { }
-		template<typename TT>
-			static void order(const TT&, std::map<TT, PoolValidationAge<T, AGE>>&);
+		template<typename TT, typename C>
+			static void order(const TT&, std::map<TT, C>&);
 	protected:
 	private:
 		int age;
 };
 
 template<typename T, int AGE>
-template<typename TT>
-void PoolValidationAge<T, AGE>::order(const TT& idx, std::map<TT, PoolValidationAge<T, AGE>>& map)
+template<typename TT, typename C>
+void PoolValidationAge<T, AGE>::order(const TT& idx, std::map<TT, C>& map)
 {
 	int age = map.at(idx).age;
 
@@ -87,10 +85,26 @@ template
 class Pool
 {
 	public:
+		virtual ~Pool( );
 		typename C<T>::return_type getFromPool(const TT&);
 	private:
 		std::map<TT, C<T>> pool;
 };
+
+template
+<
+	typename T,
+	typename TT,
+	template<typename> class C
+>
+Pool<T, TT, C>::~Pool(void)
+{
+	for(auto i = pool.begin() ; i != pool.end() ; ++i)
+	{
+		i->second.free();
+	}
+	pool.clear();
+}
 
 template
 <

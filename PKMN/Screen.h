@@ -46,7 +46,7 @@ class Screen : public display::Terminal
 		void toScreen(SDL_Texture *, SDL_Rect o, SDL_Rect r);
 	public:
 		static const int SCREEN_WIDTH = 240;
-		static const int SCREEN_HEIGHT = 176;
+		static const int SCREEN_HEIGHT = 160;
 	protected:
 	private:
 		static void loadKeyMap(const std::string&, std::map<int, int>&);

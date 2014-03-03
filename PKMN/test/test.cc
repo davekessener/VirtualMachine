@@ -29,10 +29,6 @@ void pause( );
 
 int main(void)
 {
-	B<C, A<42>> b;
-	std::cout << b.get().getID() << "  " << b.get().getName() << std::endl;
-	return 0;
-
 	const int SCREEN_WIDTH = 640;
 	const int SCREEN_HEIGHT = 480;
 

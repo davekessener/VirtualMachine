@@ -24,6 +24,7 @@ class SDLImage
 		void toScreen( );
 		void startBlit( );
 		void endBlit( );
+		bool opened( ) { return img != NULL; }
 		explicit operator SDL_Texture *( ) const;
 	private:
 		SDL_Texture *img;

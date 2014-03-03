@@ -4,12 +4,16 @@
 #include <string>
 #include <vector>
 #include "Map.h"
+#include "OWSprite.h"
+#include "PlayerSprite.h"
+#include "Camera.h"
 #include "Logger.h"
 
 #ifdef CONTROLLER_MAIN
 #include <NBT/NBT.h>
 #include <cassert>
 #include "MapRenderer.h"
+#include "OWSpriteRenderer.h"
 #endif
 
 class Controller
@@ -20,6 +24,7 @@ class Controller
 		static Controller& instance( );
 		void render( );
 		void update( );
+		bool input(int);
 	private:
 		Controller(const std::string&);
 		Controller(const Controller&);
@@ -27,6 +32,8 @@ class Controller
 		Controller& operator=(const Controller&);
 		static Controller *_instance;
 
+		PlayerSprite thePlayer;
+		Camera camera;
 		std::string saveFn;
 		std::vector<Map *> maps;
 		int curMap, ticks;

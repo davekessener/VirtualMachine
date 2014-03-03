@@ -14,6 +14,7 @@ void Game::init(void)
 {
 	Screen::instance().onQuit(std::bind(&Game::quit, this));
 	Controller::create("data.nbt");
+	pushInputFunction(std::bind(&Controller::input, &Controller::instance(), std::placeholders::_1));
 }
 
 void Game::finalize(void)
@@ -56,6 +57,7 @@ void Game::input(int in)
 
 void Game::update(int ms)
 {
+	Controller::instance().update();
 }
 
 void Game::refresh(void)
