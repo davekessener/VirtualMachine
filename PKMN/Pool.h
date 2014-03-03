@@ -6,122 +6,145 @@
 // # ===========================================================================
 
 template<typename T>
-class PoolRetainerNew
+class PoolSimple
 {
 	public:
 		typedef T *return_type;
-		PoolRetainerNew( ) : ptr(new T()) { }
-		virtual ~PoolRetainerNew( ) { }
-		return_type getReturn( ) { return ptr; }
-		void free( ) { delete ptr; ptr = NULL; }
-	private:
-		return_type ptr;
-};
 
-// # ===========================================================================
-
-template<typename T>
-class PoolValidationConst : public T
-{
-	public:
-		template<typename TT>
-			static void order(const TT&, std::map<TT, PoolValidationConst<T>>&);
+		PoolSimple( ) : elem(NULL) { }
+		PoolSimple(return_type r) : elem(r) { use(); }
+		virtual ~PoolSimple( ) { }
+		static bool isValid(return_type v) { return v != invalid(); }
+		static return_type invalid( ) { return NULL; }
+		static return_type create( ) { return new T; }
+		virtual void destroy( ) { delete elem; }
+		virtual void use( ) { }
+		virtual bool good( ) { return true; }
+		return_type getValue( ) { return elem; }
 	protected:
 	private:
+		return_type elem;
 };
+
+// # ---------------------------------------------------------------------------
 
 template<typename T>
-template<typename TT>
-void PoolValidationConst<T>::order(const TT& idx, std::map<TT, PoolValidationConst<T>>& map)
-{
-}
-
-// # ===========================================================================
-
-template<typename T, int AGE>
-class PoolValidationAge : public T
+class PoolRemote : public virtual PoolSimple<T>
 {
 	public:
-		PoolValidationAge( ) : T(), age(-1) { }
-		template<typename TT, typename C>
-			static void order(const TT&, std::map<TT, C>&);
-	protected:
-	private:
-		int age;
+		typedef typename PoolSimple<T>::return_type return_type;
+
+		PoolRemote( ) { }
+		PoolRemote(return_type v) : PoolSimple<T>(v) { }
+		static return_type create( ) { return PoolSimple<T>::invalid(); }
+		virtual void destroy( ) { }
 };
 
-template<typename T, int AGE>
-template<typename TT, typename C>
-void PoolValidationAge<T, AGE>::order(const TT& idx, std::map<TT, C>& map)
+// # ---------------------------------------------------------------------------
+
+template<typename T, int SIZE>
+class PoolCounted : public virtual PoolSimple<T>
 {
-	int age = map.at(idx).age;
+	public:
+		typedef typename PoolSimple<T>::return_type return_type;
 
-	for(auto i = map.begin() ; i != map.end() ; ++i)
-	{
-		if(age < 0 || i->second.age < age) ++(i->second.age);
-	}
+		PoolCounted( ) { }
+		PoolCounted(return_type v) : PoolSimple<T>(v) { }
+		virtual void use( ) { id = cID++; }
+		virtual bool good( ) { return cID - id <= SIZE; }
+	private:
+		int id;
+		static int cID;
+};
 
-	map.at(idx).age = 0;
-
-	for(auto i = map.begin() ; i != map.end() ; ++i)
-	{
-		if(i->second.age >= AGE)
-		{
-			i->second.T::free();
-			map.erase(i);
-			i = map.begin();
-		}
-	}
-}
+template<typename T, int SIZE>
+int PoolCounted<T, SIZE>::cID = 0;
 
 // # ===========================================================================
 
 template
 <
-	typename T,
-	typename TT = int,
-	template<typename> class C = PoolValidationConst
+	typename VAL,
+	typename KEY = int,
+	template<typename> class C = PoolSimple
 >
 class Pool
 {
 	public:
 		virtual ~Pool( );
-		typename C<T>::return_type getFromPool(const TT&);
+		typename C<VAL>::return_type getFromPool(const KEY&);
+		void addToPool(const KEY&, typename C<VAL>::return_type);
 	private:
-		std::map<TT, C<T>> pool;
+		std::map<KEY, C<VAL>> pool;
 };
+
+// # ---------------------------------------------------------------------------
 
 template
 <
-	typename T,
-	typename TT,
+	typename VAL,
+	typename KEY,
 	template<typename> class C
 >
-Pool<T, TT, C>::~Pool(void)
+Pool<VAL, KEY, C>::~Pool(void)
 {
 	for(auto i = pool.begin() ; i != pool.end() ; ++i)
 	{
-		i->second.free();
+		i->second.destroy();
 	}
 	pool.clear();
 }
 
 template
 <
-	typename T,
-	typename TT,
+	typename VAL,
+	typename KEY,
 	template<typename> class C
 >
-typename C<T>::return_type Pool<T, TT, C>::getFromPool(const TT& idx)
+typename C<VAL>::return_type Pool<VAL, KEY, C>::getFromPool(const KEY& key)
 {
-	if(pool.count(idx) == 0)
+	if(pool.count(key) == 0)
 	{
-		pool[idx] = C<T>{};
+		typename C<VAL>::return_type v = C<VAL>::create();
+
+		if(C<VAL>::isValid(v))
+		{
+			pool[key] = C<VAL>(v);
+		}
+		else
+		{
+			return C<VAL>::invalid();
+		}
+	}
+	else
+	{
+		pool.at(key).use();
 	}
 
-	C<T>::order(idx, pool);
+	return pool.at(key).getValue();
+}
 
-	return pool.at(idx).getReturn();
+template
+<
+	typename VAL,
+	typename KEY,
+	template<typename> class C
+>
+void Pool<VAL, KEY, C>::addToPool(const KEY& key, typename C<VAL>::return_type v)
+{
+	if(C<VAL>::isValid(v))
+	{
+		pool[key] = C<VAL>(v);
+
+		for(auto i = pool.begin() ; i != pool.end() ; ++i)
+		{
+			if(!i->second.good())
+			{
+				pool.erase(i);
+				i = pool.begin();
+			}
+		}
+	}
 }
 
 // # ===========================================================================

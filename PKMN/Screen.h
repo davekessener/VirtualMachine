@@ -15,7 +15,7 @@
 #include <SDL_image.h>
 #include <SDL_ttf.h>
 #include <cassert>
-#include "SDLException.h"
+#include <Misc/SDLException.h>
 #endif
 
 class Screen : public display::Terminal
@@ -42,7 +42,6 @@ class Screen : public display::Terminal
 		static Screen& instance( );
 		SDL_Renderer *getRenderer( ) { return renderer; }
 		void onQuit(quitFn_t);
-		SDL_Texture *loadImage(const std::string&);
 		void toScreen(SDL_Texture *, SDL_Rect o, SDL_Rect r);
 	public:
 		static const int SCREEN_WIDTH = 240;

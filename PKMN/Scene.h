@@ -3,7 +3,7 @@
 
 #include <functional>
 #include <stack>
-#include "Timer.h"
+#include <Misc/Timer.h>
 
 #ifdef SCENE_MAIN
 #include "Terminal.h"
@@ -21,7 +21,7 @@ class Scene
 		virtual void suspend( );
 		virtual void wake( );
 		virtual void input(int) = 0;
-		virtual void update(int) = 0;
+		virtual void update() = 0;
 		virtual void refresh( ) = 0;
 		virtual void finalize( );
 		void quit( );
@@ -32,6 +32,8 @@ class Scene
 		std::stack<inputFn_t> inputFns;
 		Timer timer;
 		static Scene *scene;
+
+		static const int FRAME_RATE = 40;
 };
 
 #endif

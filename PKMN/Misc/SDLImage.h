@@ -3,9 +3,9 @@
 
 #include <iostream>
 #include <SDL2/SDL.h>
+#include <SDL_image.h>
+#include <Misc/SDLException.h>
 #include <cassert>
-#include "Screen.h"
-#include "SDLException.h"
 
 #ifdef SDLIMAGE_MAIN
 #endif
@@ -13,20 +13,21 @@
 class SDLImage
 {
 	public:
-		SDLImage( );
-		SDLImage(const std::string&);
-		SDLImage(int, int);
+		SDLImage(SDL_Renderer * = NULL);
+		SDLImage(SDL_Renderer *, const std::string&);
+		SDLImage(SDL_Renderer *,int, int);
 		~SDLImage( );
+		void setRenderer(SDL_Renderer *r) { render = r; }
 		void create(int, int);
 		void open(const std::string&);
 		void close( );
 		void blit(const SDLImage&, SDL_Rect, SDL_Rect);
-		void toScreen( );
 		void startBlit( );
 		void endBlit( );
 		bool opened( ) { return img != NULL; }
 		explicit operator SDL_Texture *( ) const;
 	private:
+		SDL_Renderer *render;
 		SDL_Texture *img;
 		static bool isBlitting;
 };

@@ -1,4 +1,4 @@
-#ifndef SDLEXCPETION_H
+#ifndef SDLEXCEPTION_H
 #define SDLEXCEPTION_H
 
 #include <exception>

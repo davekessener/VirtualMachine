@@ -1,13 +1,34 @@
 #include <NBT/NBT.h>
-#include <vector>
+#include <Misc/SDLException.h>
+#include <MapEdit/Editor.h>
 #include <iostream>
+#include <vector>
 #include "Game.h"
 #include "Screen.h"
-#include "SDLException.h"
 
 void writePreparationFiles( );
 
-int main(void)
+int launchGame( );
+int launchEditor( );
+
+int main(int argc, char *argv[])
+{
+	if(argc > 1 && std::string(argv[1]).compare("--editor") == 0)
+	{
+		return launchEditor();
+	}
+	else
+	{
+		return launchGame();
+	}
+}
+
+int launchEditor(void)
+{
+	return Editor::run(0, NULL);
+}
+
+int launchGame(void)
 {
 	writePreparationFiles();
 

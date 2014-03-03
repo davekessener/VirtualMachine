@@ -4,7 +4,6 @@ LIBS=-L./GZ -L./NBT -lgz -lnbt -lncursesw -lpthread
 SRC=$(wildcard *.cc)
 OBJ=$(SRC:.cc=.o)
 HEADERS=$(wildcard *.h)
-DEPS=GZ/libgz.so NBT/libnbt.so
 TARGET=nbtedit
 
 %.o: %.cc $(HEADERS)
@@ -15,11 +14,8 @@ all:
 	$(MAKE) -C NBT/
 	$(MAKE) $(TARGET)
 
-$(TARGET): $(OBJ) $(DEPS)
+$(TARGET): $(OBJ)
 	$(CC) $(OBJ) -o $(TARGET) $(LIBS)
-
-run: all
-	export LD_LIBRARY_PATH="./NBT;./GZ" && gdb $(TARGET)
 
 clean:
 	-$(MAKE) clean -C GZ/

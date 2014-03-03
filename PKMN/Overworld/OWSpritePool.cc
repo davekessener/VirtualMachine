@@ -10,6 +10,7 @@ SDLImage *OWSpritePool::getSprite(int id)
 	{
 		std::ostringstream ss;
 		ss << "./sprites/" << id << ".png";
+		r->setRenderer(Screen::instance().getRenderer());
 		r->open(ss.str());
 	}
 

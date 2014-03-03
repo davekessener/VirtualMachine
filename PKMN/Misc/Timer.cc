@@ -29,9 +29,14 @@ int Timer::getDelta(void)
 	return r;
 }
 
+void Timer::keepRate(int fr)
+{
+	if(fr > 0) sleep((1000 / fr) - getDelta());
+}
+
 void Timer::sleep(int ms)
 {
-	usleep(ms * 1000);
+	if(ms > 0) usleep(ms * 1000);
 }
 
 long long Timer::curTimeMilliSec(void)

@@ -39,8 +39,6 @@ void Scene::run(void)
 			wake();
 		}
 
-		int d = timer.getDelta();
-
 		int in = Terminal::instance().getChar();
 
 		if(in != display::Keys::ERR)
@@ -58,7 +56,7 @@ void Scene::run(void)
 			}
 		}
 
-		update(d);
+		update();
 
 		Terminal::instance().eraseScreen();
 
@@ -66,8 +64,7 @@ void Scene::run(void)
 
 		Terminal::instance().flush();
 
-		d = 16 - timer.elapsed();
-		if(d > 0) timer.sleep(d);
+		timer.keepRate(FRAME_RATE);
 	}
 
 	finalize();

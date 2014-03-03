@@ -6,7 +6,7 @@
 #ifdef OWSPRITERENDERER_MAIN
 #include "OWSpritePool.h"
 #include "Screen.h"
-#include "Logger.h"
+#include <Misc/Logger.h>
 #endif
 
 class OWSpriteRenderer

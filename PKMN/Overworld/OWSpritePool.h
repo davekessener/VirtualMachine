@@ -2,16 +2,25 @@
 #define OWSPRITEPOOL_H
 
 #include <map>
-#include "SDLImage.h"
+#include <Misc/SDLImage.h>
 #include "Pool.h"
 #include "Singleton.h"
+#include "Screen.h"
 
 #ifdef OWSPRITEPOOL_MAIN
 #include <sstream>
 
 #define OWS_POOL_MAXSIZE 24
 
-template<typename T> class _pool_validation_age : public PoolValidationAge<T, OWS_POOL_MAXSIZE> { };
+template<typename T>
+class _pool_validation_age  : public PoolCounted<T, OWS_POOL_MAXSIZE>
+{
+	public:
+		typedef typename PoolSimple<T>::return_type return_type;
+
+		_pool_validation_age( ) { }
+		_pool_validation_age(return_type v) : PoolSimple<T>(v), PoolCounted<T, OWS_POOL_MAXSIZE>(v) { }
+};
 #else
 template<typename T>
 class _pool_validation_age;
@@ -20,7 +29,7 @@ class _pool_validation_age;
 
 class OWSpritePool
 {
-	typedef Singleton<Pool<PoolRetainerNew<SDLImage>, int, _pool_validation_age>> pool;
+	typedef Singleton<Pool<SDLImage, int, _pool_validation_age>> pool;
 	
 	public:
 		static SDLImage *getSprite(int);

@@ -4,16 +4,16 @@
 
 bool SDLImage::isBlitting = false;
 
-SDLImage::SDLImage(void) : img(NULL)
+SDLImage::SDLImage(SDL_Renderer *r) : render(r), img(NULL)
 {
 }
 
-SDLImage::SDLImage(const std::string& path) : img(NULL)
+SDLImage::SDLImage(SDL_Renderer *r, const std::string& path) : render(r), img(NULL)
 {
 	open(path);
 }
 
-SDLImage::SDLImage(int w, int h) : img(NULL)
+SDLImage::SDLImage(SDL_Renderer *r, int w, int h) : render(r), img(NULL)
 {
 	create(w, h);
 }
@@ -22,7 +22,7 @@ void SDLImage::create(int w, int h)
 {
 	if(img) close();
 
-	SDL_Renderer *r = Screen::instance().getRenderer();
+	SDL_Renderer *r = render;
 	img = SDL_CreateTexture(r, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, w, h);
 	if(!img) throw SDLException();
 	SDL_SetTextureBlendMode(img, SDL_BLENDMODE_BLEND);
@@ -43,7 +43,9 @@ void SDLImage::open(const std::string& path)
 {
 	if(img) close();
 
-	img = Screen::instance().loadImage(path);
+	img = IMG_LoadTexture(render, path.c_str());
+
+	if(!img) throw SDLException(IMG_GetError());
 }
 
 void SDLImage::close(void)
@@ -59,7 +61,8 @@ void SDLImage::startBlit(void)
 {
 	if(!isBlitting)
 	{
-		SDL_SetRenderTarget(Screen::instance().getRenderer(), img);
+		if(!render) throw SDLException("ERR: Can't blit without renderer.");
+		SDL_SetRenderTarget(render, img);
 		isBlitting = true;
 	}
 	else throw SDLException("ALREADY BLITTING!");
@@ -69,36 +72,21 @@ void SDLImage::endBlit(void)
 {
 	if(isBlitting)
 	{
-		SDL_SetRenderTarget(Screen::instance().getRenderer(), NULL);
+		if(!render) throw SDLException("ERR: Can't blit without renderer.");
+		SDL_SetRenderTarget(render, NULL);
 		isBlitting = false;
 	}
 }
 
 void SDLImage::blit(const SDLImage& _i, SDL_Rect _ro, SDL_Rect _rt)
 {
-	SDL_Renderer *r = Screen::instance().getRenderer();
-
-	if(!isBlitting) SDL_SetRenderTarget(r, img);
-	SDL_RenderCopy(r, _i.img, &_ro, &_rt);
-	if(!isBlitting) SDL_SetRenderTarget(r, NULL);
+	if(!isBlitting) SDL_SetRenderTarget(render, img);
+	SDL_RenderCopy(render, _i.img, &_ro, &_rt);
+	if(!isBlitting) SDL_SetRenderTarget(render, NULL);
 }
 
 SDLImage::operator SDL_Texture *(void) const
 {
 	return img;
-}
-
-void SDLImage::toScreen(void)
-{
-	SDL_Rect o, d;
-
-	o.x = o.y = 0;
-	SDL_QueryTexture(img, NULL, NULL, &o.w, &o.h);
-
-	d.x = d.y = 0;
-	d.w = Screen::SCREEN_WIDTH;
-	d.h = Screen::SCREEN_HEIGHT;
-
-	Screen::instance().toScreen(img, o, d);
 }
 

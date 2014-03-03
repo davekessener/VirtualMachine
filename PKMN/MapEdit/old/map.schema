@@ -10,6 +10,7 @@
 			{
 				int-list : "Bottom";
 				int-list : "Animation";
+				int-list : "Intermediate";
 				int-list : "Top";
 			}
 		}

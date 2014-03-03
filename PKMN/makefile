@@ -6,7 +6,7 @@ LIBS=$(SDLLIBS) -lSDL2_image -lpthread -lz
 SRC=$(wildcard *.cc)
 OBJ=$(SRC:.cc=.o)
 HEADERS=$(wildcard *.h)
-SUBS=NBT.a GZ.a Overworld.a
+SUBS=NBT.a GZ.a MapEdit.a Misc.a Overworld.a
 TARGET=pokemon
 
 %.o: %.cc $(HEADERS)

@@ -5,6 +5,7 @@
 #include <cstdio>
 #include <cstdarg>
 #include <cstdlib>
+#include <mutex>
 
 #ifdef LOGGER_MAIN
 #include <ctime>
@@ -31,6 +32,7 @@ class Logger
 		Logger& operator=(const Logger&);
 		Logger& operator=(Logger&&);
 		FILE *_f;
+		std::mutex mtx;
 };
 
 #endif

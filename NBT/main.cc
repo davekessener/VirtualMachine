@@ -5,8 +5,6 @@
 #include "Editor.h"
 #include "Logger.h"
 
-#include "Game.h"
-
 int main(int argc, char *argv[])
 {
 	display::Terminal::create<ncurses::Curse>();

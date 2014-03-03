@@ -8,14 +8,14 @@ MapRenderer *MapRenderer::getRenderer(const Map& map)
 {
 	MapRenderer *r = Renderers::instance().getFromPool(map.ID);
 
-	if(!r->good())
+	if(!r)
 	{
-		r->~MapRenderer();
-
 		Timer t;
-		new(r) MapRenderer(map.width, map.height, 
+		r = new MapRenderer(map.width, map.height, 
 			map.getBottomLayer(), map.getAnimationLayer(), map.getTopLayer());
 		int e = t.elapsed();
+
+		Renderers::instance().addToPool(map.ID, r);
 
 		LOG("Prerendered map #%d '%s' in %dms", map.ID, map.name.c_str(), e);
 	}
@@ -59,7 +59,7 @@ void MapRenderer::renderMap(const Map& map, int ticks, int x, int y)
 // # ===========================================================================
 
 MapRenderer::MapRenderer(int w, int h, const layer_t& b, const layer_t& a, const layer_t& t) 
-	: width(w), height(h), animation(a), map_bottom(w * 16, h * 16), map_top(w * 16, h * 16)
+	: width(w), height(h), animation(a), map_bottom(Screen::instance().getRenderer(), w * 16, h * 16), map_top(Screen::instance().getRenderer(), w * 16, h * 16)
 {
 	prerenderLayer(w, h, map_bottom, b);
 	prerenderLayer(w, h, map_top, t);

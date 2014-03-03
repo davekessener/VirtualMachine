@@ -55,7 +55,7 @@ void Game::input(int in)
 	}
 }
 
-void Game::update(int ms)
+void Game::update(void)
 {
 	Controller::instance().update();
 }

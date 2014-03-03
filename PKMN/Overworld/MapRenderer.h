@@ -4,29 +4,37 @@
 #include <map>
 #include <vector>
 #include <cstdint>
-#include "SDLImage.h"
+#include <Misc/SDLImage.h>
 #include "Map.h"
 #include "Pool.h"
 #include "Singleton.h"
+#include "Screen.h"
 
 #ifdef MAPRENDERER_MAIN
-#include "Logger.h"
-#include "Timer.h"
+#include <Misc/Logger.h>
+#include <Misc/Timer.h>
 
 #define MR_POOL_MAXSIZE 8
 
 class MapRenderer;
 
-template<typename T> class VAge : public PoolValidationAge<T, MR_POOL_MAXSIZE> { };
-
-class _MapRenderer : public Pool<PoolRetainerNew<MapRenderer>, int, VAge>
+template<typename T>
+class VAge : public PoolCounted<T, MR_POOL_MAXSIZE>, public PoolRemote<T>
 {
 	public:
-		_MapRenderer( ) : tileset("./tileset.png") { }
+		typedef typename PoolSimple<T>::return_type return_type;
+
+		VAge( ) { }
+		VAge(return_type v) : PoolSimple<T>(v), PoolCounted<T, MR_POOL_MAXSIZE>(v), PoolRemote<T>(v) { }
+		void destroy( ) { PoolSimple<T>::destroy(); }
+};
+
+class _MapRenderer : public Pool<MapRenderer, int, VAge>
+{
+	public:
+		_MapRenderer( ) : tileset(Screen::instance().getRenderer(), "./tileset.png") { }
 		SDLImage tileset;
 };
-#else
-class _MapRenderer;
 #endif
 
 class MapRenderer
@@ -36,18 +44,14 @@ class MapRenderer
 	public:
 		static MapRenderer *getRenderer(const Map&);
 		static void renderMap(const Map&, int, int, int);
+		~MapRenderer( );
 	private:
 		MapRenderer(int, int, const layer_t&, const layer_t&, const layer_t&);
-		~MapRenderer( );
-		MapRenderer( ) : width(-1), height(-1) { }
 		static void prerenderLayer(int, int, SDLImage&, const layer_t&);
-		bool good( ) { return width > 0 && height > 0; }
 
 		SDLImage map_bottom, map_top;
 		layer_t animation;
 		int width, height;
-
-		friend class PoolRetainerNew<MapRenderer>;
 };
 
 #endif

@@ -30,27 +30,39 @@ void Logger::logFrom(const char *f, int i, const char *s, ...)
 
 void Logger::logMsg(const char *s, ...)
 {
+	mtx.lock();
+
 	va_list l;
 	va_start(l, s);
 
 	logMsg(s, l);
 
 	va_end(l);
+
+	mtx.unlock();
 }
 
 void Logger::logMsg(const char *s, va_list l)
 {
+	mtx.lock();
+
 	fprintf(_f, "[%s] ", getTime().c_str());
 	vfprintf(_f, s, l);
 	putc('\n', _f);
+
+	mtx.unlock();
 }
 
 void Logger::logMsgFrom(const char *f, int i, const char *s, va_list l)
 {
+	mtx.lock();
+
 	fprintf(_f, "[%s] ", getTime().c_str());
 	fprintf(_f, "[%s:%d] ", f, i);
 	vfprintf(_f, s, l);
 	putc('\n', _f);
+
+	mtx.unlock();
 }
 
 // # ---------------------------------------------------------------------------

@@ -133,15 +133,6 @@ void Screen::onQuit(quitFn_t q)
 	quitFn = q;
 }
 
-SDL_Texture *Screen::loadImage(const std::string& path)
-{
-	SDL_Texture *tex = IMG_LoadTexture(renderer, path.c_str());
-
-	if(!tex) throw SDLException();
-
-	return tex;
-}
-
 void Screen::toScreen(SDL_Texture *img, SDL_Rect o, SDL_Rect d)
 {
 	if(o.w > d.w || o.h > d.h) throw SDLException();

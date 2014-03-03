@@ -7,7 +7,7 @@
 #include "OWSprite.h"
 #include "PlayerSprite.h"
 #include "Camera.h"
-#include "Logger.h"
+#include <Misc/Logger.h>
 
 #ifdef CONTROLLER_MAIN
 #include <NBT/NBT.h>
