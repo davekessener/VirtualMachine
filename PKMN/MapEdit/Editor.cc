@@ -6,23 +6,39 @@ int Editor::run(int argc, char *argv[])
 	if(IMG_Init(IMG_INIT_PNG) == -1) throw SDLException(IMG_GetError());
 
 	Editor e;
+	AsyncIn in;
 
 	try
 	{
-		while(std::cin && e.running)
+		Timer t;
+		SDL_Event ev;
+		std::string command;
+
+		std::cout << "> " << std::flush;
+
+		while(e.running)
 		{
-			std::string cmd;
+			if(SDL_PollEvent(&ev))
+			{
+				e.handle(ev);
+			}
 
-			std::cout << "> ";
-			std::getline(std::cin, cmd);
+			if(in.pollCommand(command))
+			{
+				e.execute(command);
+				if(e.running) std::cout << "> " << std::flush;
+			}
 
-			if(!cmd.empty()) e.execute(cmd);
+			e.render();
+
+			if(e.running) t.keepRate(FRAME_RATE);
 		}
 	}
 	catch(const SDLException& ex)
 	{
 		e.save("./.bckup.map");
 		std::cerr << "SDL-Err: " << ex.what() << std::endl;
+		LOG("[FATAL] '%s'", ex.what());
 	}
 
 	IMG_Quit();
@@ -52,12 +68,13 @@ Editor::cmd_params_t Editor::parse(const std::string& c)
 
 Editor::Editor(void) : running(true)
 {
+	windows[tileset.getID()] = &tileset;
+
 	cmds["quit"] = [this](cmd_params_t p) { running = false; };
 }
 
 Editor::~Editor(void)
 {
-	tsWin.join();
 }
 
 void Editor::execute(const std::string& cmd)
@@ -76,5 +93,37 @@ void Editor::execute(const std::string& cmd)
 
 void Editor::save(const std::string& fn)
 {
+}
+
+void Editor::handle(SDL_Event& e)
+{
+	if(windows.count(e.button.windowID) > 0)
+	{
+		Window *w = windows.at(e.button.windowID);
+
+		switch(e.type)
+		{
+			case SDL_MOUSEBUTTONDOWN:
+				w->onClick(Button::LEFT, e.button.x, e.button.y);
+				break;
+		}
+	}
+	else
+	{
+		switch(e.type)
+		{
+			case SDL_QUIT:
+				running = false;
+				break;
+		}
+	}
+}
+
+void Editor::render(void)
+{
+	for(auto i = windows.begin() ; i != windows.end() ; ++i)
+	{
+		i->second->refresh();
+	}
 }
 

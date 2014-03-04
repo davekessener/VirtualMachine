@@ -8,9 +8,12 @@
 #include <iomanip>
 #include <map>
 #include <vector>
-#include <functional>
 #include <cstdint>
 #include <Misc/SDLException.h>
+#include <Misc/Timer.h>
+#include <Misc/Logger.h>
+#include "AsyncIn.h"
+#include "Window.h"
 #include "TilesetWindow.h"
 
 class Editor
@@ -18,7 +21,7 @@ class Editor
 	typedef std::vector<std::string> cmd_params_t;
 
 	public:
-		static int run(int, char **);
+		static int run(int = 0, char ** = NULL);
 	private:
 		Editor( );
 		Editor(const Editor&);
@@ -28,10 +31,15 @@ class Editor
 
 		void execute(const std::string&);
 		void save(const std::string&);
+		void handle(SDL_Event&);
+		void render( );
 
 		bool running;
-		TilesetWindow tsWin;
 		std::map<std::string, std::function<void(cmd_params_t)>> cmds;
+		std::map<win_id_t, Window *> windows;
+		TilesetWindow tileset;
+
+		static const int FRAME_RATE = 60;
 };
 
 #endif
