@@ -4,15 +4,18 @@
 #include <iostream>
 #include <SDL2/SDL.h>
 #include <SDL_image.h>
+#include <vector>
 #include <cassert>
 #include "Geometry.h"
 
 class Image
 {
+	typedef unsigned int color_rgba_t;
+
 	public:
-		Image(SDL_Renderer * = NULL);
-		Image(SDL_Renderer *, const std::string&);
-		Image(SDL_Renderer *, int, int);
+		Image( );
+		Image(const std::string&);
+		Image(int, int);
 		virtual ~Image( );
 		void setRenderer(SDL_Renderer *r) { render = r; }
 		void create(int, int);
@@ -24,13 +27,15 @@ class Image
 		bool opened( ) { return img != NULL; }
 		int width( ) const { return _width; }
 		int height( ) const { return _height; }
+		void gradientFill(color_rgba_t, color_rgba_t, color_rgba_t, color_rgba_t);
 		virtual void getUnderlying(SDL_Rect *) const;
 		virtual explicit operator SDL_Texture *( ) const;
+		static void init(SDL_Renderer *r) { render = r; }
 	protected:
 		int _width, _height;
 	private:
-		SDL_Renderer *render;
 		SDL_Texture *img;
+		static SDL_Renderer *render;
 		static bool isBlitting;
 };
 

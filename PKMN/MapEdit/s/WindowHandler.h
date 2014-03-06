@@ -6,16 +6,15 @@
 #include <map>
 #include "Image.h"
 #include "SubImage.h"
+#include "Logger.h"
 
 class WindowHandler
 {
 	public:
-		static void init(SDL_Renderer *);
-		static void end( );
 		static Image *getIcon(const std::string&);
 		static void returnIcon(Image *);
 	private:
-		WindowHandler(SDL_Renderer *);
+		WindowHandler( );
 		WindowHandler(const WindowHandler&);
 		~WindowHandler( );
 		WindowHandler& operator=(const WindowHandler&);
@@ -25,7 +24,6 @@ class WindowHandler
 		static WindowHandler& instance( );
 		static WindowHandler *_instance;
 
-		SDL_Renderer *render;
 		std::map<Image *, std::pair<int, std::string>> icons;
 		std::map<std::string, std::pair<int, Image *>> locations;
 		std::stack<int> empty_stack;

@@ -1,3 +1,21 @@
+"scroll_vcursor_1";
+"scroll_vcursor_2";
+"scroll_hcursor_1";
+"scroll_hcursor_2";
+"scroll_fill";
+"scroll_up_1";
+"scroll_down_1";
+"scroll_left_1";
+"scroll_right_1";
+"scroll_up_2";
+"scroll_down_2";
+"scroll_left_2";
+"scroll_right_2";
+"close_1";
+"close_2";
+"mini_1";
+"mini_2";
+
 typedef std::uint32_t button_t;
 
 class Surface

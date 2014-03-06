@@ -19,8 +19,8 @@ namespace Button
 	{
 		NONE = 0,
 		LEFT = 1,
-		RIGHT = 2,
-		MIDDLE = 4,
+		MIDDLE = 2,
+		RIGHT = 4,
 		SHIFT = 8,
 		CTRL = 16,
 		ALT = 32,
