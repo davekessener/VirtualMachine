@@ -94,8 +94,8 @@ void Image::blit(const Image *_i, Point t, Rect r)
 	if(r.x < _i->width() && r.y < _i->height())
 	{
 		SDL_Rect rt = {t.x, t.y, 
-			min(min(_width - t.x, r.w), _i->width() - r.x), 
-			min(min(_height - t.y, r.h), _i->height() - r.y)};
+			std::min(std::min(_width - t.x, r.w), _i->width() - r.x), 
+			std::min(std::min(_height - t.y, r.h), _i->height() - r.y)};
 		SDL_Rect ro = {r.x, r.y, rt.w, rt.h};
 
 		_i->getUnderlying(&ro);

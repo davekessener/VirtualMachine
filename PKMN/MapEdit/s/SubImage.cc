@@ -2,10 +2,10 @@
 
 SubImage::SubImage(Image *i, int x, int y, int w, int h) : Image(), _i(i)
 {
-	_x = max(0, min(x, i->width()));
-	_y = max(0, min(y, i->height()));
-	_width = max(0, min(w, i->width() - _x));
-	_height = max(0, min(h, i->height() - _y));
+	_x = std::max(0, std::min(x, i->width()));
+	_y = std::max(0, std::min(y, i->height()));
+	_width = std::max(0, std::min(w, i->width() - _x));
+	_height = std::max(0, std::min(h, i->height() - _y));
 }
 
 SubImage::~SubImage(void)

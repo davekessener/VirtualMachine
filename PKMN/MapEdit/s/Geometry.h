@@ -4,11 +4,30 @@
 #include <SDL2/SDL.h>
 #include <string>
 #include <cstdlib>
+#include <cstdint>
 #include "Exception.h"
 
-#define min(i,j) ((i)<(j)?(i):(j))
-#define max(i,j) ((i)>(j)?(i):(j))
 #define SDLException(...) Exception(::format("[%s:%d] ",__FILE__, __LINE__)+::format(__VA_ARGS__))
+
+const int TILE_SIZE = 16;
+const std::string FE = ".png";
+
+typedef std::uint32_t button_t;
+namespace Button
+{
+	enum
+	{
+		NONE = 0,
+		LEFT = 1,
+		RIGHT = 2,
+		MIDDLE = 4,
+		SHIFT = 8,
+		CTRL = 16,
+		ALT = 32,
+		WIN = 64,
+		FN = 128
+	};
+}
 
 struct Rect
 {

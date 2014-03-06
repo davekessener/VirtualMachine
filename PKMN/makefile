@@ -25,7 +25,7 @@ $(TARGET): logs $(SUBS) $(OBJ)
 .PHONY: logs clean
 
 logs:
-	-rm -f *.log
+	-mv *.log logs/
 	-rm -f *.a
 
 clean: logs $(SUBS:.a=.clean)

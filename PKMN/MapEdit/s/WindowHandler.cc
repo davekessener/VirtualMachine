@@ -18,7 +18,7 @@ void WindowHandler::end(void)
 
 Image *WindowHandler::getIcon(const std::string& fn)
 {
-	return instance()._getIcon(fn);
+	return instance()._getIcon(fn.substr(fn.length() - 4).compare(FE) != 0 ? fn + FE : fn);
 }
 
 void WindowHandler::returnIcon(Image *i)
@@ -43,14 +43,14 @@ Image *WindowHandler::_getIcon(const std::string& fn)
 			empty_stack.pop();
 		}
 		
-		int x = (id % CX_ELEMS) << 4;
-		int y = (id / CX_ELEMS) << 4;
+		int x = (id % CX_ELEMS) / TILE_SIZE;
+		int y = (id / CX_ELEMS) / TILE_SIZE;
 
-		stitch->blit(i, Point(x, y), Rect(0, 0, 16, 16));
+		stitch->blit(i, Point(x, y), Rect(0, 0, TILE_SIZE, TILE_SIZE));
 
 		delete i;
 
-		i = new SubImage(stitch, x, y, 16, 16);
+		i = new SubImage(stitch, x, y, TILE_SIZE, TILE_SIZE);
 
 		icons[i] = std::make_pair(1, fn);
 		locations[fn] = std::make_pair(id, i);
@@ -81,7 +81,7 @@ void WindowHandler::_returnIcon(Image *i)
 
 WindowHandler::WindowHandler(SDL_Renderer *r) : render(r), nextPos(0)
 {
-	stitch = new Image(render, CX_ELEMS * 16, CY_ELEMS * 16);
+	stitch = new Image(render, CX_ELEMS * TILE_SIZE, CY_ELEMS * TILE_SIZE);
 }
 
 WindowHandler::~WindowHandler(void)

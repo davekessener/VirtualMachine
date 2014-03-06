@@ -7,7 +7,7 @@ class Surface
 		void redraw();
 		void force_redraw();
 		bool hit(int x, int y);
-		Surface *lock(button_t, int x, int y);
+		Surface *lock(int x, int y);
 		void mouseDown(button_t, int x, int y);
 		void mouseDrag(int x, int y);
 		void mouseUp(int x, int y);
@@ -61,7 +61,7 @@ class Scrollable : Surface
 class StatusBar : Surface
 {
 	public:
-		StatusBar(Image *, x, y, w, Button::onActivate_fn minimize_fn, Button::onActivate_fn quit_fn);
+		StatusBar(Image *, x, y, w);
 		void setTitle(string);
 	private:
 		Button *minimize, *quit;

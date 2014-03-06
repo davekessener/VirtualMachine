@@ -10,6 +10,7 @@ class A
 		A(const A& a) : _v(a._v) { std::cout << "A c-cons: " << _v << std::endl; }
 		~A( ) { std::cout << "A destr: " << _v << std::endl; }
 		int get( ) const { return _v; }
+		virtual int tst( ) = 0;
 	private:
 		int _v;
 };
@@ -17,7 +18,8 @@ class A
 class B : public A
 {
 	public:
-		B( ) : A(member()) { std::cout << "B constr: " << p << std::endl; }
+		B( ) : A(tst()) { std::cout << "B constr: " << p << std::endl; }
+		int tst( ) { return 413; }
 	private:
 		static int *p;
 		int member( );
@@ -52,7 +54,6 @@ void pause( );
 int main(void)
 {
 	B a;
-	testfn(A(42));
 	testfn(a);
 	return 0;
 
