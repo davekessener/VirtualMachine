@@ -1,25 +1,23 @@
-#define SDLIMAGE_MAIN
-#include "SDLImage.h"
-#undef SDLIMAGE_MAIN
+#include "Image.h"
 
-bool SDLImage::isBlitting = false;
+bool Image::isBlitting = false;
 
-SDLImage::SDLImage(SDL_Renderer *r) : render(r), img(NULL)
+Image::Image(SDL_Renderer *r) : render(r), img(NULL)
 {
 	_width = _height = -1;
 }
 
-SDLImage::SDLImage(SDL_Renderer *r, const std::string& path) : render(r), img(NULL)
+Image::Image(SDL_Renderer *r, const std::string& path) : render(r), img(NULL)
 {
 	open(path);
 }
 
-SDLImage::SDLImage(SDL_Renderer *r, int w, int h) : render(r), img(NULL)
+Image::Image(SDL_Renderer *r, int w, int h) : render(r), img(NULL)
 {
 	create(w, h);
 }
 
-SDLImage::~SDLImage(void)
+Image::~Image(void)
 {
 	if(img)
 	{
@@ -27,7 +25,7 @@ SDLImage::~SDLImage(void)
 	}
 }
 
-void SDLImage::create(int w, int h)
+void Image::create(int w, int h)
 {
 	if(img) close();
 
@@ -43,7 +41,7 @@ void SDLImage::create(int w, int h)
 	SDL_SetRenderTarget(r, NULL);
 }
 
-void SDLImage::open(const std::string& path)
+void Image::open(const std::string& path)
 {
 	if(img) close();
 
@@ -54,7 +52,7 @@ void SDLImage::open(const std::string& path)
 	SDL_QueryTexture(img, NULL, NULL, &_width, &_height);
 }
 
-void SDLImage::close(void)
+void Image::close(void)
 {
 	if(img)
 	{
@@ -64,18 +62,18 @@ void SDLImage::close(void)
 	}
 }
 
-void SDLImage::startBlit(void)
+void Image::startBlit(void)
 {
 	if(!isBlitting)
 	{
 		if(!render) throw SDLException("ERR: Can't blit without renderer.");
-		SDL_SetRenderTarget(render, img);
+		SDL_SetRenderTarget(render, static_cast<SDL_Texture *>(*this));
 		isBlitting = true;
 	}
 	else throw SDLException("ALREADY BLITTING!");
 }
 
-void SDLImage::endBlit(void)
+void Image::endBlit(void)
 {
 	if(isBlitting)
 	{
@@ -85,21 +83,30 @@ void SDLImage::endBlit(void)
 	}
 }
 
-void SDLImage::erase(void)
+void Image::getUnderlying(SDL_Rect *r) const
+{
+}
+
+void Image::blit(const Image *_i, Point t, Rect r)
 {
 	if(!isBlitting) SDL_SetRenderTarget(render, img);
-	SDL_RenderClear(render);
+
+	if(r.x < _i->width() && r.y < _i->height())
+	{
+		SDL_Rect rt = {t.x, t.y, 
+			min(min(_width - t.x, r.w), _i->width() - r.x), 
+			min(min(_height - t.y, r.h), _i->height() - r.y)};
+		SDL_Rect ro = {r.x, r.y, rt.w, rt.h};
+
+		_i->getUnderlying(&ro);
+
+		SDL_RenderCopy(render, static_cast<SDL_Texture *>(*_i), &ro, &rt);
+	}
+
 	if(!isBlitting) SDL_SetRenderTarget(render, NULL);
 }
 
-void SDLImage::blit(const SDLImage& _i, SDL_Rect _ro, SDL_Rect _rt)
-{
-	if(!isBlitting) SDL_SetRenderTarget(render, img);
-	SDL_RenderCopy(render, _i.img, &_ro, &_rt);
-	if(!isBlitting) SDL_SetRenderTarget(render, NULL);
-}
-
-SDLImage::operator SDL_Texture *(void) const
+Image::operator SDL_Texture *(void) const
 {
 	return img;
 }

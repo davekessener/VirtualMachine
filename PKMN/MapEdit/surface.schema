@@ -1,0 +1,121 @@
+typedef std::uint32_t button_t;
+
+class Surface
+{
+	public:
+		Surface(Image *, int x, y, w, h);
+		void redraw();
+		void force_redraw();
+		bool hit(int x, int y);
+		Surface *lock(button_t, int x, int y);
+		void mouseDown(button_t, int x, int y);
+		void mouseDrag(int x, int y);
+		void mouseUp(int x, int y);
+	protected:
+		virtual void draw( ) = 0;
+		void registerSurface(Surface *);
+		void dirty( );
+	private:
+		bool needsRedraw;
+		int x, y, w, h;
+		Image *surface;
+		button_t currentlyPressedButton;
+		vector<Surface *> surfaces;
+}
+
+class Button : Surface
+{
+	typedef std::uint32_t button_state; //(DOWN, AWAY, UP)
+	typedef std::function<void(button_state)> onActivate_fn;
+	public:
+		Button(Image *, int x, y, w, h, onActivate_fn, string btnName, string pressed = "");
+	private:
+		Image *up, *down;
+}
+
+class ScrollBar : Surface
+{
+	public:
+		ScrollBar(Image *, int x, y, w, h, int range);
+		int getRelativePosition( );
+	protected:
+		void draw( );
+		virtual std::array<string, 5> getIconNames( ) = 0;
+		int position;
+		Image (*cursor)[2], *filler;
+		Button *incr, *decr;
+}
+
+class Scrollable : Surface
+{
+	public:
+		Scrollable(Image *, int x, y, w, h);
+	protected:
+		void draw( ) { draw(scr1 ? scr1->getRelativePosition() : 0, scr 2 ? ...); }
+		virtual void draw(int dx, int dy) = 0;
+		virtual std::pair<int, int> getScrollRanges( ) = 0;
+	private:
+		ScrollBar *scr1, *scr2;
+}
+
+class StatusBar : Surface
+{
+	public:
+		StatusBar(Image *, x, y, w, Button::onActivate_fn minimize_fn, Button::onActivate_fn quit_fn);
+		void setTitle(string);
+	private:
+		Button *minimize, *quit;
+}
+
+class Application : Surface
+{
+	public:
+		Application(int x, y, w, h);
+		void run( );
+	private:
+		StatusBar *statusbar;
+		static Image *init( );
+		static void end( );
+		static SDL_Window *window;
+		static SDL_Renderer *renderer;
+}
+
+class WindowHandler
+{
+	public:
+		static void init(SDL_Renderer *);
+		static Image *getIcon(string filename);
+		static void returnIcon(Image *);
+}
+
+class Rect
+{
+	int x, y, w, h;
+}
+
+class Point
+{
+	int x, y;
+}
+
+class Image
+{
+	public:
+		Image(SDL_Renderer *, string path);
+		Image(SDL_Renderer *, int w, int h);
+		Image(SDL_Renderer *);
+		void startBlit( );
+		void endBlit( );
+		virtual void blit(const Image *, Rect o, Point d);
+		int width() const;
+		int height() const;
+	private:
+		operator SDL_Texture *( );
+}
+
+class SubImage : Image
+{
+	public:
+		SubImage(Image *, int, int, int, int);
+}
+

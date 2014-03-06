@@ -26,7 +26,8 @@ $(TARGET): logs $(SUBS) $(OBJ)
 
 logs:
 	-rm -f *.log
+	-rm -f *.a
 
 clean: logs $(SUBS:.a=.clean)
-	-rm -f *.a *.o $(TARGET)
+	-rm -f *.o $(TARGET)
 

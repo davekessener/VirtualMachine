@@ -3,32 +3,59 @@
 #include <SDL_image.h>
 #include "SDLException.h"
 
-class C
+class A
 {
 	public:
-		std::string getName( ) { return std::string("HELLO"); }
-};
-
-template<int ID, typename T>
-class A : public T
-{
-	public:
-		int getID( ) { return ID; }
-};
-
-template<typename TT, template<typename, typename ...> class T>
-class B
-{
-	public:
-		T<TT>& get( ) { return t; }
+		A(int v) : _v(v) { std::cout << "A cons: " << _v << std::endl; }
+		A(const A& a) : _v(a._v) { std::cout << "A c-cons: " << _v << std::endl; }
+		~A( ) { std::cout << "A destr: " << _v << std::endl; }
+		int get( ) const { return _v; }
 	private:
-		T<TT> t;
+		int _v;
 };
+
+class B : public A
+{
+	public:
+		B( ) : A(member()) { std::cout << "B constr: " << p << std::endl; }
+	private:
+		static int *p;
+		int member( );
+};
+
+int *B::p = NULL;
+
+int B::member(void)
+{
+	p = new int;
+
+	std::cout << "P is " << p << std::endl;
+
+	int t = *p;
+	t ^= reinterpret_cast<unsigned long>(p);
+
+	return t;
+}
+
+void testfn(A&& a)
+{
+	std::cout << "A value: " << a.get() << std::endl;
+}
+
+void testfn(const A& a)
+{
+	std::cout << "const A& value: " << a.get() << std::endl;
+}
 
 void pause( );
 
 int main(void)
 {
+	B a;
+	testfn(A(42));
+	testfn(a);
+	return 0;
+
 	const int SCREEN_WIDTH = 640;
 	const int SCREEN_HEIGHT = 480;
 

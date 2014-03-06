@@ -5,40 +5,46 @@ int Editor::run(int argc, char *argv[])
 	if(SDL_Init(SDL_INIT_EVERYTHING)) throw SDLException();
 	if(IMG_Init(IMG_INIT_PNG) == -1) throw SDLException(IMG_GetError());
 
-	Editor e;
-	AsyncIn in;
+	SDL_DisplayMode dMode;
 
-	try
+	if(SDL_GetCurrentDisplayMode(0, &dMode)) throw SDLException();
+
 	{
-		Timer t;
-		SDL_Event ev;
-		std::string command;
+		Editor e(dMode.w - 16, dMode.h - 64);
+		AsyncIn in;
 
-		std::cout << "> " << std::flush;
-
-		while(e.running)
+		try
 		{
-			if(SDL_PollEvent(&ev))
+			Timer t;
+			SDL_Event ev;
+			std::string command;
+
+			std::cout << "> " << std::flush;
+
+			while(e.running)
 			{
-				e.handle(ev);
+				while(SDL_PollEvent(&ev))
+				{
+					e.handle(ev);
+				}
+
+				while(in.pollCommand(command))
+				{
+					e.execute(command);
+					if(e.running) std::cout << "> " << std::flush;
+				}
+
+				e.render();
+
+				if(e.running) t.keepRate(FRAME_RATE);
 			}
-
-			if(in.pollCommand(command))
-			{
-				e.execute(command);
-				if(e.running) std::cout << "> " << std::flush;
-			}
-
-			e.render();
-
-			if(e.running) t.keepRate(FRAME_RATE);
 		}
-	}
-	catch(const SDLException& ex)
-	{
-		e.save("./.bckup.map");
-		std::cerr << "SDL-Err: " << ex.what() << std::endl;
-		LOG("[FATAL] '%s'", ex.what());
+		catch(const SDLException& ex)
+		{
+			e.save("./.bckup.map");
+			std::cerr << "SDL-Err: " << ex.what() << std::endl;
+			LOG("[FATAL] '%s'", ex.what());
+		}
 	}
 
 	IMG_Quit();
@@ -49,32 +55,32 @@ int Editor::run(int argc, char *argv[])
 
 // # ---------------------------------------------------------------------------
 
-Editor::cmd_params_t Editor::parse(const std::string& c)
+Editor::Editor(int w, int h) : running(true), width(w), height(h), inputSurface(NULL)
 {
-	std::vector<std::string> v;
-	std::istringstream iss(c);
-
-	while(iss)
-	{
-		std::string s;
-		iss >> s;
-		if(!s.empty()) v.push_back(s);
-	}
-
-	return v;
-}
-
-// # ---------------------------------------------------------------------------
-
-Editor::Editor(void) : running(true)
-{
-	windows[tileset.getID()] = &tileset;
-
 	cmds["quit"] = [this](cmd_params_t p) { running = false; };
+
+	if(!(win = SDL_CreateWindow("", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, w, h, 
+			SDL_WINDOW_SHOWN | SDL_WINDOW_BORDERLESS | SDL_WINDOW_MAXIMIZED))) throw SDLException();
+
+	if(!(renderer = SDL_CreateRenderer(win, -1, SDL_RENDERER_TARGETTEXTURE))) throw SDLException();
+
+	if(SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND)) throw SDLException();
+
+	LOG("Starting editor with resulation of %d x %d", width, height);
+
+	Surface::init(renderer);
+
+	tileset = new TilesetSurface(3 * width / 4, 0, width - (3 * width / 4), height);
 }
 
 Editor::~Editor(void)
 {
+	delete tileset;
+
+	Surface::freeResources();
+
+	SDL_DestroyRenderer(renderer);
+	SDL_DestroyWindow(win);
 }
 
 void Editor::execute(const std::string& cmd)
@@ -95,35 +101,102 @@ void Editor::save(const std::string& fn)
 {
 }
 
-void Editor::handle(SDL_Event& e)
+button_t Editor::toButton(std::int8_t k)
 {
-	if(windows.count(e.button.windowID) > 0)
-	{
-		Window *w = windows.at(e.button.windowID);
+	button_t b = 0;
 
-		switch(e.type)
+	if(k & SDL_BUTTON_LMASK)
+	{
+		b |= Key::LEFT;
+	}
+
+	if(k & SDL_BUTTON_MMASK)
+	{
+		b |= Key::MIDDLE;
+	}
+
+	if(k & SDL_BUTTON_RMASK)
+	{
+		b |= Key::RIGHT;
+	}
+
+	return b;
+}
+
+void Editor::onMouseDown(SDL_MouseButtonEvent e)
+{
+	if(button_t b = toButton(SDL_BUTTON(e.button)))
+	{
+		if(tileset->lock(e.x, e.y))
 		{
-			case SDL_MOUSEBUTTONDOWN:
-				w->onClick(Button::LEFT, e.button.x, e.button.y);
-				break;
+			inputSurface = tileset;
+			tileset->click(b, e.x, e.y);
 		}
 	}
-	else
+}
+
+void Editor::onMouseUp(SDL_MouseButtonEvent e)
+{
+	if(inputSurface)
 	{
-		switch(e.type)
+		inputSurface->unlock();
+		inputSurface = NULL;
+	}
+}
+
+void Editor::onMouseDrag(SDL_MouseMotionEvent e)
+{
+	if(e.state && inputSurface)
+	{
+		if(button_t b = toButton(e.state))
 		{
-			case SDL_QUIT:
-				running = false;
-				break;
+			inputSurface->click(b, e.x, e.y);
 		}
+	}
+}
+
+
+void Editor::handle(SDL_Event& e)
+{
+	switch(e.type)
+	{
+		case SDL_QUIT:
+			running = false;
+			break;
+		case SDL_MOUSEBUTTONUP:
+			onMouseUp(e.button);
+			break;
+		case SDL_MOUSEBUTTONDOWN:
+			onMouseDown(e.button);
+			break;
+		case SDL_MOUSEMOTION:
+			onMouseDrag(e.motion);
+			break;
 	}
 }
 
 void Editor::render(void)
 {
-	for(auto i = windows.begin() ; i != windows.end() ; ++i)
+	tileset->render();
+
+	SDL_RenderPresent(renderer);
+	SDL_UpdateWindowSurface(win);
+}
+
+// # ---------------------------------------------------------------------------
+
+Editor::cmd_params_t Editor::parse(const std::string& c)
+{
+	std::vector<std::string> v;
+	std::istringstream iss(c);
+
+	while(iss)
 	{
-		i->second->refresh();
+		std::string s;
+		iss >> s;
+		if(!s.empty()) v.push_back(s);
 	}
+
+	return v;
 }
 

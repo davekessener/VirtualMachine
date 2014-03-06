@@ -1,36 +1,34 @@
-#ifndef SDLIMAGE_H
-#define SDLIMAGE_H
+#ifndef IMAGE_H
+#define IMAGE_H
 
 #include <iostream>
 #include <SDL2/SDL.h>
 #include <SDL_image.h>
-#include <Misc/SDLException.h>
 #include <cassert>
+#include "Geometry.h"
 
-#ifdef SDLIMAGE_MAIN
-#endif
-
-class SDLImage
+class Image
 {
 	public:
-		SDLImage(SDL_Renderer * = NULL);
-		SDLImage(SDL_Renderer *, const std::string&);
-		SDLImage(SDL_Renderer *,int, int);
-		~SDLImage( );
+		Image(SDL_Renderer * = NULL);
+		Image(SDL_Renderer *, const std::string&);
+		Image(SDL_Renderer *, int, int);
+		virtual ~Image( );
 		void setRenderer(SDL_Renderer *r) { render = r; }
 		void create(int, int);
 		void open(const std::string&);
 		void close( );
-		void blit(const SDLImage&, SDL_Rect, SDL_Rect);
+		virtual void blit(const Image *, Point, Rect);
 		void startBlit( );
 		void endBlit( );
-		void erase( );
 		bool opened( ) { return img != NULL; }
 		int width( ) const { return _width; }
 		int height( ) const { return _height; }
-		explicit operator SDL_Texture *( ) const;
-	private:
+		virtual void getUnderlying(SDL_Rect *) const;
+		virtual explicit operator SDL_Texture *( ) const;
+	protected:
 		int _width, _height;
+	private:
 		SDL_Renderer *render;
 		SDL_Texture *img;
 		static bool isBlitting;
