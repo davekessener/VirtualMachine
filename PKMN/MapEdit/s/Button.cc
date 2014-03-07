@@ -40,9 +40,9 @@ namespace surface
 		state = NONE;
 	}
 	
-	void Button::draw(void)
+	void Button::draw(Image *dI)
 	{
-		getDrawSurface()->blit(buttons[state == PRESSED], Point(0, 0), Rect(0, 0, TILE_SIZE, TILE_SIZE));
+		dI->blit(buttons[state == PRESSED], Point(0, 0), Rect(0, 0, TILE_SIZE, TILE_SIZE));
 	}
 	
 	void Button::changeState(button_state s)

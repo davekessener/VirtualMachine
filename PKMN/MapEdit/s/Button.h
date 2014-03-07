@@ -26,10 +26,6 @@ namespace surface
 			void mouseDrag(button_t, int, int);
 			void mouseUp(button_t, int, int);
 	
-//			static const int NONE = 0;
-//			static const int PRESSED = 1;
-//			static const int INACTIVE = 2;
-//			static const int RELEASED = 3;
 			enum
 			{
 				NONE,
@@ -38,7 +34,7 @@ namespace surface
 				RELEASED
 			};
 		protected:
-			void draw( );
+			void draw(Image *);
 		private:
 			void changeState(button_state);
 			button_state state;

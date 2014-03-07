@@ -20,10 +20,9 @@ namespace surface
 			virtual void mouseDrag(button_t, int, int);
 			virtual void mouseUp(button_t, int, int);
 		protected:
-			virtual void draw( ) = 0;
+			virtual void draw(Image *) = 0;
 			void registerSurface(Surface *);
 			inline void dirty( ) { isDirty = true; }
-			inline Image *getDrawSurface( ) { return surface; }
 			inline void offset(int dx, int dy) { _x += dx; _y += dy; }
 			inline int X( ) { return _x; }
 			inline int Y( ) { return _y; }

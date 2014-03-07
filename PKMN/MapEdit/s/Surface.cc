@@ -17,25 +17,27 @@ namespace surface
 	{
 		if(isDirty)
 		{
-			draw();
-			isDirty = false;
+			draw(surface);
 		}
 	
 		for(Surface *s : surfaces)
 		{
 			s->redraw();
 		}
+		
+		isDirty = false;
 	}
 	
 	void Surface::forceRedraw(void)
 	{
-		draw();
-		isDirty = false;
+		draw(surface);
 	
 		for(Surface *s : surfaces)
 		{
 			s->forceRedraw();
 		}
+
+		isDirty = false;
 	}
 	
 	bool Surface::hit(int x, int y)

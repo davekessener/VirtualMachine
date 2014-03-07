@@ -18,7 +18,7 @@ namespace surface
 			inline int getRelativePosition( ) { return position; }
 			void mouseDown(button_t, int, int);
 		protected:
-			void draw( );
+			void draw(Image *);
 			virtual names_arr getIconNames( ) = 0;
 			void calculatePosition(int, int);
 		private:

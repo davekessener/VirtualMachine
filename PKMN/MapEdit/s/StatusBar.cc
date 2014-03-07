@@ -4,13 +4,10 @@
 
 namespace surface
 {
-	StatusBar::StatusBar(Image *i, const std::string& t)
-		: Surface(new SubImage(i, BORDER_SIZE, BORDER_SIZE, i->width() - 2 * BORDER_SIZE, BAR_SIZE), 
-			BORDER_SIZE, BORDER_SIZE), title(t)
+	StatusBar::StatusBar(Image *i, int x, int y, int w, const std::string& t)
+		: Surface(i = new SubImage(i, x, y, w, BAR_SIZE), x, y), title(t)
 	{
-		i = getDrawSurface();
-
-		registerSurface(close = new Button(i, W() - (TILE_SIZE + 2), 2,
+		registerSurface(close = new Button(i, w - (TILE_SIZE + 2), 2,
 			[ ](Button::button_state b)
 			{
 				if(b == Button::RELEASED)
@@ -20,7 +17,7 @@ namespace surface
 					SDL_PushEvent(&e);
 				}
 			}, __SB_CLOSE_BTN));
-		registerSurface(minimize = new Button(i, W() - 2 * (TILE_SIZE + 2), 2,
+		registerSurface(minimize = new Button(i, w - 2 * (TILE_SIZE + 2), 2,
 			[ ](Button::button_state b)
 			{
 				if(b == Button::RELEASED)
@@ -49,12 +46,11 @@ namespace surface
 		dirty();
 	}
 
-	void StatusBar::draw(void)
+	void StatusBar::draw(Image *dI)
 	{
-		Image *dI = getDrawSurface();
-
 		dI->startBlit();
 		dI->blit(bg, Point(0, 0), Rect(0, 0, W(), H()));
+		// draw title && icon
 		dI->endBlit();
 	}
 }

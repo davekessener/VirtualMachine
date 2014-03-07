@@ -3,10 +3,8 @@
 namespace surface
 {
 	ScrollBar::ScrollBar(Image *i, int x, int y, int w, int h, int r, names_arr names)
-		: Surface(new SubImage(i, x, y, w, h), x, y), range(r), position(0)
+		: Surface(i = new SubImage(i, x, y, w, h), x, y), range(r), position(0)
 	{
-		i = getDrawSurface();
-
 		cursor[0] = WindowHandler::getIcon(names[0]);
 		cursor[1] = WindowHandler::getIcon(names[1]);
 		fill = WindowHandler::getIcon(names[2]);
@@ -46,10 +44,9 @@ namespace surface
 		if(p >= 0 && p < r) setPosition((range * p + r / 2) / r);
 	}
 	
-	void ScrollBar::draw(void)
+	void ScrollBar::draw(Image *dI)
 	{
 		Rect r(0, 0, TILE_SIZE, TILE_SIZE);
-		Image *dI = getDrawSurface();
 	
 		dI->startBlit();
 	
