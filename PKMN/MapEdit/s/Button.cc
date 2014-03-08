@@ -5,7 +5,7 @@
 namespace surface
 {
 	Button::Button(Image *i, int x, int y, onAction_fn a, const std::string& name, const std::string& o)
-		: Surface(new SubImage(i, x, y, TILE_SIZE, TILE_SIZE), x, y), action(a), state(NONE)
+		: Surface(new SubImage(i, x, y, TILE_SIZE, TILE_SIZE)), action(a), state(NONE)
 	{
 		std::string first(o.length() ? name + FE : name + __B_STD_1 + FE);
 		std::string second(o.length() ? o + FE : name + __B_STD_2 + FE);

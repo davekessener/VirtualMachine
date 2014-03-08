@@ -5,7 +5,7 @@
 namespace surface
 {
 	StatusBar::StatusBar(Image *i, int x, int y, int w, const std::string& t)
-		: Surface(i = new SubImage(i, x, y, w, BAR_SIZE), x, y), title(t)
+		: Surface(i = new SubImage(i, x, y, w, BAR_SIZE)), title(t)
 	{
 		registerSurface(close = new Button(i, w - (TILE_SIZE + 2), 2,
 			[ ](Button::button_state b)
@@ -31,6 +31,7 @@ namespace surface
 
 		bg = new Image(W(), H());
 		bg->gradientFill(LIGHT, LIGHT, DARK, DARK);
+		bg->renderText(title, 4, 2, 0xffffffff);
 	}
 
 	StatusBar::~StatusBar(void)

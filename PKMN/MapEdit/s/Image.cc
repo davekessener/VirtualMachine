@@ -1,6 +1,7 @@
 #include "Image.h"
 
 SDL_Renderer *Image::render = NULL;
+TTF_Font *Image::font = NULL;
 bool Image::isBlitting = false;
 
 Image::Image(void) : img(NULL)
@@ -79,6 +80,7 @@ void Image::endBlit(void)
 	if(isBlitting)
 	{
 		if(!render) throw SDLException("ERR: Can't blit without renderer.");
+		SDL_SetRenderDrawColor(render, 255, 255, 255, 255);
 		SDL_SetRenderTarget(render, NULL);
 		isBlitting = false;
 	}
@@ -128,11 +130,11 @@ void Image::gradientFill(color_rgba_t c1, color_rgba_t c2, color_rgba_t c3, colo
 		for(int x = 0 ; x < _width ; ++x)
 		{
 #define RGBA(r,g,b) (((r)<<24)|((g)<<16)|((b)<<8)|0xff)
-#define LARP(x1,x2,p,r) (((x1)*(p)+(x2)*((r)-(p)))/(r))
+#define LARP(x1,x2,p,r) ((x1)*((p)/(double)(r))+(x2)*(1.0-(p)/(double)(r)))//(((x1)*(p)+(x2)*((r)-(p)))/(r))
 			pix[y * _width + x] = RGBA(
-				LARP(LARP(r[0], r[1], y, _height), LARP(r[3], r[2], y, _height), x, _width),
-				LARP(LARP(g[0], g[1], y, _height), LARP(g[3], g[2], y, _height), x, _width),
-				LARP(LARP(b[0], b[1], y, _height), LARP(b[3], b[2], y, _height), x, _width));
+				(int)LARP(LARP(r[0], r[1], y, _height), LARP(r[3], r[2], y, _height), x, _width),
+				(int)LARP(LARP(g[0], g[1], y, _height), LARP(g[3], g[2], y, _height), x, _width),
+				(int)LARP(LARP(b[0], b[1], y, _height), LARP(b[3], b[2], y, _height), x, _width));
 #undef LARP
 #undef RGBA
 		}
@@ -141,5 +143,59 @@ void Image::gradientFill(color_rgba_t c1, color_rgba_t c2, color_rgba_t c3, colo
 	SDL_UpdateTexture(img, NULL, pix, _width * sizeof(color_rgba_t));
 
 	delete pix;
+}
+
+void Image::fillRect(color_rgba_t c, int x, int y, int w, int h)
+{
+	x = std::max(0, x);
+	y = std::max(0, y);
+	if(x + w > _width) w = 0;
+	if(y + h > _height) h = 0;
+	x = std::min(x, _width);
+	y = std::min(y, _height);
+
+	if(x == _width || y == _height) return;
+
+	SDL_Rect r = {x, y, w, h};
+
+	SDL_SetRenderDrawColor(render, (c & 0xff000000) >> 24, (c & 0x00ff0000) >> 16, (c & 0x0000ff00) >> 8, 0xff);
+	SDL_RenderFillRect(render, &r);
+}
+
+void Image::drawLine(color_rgba_t c, int x, int y, int dx, int dy)
+{
+	x = std::max(0, x);
+	y = std::max(0, y);
+	if(x + dx > _width) dx = 0;
+	if(y + dy > _height) dy = 0;
+	x = std::min(x, _width);
+	y = std::min(y, _height);
+
+	if(x == _width || y == _height) return;
+
+	SDL_SetRenderDrawColor(render, (c & 0xff000000) >> 24, (c & 0x00ff0000) >> 16, (c & 0x0000ff00) >> 8, 0xff);
+	SDL_RenderDrawLine(render, x, y, x + dx - 1, y + dy - 1);
+}
+
+void Image::renderText(const std::string& t, int x, int y, color_rgba_t _c)
+{
+	SDL_Color c = { static_cast<std::uint8_t>((_c & 0xff000000) >> 24), static_cast<std::uint8_t>((_c & 0x00ff0000) >> 16), static_cast<std::uint8_t>((_c & 0x0000ff00) >> 8), 0xff};
+
+	if(x >= _width || y >= _height) throw SDLException("%d|%d in %d, %d", x, y, _width, _height);
+
+	SDL_Surface *s = TTF_RenderText_Blended(font, t.c_str(), c);
+
+	if(!s) throw SDLException(TTF_GetError());
+
+	Image i(s);
+
+	blit(&i, Point(x, y), Rect(0, 0, s->w, s->h));
+
+	SDL_FreeSurface(s);
+}
+
+Image::Image(SDL_Surface *s) : _width(s->w), _height(s->h)
+{
+	if(!(img = SDL_CreateTextureFromSurface(render, s))) throw SDLException();
 }
 

@@ -10,7 +10,7 @@ namespace surface
 	class Surface
 	{
 		public:
-			Surface(Image *, int, int);
+			Surface(Image *);
 			virtual ~Surface( );
 			void redraw( );
 			void forceRedraw( );
@@ -22,14 +22,13 @@ namespace surface
 		protected:
 			virtual void draw(Image *) = 0;
 			void registerSurface(Surface *);
-			inline void dirty( ) { isDirty = true; }
-			inline void offset(int dx, int dy) { _x += dx; _y += dy; }
+			void dirty( );
 			inline int X( ) { return _x; }
 			inline int Y( ) { return _y; }
 			inline int W( ) { return _w; }
 			inline int H( ) { return _h; }
 		private:
-			int _x, _y, _w, _h;
+			const int _x, _y, _w, _h;
 			bool isDirty;
 			std::vector<Surface *> surfaces;
 			button_t pressed;

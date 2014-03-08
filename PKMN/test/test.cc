@@ -3,7 +3,30 @@
 #include <SDL_image.h>
 #include "SDLException.h"
 
-void pause( );
+void pause(SDL_Texture *img, SDL_Renderer *renderer, SDL_Window *window)
+{
+	bool running = true;
+	SDL_Event e;
+
+	SDL_Rect r = {10, 10, 200, 200};
+
+	while(running)
+	{
+		while(SDL_PollEvent(&e))
+		{
+			if(e.type == SDL_QUIT)
+			{
+				running = false;
+				break;
+			}
+		}
+
+		SDL_RenderClear(renderer);
+		SDL_RenderCopy(renderer, img, &r, &r);
+		SDL_RenderPresent(renderer);
+		SDL_UpdateWindowSurface(window);
+	}
+}
 
 int main(void)
 {
@@ -19,7 +42,7 @@ int main(void)
 	
 		if(IMG_Init(IMG_INIT_PNG | IMG_INIT_JPG) == -1) throw SDLException(IMG_GetError());
 	
-		window = SDL_CreateWindow("Pokemon", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
+		window = SDL_CreateWindow("Pokemon", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
 	
 		if(!window) throw SDLException();
 	
@@ -35,24 +58,17 @@ int main(void)
 
 		SDL_Texture *img = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, SCREEN_WIDTH, SCREEN_HEIGHT);
 
-		unsigned int *pix = new unsigned int[SCREEN_WIDTH * SCREEN_HEIGHT];
-		unsigned int c = 0x0000ffff;
+		r.x = r.y = 10;
+		r.w = r.h = 200;
 
-		for(int i = 0 ; i < SCREEN_WIDTH * SCREEN_HEIGHT ; ++i)
-		{
-			pix[i] = c;
-		}
+		SDL_SetRenderTarget(renderer, img);
+		SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+		SDL_RenderFillRect(renderer, &r);
+		SDL_SetRenderTarget(renderer, NULL);
 
-		SDL_UpdateTexture(img, NULL, pix, SCREEN_WIDTH * sizeof(unsigned int));
+		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 
-		delete pix;
-
-		SDL_RenderClear(renderer);
-		SDL_RenderCopy(renderer, img, &r, &r);
-		SDL_RenderPresent(renderer);
-		SDL_UpdateWindowSurface(window);
-
-		pause();
+		pause(img, renderer, window);
 
 		SDL_DestroyTexture(img);
 		SDL_DestroyRenderer(renderer);
@@ -68,23 +84,5 @@ int main(void)
 	}
 
 	return 1;
-}
-
-void pause(void)
-{
-	bool running = true;
-	SDL_Event e;
-
-	while(running)
-	{
-		while(SDL_PollEvent(&e))
-		{
-			if(e.type == SDL_QUIT)
-			{
-				running = false;
-				break;
-			}
-		}
-	}
 }
 

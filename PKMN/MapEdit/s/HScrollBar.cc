@@ -13,7 +13,7 @@ namespace surface
 	
 	void HScrollBar::mouseDrag(button_t b, int x, int y)
 	{
-		calculatePosition(x - X(), W());
+		if(b == ::Button::LEFT) calculatePosition(x - X(), W());
 	}
 	
 	ScrollBar::names_arr HScrollBar::getIconNames(void)

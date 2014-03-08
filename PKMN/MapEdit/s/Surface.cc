@@ -2,9 +2,9 @@
 
 namespace surface
 {
-	Surface::Surface(Image *i, int x, int y)
-		: surface(i), _x(x), _y(y), _w(i->width()), _h(i->height()), isDirty(true)
+	Surface::Surface(Image *i) : surface(i), _x(i->X()), _y(i->Y()), _w(i->width()), _h(i->height()), isDirty(true)
 	{
+		LOG("Created surface @(%d|%d): %d x %d", _x, _y, _w, _h);
 	}
 	
 	Surface::~Surface(void)
@@ -39,6 +39,16 @@ namespace surface
 
 		isDirty = false;
 	}
+
+	void Surface::dirty(void)
+	{
+		isDirty = true;
+
+		for(Surface *s : surfaces)
+		{
+			s->dirty();
+		}
+	}
 	
 	bool Surface::hit(int x, int y)
 	{
@@ -71,7 +81,6 @@ namespace surface
 	{
 		if(s)
 		{
-			s->offset(_x, _y);
 			surfaces.push_back(s);
 		}
 	}

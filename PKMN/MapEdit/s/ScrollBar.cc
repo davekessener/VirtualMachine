@@ -3,21 +3,21 @@
 namespace surface
 {
 	ScrollBar::ScrollBar(Image *i, int x, int y, int w, int h, int r, names_arr names)
-		: Surface(i = new SubImage(i, x, y, w, h), x, y), range(r), position(0)
+		: Surface(i = new SubImage(i, x, y, w, h)), range(r), position(0)
 	{
 		cursor[0] = WindowHandler::getIcon(names[0]);
 		cursor[1] = WindowHandler::getIcon(names[1]);
 		fill = WindowHandler::getIcon(names[2]);
 	
-		registerSurface(incr = new Button(i, 0, 0, 
-			[this](Button::button_state s)
-				{
-					if(s == Button::RELEASED) setPosition(position + 1);
-				}, names[3]));
-		registerSurface(decr = new Button(i, w - TILE_SIZE, h - TILE_SIZE,
+		registerSurface(decr = new Button(i, 0, 0, 
 			[this](Button::button_state s)
 				{
 					if(s == Button::RELEASED) setPosition(position - 1);
+				}, names[3]));
+		registerSurface(incr = new Button(i, w - TILE_SIZE, h - TILE_SIZE,
+			[this](Button::button_state s)
+				{
+					if(s == Button::RELEASED) setPosition(position + 1);
 				}, names[4]));
 	}
 	
@@ -58,7 +58,7 @@ namespace surface
 			}
 		}
 	
-		if(range > 0)
+		if(range > 1)
 		{
 			int dx[2], dy[2];
 			dx[0] = std::min(W() - TILE_SIZE, std::max(0, (W() - 4 * TILE_SIZE) * position / range) + TILE_SIZE);
@@ -77,7 +77,7 @@ namespace surface
 	
 	void ScrollBar::setPosition(int p)
 	{
-		if(position != p && p >= 0 && p < range)
+		if(position != p && p >= 0 && p <= range)
 		{
 			position = p;
 			dirty();

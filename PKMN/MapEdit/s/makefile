@@ -12,8 +12,16 @@ $(TARGET): $(OBJ)
 	ar rcs $(TARGET) $(OBJ)
 	ranlib $(TARGET)
 
-.PHONY: clean
+.PHONY: clean logs test
 
 clean:
 	-rm *.o $(TARGET)
+
+logs:
+	-rm -f *.log
+
+test: logs $(TARGET)
+	$(CC) -c $(CFLAGS) $(DEBUG) -I.. test.cpp -o test.o
+	$(CC) test.o $(TARGET) -o test $(shell sdl2-config --libs) -lpthread -lSDL2_image -lSDL2_ttf
+	./test
 
