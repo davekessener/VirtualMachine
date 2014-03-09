@@ -2,7 +2,7 @@
 
 namespace surface
 {
-	Surface::Surface(Image *i) : surface(i), _x(i->X()), _y(i->Y()), _w(i->width()), _h(i->height()), isDirty(true)
+	Surface::Surface(Image *i) : surface(i), _x(i->X()), _y(i->Y()), _w(i->width()), _h(i->height()), _dirty(true)
 	{
 		LOG("Created surface @(%d|%d): %d x %d", _x, _y, _w, _h);
 	}
@@ -15,7 +15,7 @@ namespace surface
 	
 	void Surface::redraw(void)
 	{
-		if(isDirty)
+		if(isDirty())
 		{
 			draw(surface);
 		}
@@ -25,7 +25,7 @@ namespace surface
 			s->redraw();
 		}
 		
-		isDirty = false;
+		_dirty = false;
 	}
 	
 	void Surface::forceRedraw(void)
@@ -37,17 +37,22 @@ namespace surface
 			s->forceRedraw();
 		}
 
-		isDirty = false;
+		_dirty = false;
 	}
 
 	void Surface::dirty(void)
 	{
-		isDirty = true;
+		_dirty = true;
 
 		for(Surface *s : surfaces)
 		{
 			s->dirty();
 		}
+	}
+
+	bool Surface::isDirty(void)
+	{
+		return _dirty;
 	}
 	
 	bool Surface::hit(int x, int y)
@@ -59,7 +64,7 @@ namespace surface
 	{
 		for(Surface *s : surfaces)
 		{
-			if(s->hit(x, y)) return s->lock(x, y);
+			if(s->capturing() && s->hit(x, y)) return s->lock(x, y);
 		}
 	
 		return &*this;
@@ -83,6 +88,11 @@ namespace surface
 		{
 			surfaces.push_back(s);
 		}
+	}
+
+	bool Surface::capturing(void)
+	{
+		return true;
 	}
 }
 

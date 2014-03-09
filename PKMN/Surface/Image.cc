@@ -1,7 +1,6 @@
 #include "Image.h"
 
 SDL_Renderer *Image::render = NULL;
-TTF_Font *Image::font = NULL;
 bool Image::isBlitting = false;
 
 Image::Image(void) : img(NULL)
@@ -37,8 +36,8 @@ void Image::create(int w, int h)
 	SDL_Renderer *r = render;
 	img = SDL_CreateTexture(r, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, w, h);
 	if(!img) throw SDLException();
-	SDL_SetTextureBlendMode(img, SDL_BLENDMODE_BLEND);
 	SDL_SetRenderTarget(r, img);
+	SDL_SetTextureBlendMode(img, SDL_BLENDMODE_BLEND);
 	SDL_RenderClear(r);
 	SDL_SetRenderTarget(r, NULL);
 }
@@ -86,10 +85,6 @@ void Image::endBlit(void)
 	}
 }
 
-void Image::getUnderlying(SDL_Rect *r) const
-{
-}
-
 void Image::blit(const Image *_i, Point t, Rect r)
 {
 	if(!isBlitting) SDL_SetRenderTarget(render, img);
@@ -99,9 +94,7 @@ void Image::blit(const Image *_i, Point t, Rect r)
 		SDL_Rect rt = {t.x, t.y, 
 			std::min(std::min(_width - t.x, r.w), _i->width() - r.x), 
 			std::min(std::min(_height - t.y, r.h), _i->height() - r.y)};
-		SDL_Rect ro = {r.x, r.y, rt.w, rt.h};
-
-		_i->getUnderlying(&ro);
+		SDL_Rect ro = {r.x + _i->X(), r.y + _i->Y(), rt.w, rt.h};
 
 		SDL_RenderCopy(render, static_cast<SDL_Texture *>(*_i), &ro, &rt);
 	}
@@ -116,8 +109,9 @@ Image::operator SDL_Texture *(void) const
 
 void Image::gradientFill(color_rgba_t c1, color_rgba_t c2, color_rgba_t c3, color_rgba_t c4)
 {
-	color_rgba_t *pix = new color_rgba_t[_width * _height];
-	int r[4], g[4], b[4]; std::vector<color_rgba_t> _c{c1, c2, c3, c4};
+	unsigned int *pix = new unsigned int[_width * _height];
+	unsigned int r[4], g[4], b[4];
+	std::vector<color_rgba_t> _c{c1, c2, c3, c4};
 	for(int i = 0 ; i < 4 ; ++i)
 	{
 		r[i] = (_c[i] & 0xff000000) >> 24;
@@ -140,25 +134,45 @@ void Image::gradientFill(color_rgba_t c1, color_rgba_t c2, color_rgba_t c3, colo
 		}
 	}
 
-	SDL_UpdateTexture(img, NULL, pix, _width * sizeof(color_rgba_t));
+	SDL_UpdateTexture(img, NULL, pix, _width * sizeof(unsigned int));
 
-	delete pix;
+	delete[] pix;
+}
+
+void Image::drawRect(color_rgba_t c, int x, int y, int w, int h)
+{
+	if(x <= -w || y <= -h) return;
+	if(x + w > _width) w = _width - x;
+	if(y + h > _height) h = _height - y;
+	x = std::min(x, _width);
+	y = std::min(y, _height);
+
+	if(x == _width || y == _height || w < 0 || h < 0) throw SDLException("Incorrect dimensions: @(%d|%d), %d x %d inside %d x %d", x, y, w, h, _width, _height);
+
+	SDL_Rect r = {x + X(), y + Y(), w, h};
+
+	SDL_SetRenderDrawColor(render, c.r(), c.g(), c.b(), c.a());
+	SDL_RenderDrawRect(render, &r);
 }
 
 void Image::fillRect(color_rgba_t c, int x, int y, int w, int h)
 {
 	x = std::max(0, x);
 	y = std::max(0, y);
-	if(x + w > _width) w = 0;
-	if(y + h > _height) h = 0;
+	if(x + w > _width) w = _width - x;
+	if(y + h > _height) h = _height - y;
 	x = std::min(x, _width);
 	y = std::min(y, _height);
 
-	if(x == _width || y == _height) return;
+	if(x == _width || y == _height || w < 0 || h < 0)
+	{
+		LOG("Incorrect dimensions: @(%d|%d), %d x %d inside %d x %d", x, y, w, h, _width, _height);
+		return;
+	}
 
-	SDL_Rect r = {x, y, w, h};
+	SDL_Rect r = {x + X(), y + Y(), w, h};
 
-	SDL_SetRenderDrawColor(render, (c & 0xff000000) >> 24, (c & 0x00ff0000) >> 16, (c & 0x0000ff00) >> 8, 0xff);
+	SDL_SetRenderDrawColor(render, c.r(), c.g(), c.b(), c.a());
 	SDL_RenderFillRect(render, &r);
 }
 
@@ -166,24 +180,27 @@ void Image::drawLine(color_rgba_t c, int x, int y, int dx, int dy)
 {
 	x = std::max(0, x);
 	y = std::max(0, y);
-	if(x + dx > _width) dx = 0;
-	if(y + dy > _height) dy = 0;
+	if(x + dx > _width) dx = _width - x;
+	if(y + dy > _height) dy = _height - y;
 	x = std::min(x, _width);
 	y = std::min(y, _height);
 
-	if(x == _width || y == _height) return;
+	if(x == _width || y == _height || dx < 0 || dy < 0) throw SDLException("Incorrect dimensions: @(%d|%d), %d x %d inside %d x %d", x, y, dx, dy, _width, _height);
 
-	SDL_SetRenderDrawColor(render, (c & 0xff000000) >> 24, (c & 0x00ff0000) >> 16, (c & 0x0000ff00) >> 8, 0xff);
+	x += X();
+	y += Y();
+
+	SDL_SetRenderDrawColor(render, c.r(), c.g(), c.b(), c.a());
 	SDL_RenderDrawLine(render, x, y, x + dx - 1, y + dy - 1);
 }
 
 void Image::renderText(const std::string& t, int x, int y, color_rgba_t _c)
 {
-	SDL_Color c = { static_cast<std::uint8_t>((_c & 0xff000000) >> 24), static_cast<std::uint8_t>((_c & 0x00ff0000) >> 16), static_cast<std::uint8_t>((_c & 0x0000ff00) >> 8), 0xff};
+	SDL_Color c = static_cast<SDL_Color>(_c);
 
 	if(x >= _width || y >= _height) throw SDLException("%d|%d in %d, %d", x, y, _width, _height);
 
-	SDL_Surface *s = TTF_RenderText_Blended(font, t.c_str(), c);
+	SDL_Surface *s = TTF_RenderText_Blended(FontManager::getFont("tahoma", true, 12), t.c_str(), c);
 
 	if(!s) throw SDLException(TTF_GetError());
 
@@ -192,6 +209,57 @@ void Image::renderText(const std::string& t, int x, int y, color_rgba_t _c)
 	blit(&i, Point(x, y), Rect(0, 0, s->w, s->h));
 
 	SDL_FreeSurface(s);
+}
+
+void Image::clear(color_rgba_t c, bool bytewise)
+{
+	if(bytewise)
+	{
+		unsigned int *pix = new unsigned int[_width * _height];
+
+		for(int i = 0 ; i < _width * _height ; ++i)
+		{
+			pix[i] = c;
+		}
+
+		SDL_UpdateTexture(img, NULL, pix, _width * sizeof(unsigned int));
+
+		delete[] pix;
+	}
+	else
+	{
+		SDL_SetRenderDrawColor(render, c.r(), c.g(), c.b(), c.a());
+		SDL_RenderClear(render);
+	}
+}
+
+void Image::drawGrid(color_rgba_t c, int dx, int dy)
+{
+	Image cell(dx, dy);
+	unsigned int *pix = new unsigned int[dx * dy];
+
+	for(int i = 0 ; i < dx * dy ; ++i)
+	{
+		pix[i] = (i < dx || i % dx == 0) ? static_cast<unsigned int>(c) : 0;
+	}
+
+	SDL_UpdateTexture(static_cast<SDL_Texture *>(cell), NULL, pix, dx * sizeof(unsigned int));
+
+	delete[] pix;
+
+	startBlit();
+
+	clear(0, true);
+
+	for(int y = 0 ; y < _height ; y += dy)
+	{
+		for(int x = 0 ; x < _width ; x += dx)
+		{
+			blit(&cell, Point(x, y), Rect(0, 0, dx, dy));
+		}
+	}
+
+	endBlit();
 }
 
 Image::Image(SDL_Surface *s) : _width(s->w), _height(s->h)

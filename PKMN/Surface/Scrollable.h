@@ -32,8 +32,12 @@ namespace surface
 		public:
 			Scrolling(Image *, int, int, int, int);
 			~Scrolling( );
+			void mouseDown(button_t, int, int);
+			void mouseDrag(button_t, int, int);
+			void mouseUp(button_t, int, int);
 		protected:
 			void draw(Image *);
+			bool isDirty( );
 		private:
 			ScrollBar *vscroll, *hscroll;
 			Scrollable *content;
@@ -48,7 +52,6 @@ namespace surface
 		std::pair<int, int> ranges = content->getScrollRanges();
 		registerSurface(hscroll = new HScrollBar(i, 0, h - TILE_SIZE, w - TILE_SIZE, ranges.first));
 		registerSurface(vscroll = new VScrollBar(i, w - TILE_SIZE, 0, h - TILE_SIZE, ranges.second));
-		registerSurface(content);
 	}
 	
 	template<typename T>
@@ -58,11 +61,35 @@ namespace surface
 		delete hscroll;
 		delete vscroll;
 	}
+
+	template<typename T>
+	bool Scrolling<T>::isDirty(void)
+	{
+		return Surface::isDirty() || content->isDirty();
+	}
+
+	template<typename T>
+	void Scrolling<T>::mouseDown(button_t b, int x, int y)
+	{
+		content->mouseDown(b, x + hscroll->getRelativePosition(), y + vscroll->getRelativePosition());
+	}
+
+	template<typename T>
+	void Scrolling<T>::mouseDrag(button_t b, int x, int y)
+	{
+		content->mouseDrag(b, x + hscroll->getRelativePosition(), y + vscroll->getRelativePosition());
+	}
+
+	template<typename T>
+	void Scrolling<T>::mouseUp(button_t b, int x, int y)
+	{
+		content->mouseUp(b, x + hscroll->getRelativePosition(), y + vscroll->getRelativePosition());
+	}
 	
 	template<typename T>
 	void Scrolling<T>::draw(Image *dI)
 	{
-		content->draw(dI, hscroll->getRelativePosition(), vscroll->getRelativePosition());
+		content->draw(content->getDrawSurface(), hscroll->getRelativePosition(), vscroll->getRelativePosition());
 	}
 }
 

@@ -9,9 +9,8 @@ class SubImage : public Image
 		SubImage(Image *, int, int, int, int);
 		~SubImage( );
 		void blit(const Image *, Point, Rect);
-		void getUnderlying(SDL_Rect *) const;
-		int X( ) { return _x + _i->X(); }
-		int Y( ) { return _y + _i->Y(); }
+		int X( ) const { return _x + _i->X(); }
+		int Y( ) const { return _y + _i->Y(); }
 		explicit operator SDL_Texture *( ) const;
 	private:
 		Image *_i;

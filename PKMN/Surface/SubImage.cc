@@ -20,12 +20,6 @@ void SubImage::blit(const Image *i, Point p, Rect r)
 	_i->blit(i, p, r);
 }
 
-void SubImage::getUnderlying(SDL_Rect *r) const
-{
-	r->x += _x;
-	r->y += _y;
-}
-
 SubImage::operator SDL_Texture *(void) const
 {
 	return static_cast<SDL_Texture *>(*_i);

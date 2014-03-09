@@ -1,10 +1,12 @@
 #ifndef _APPLICATION_H
 #define _APPLICATION_H
 
+#include <sstream>
 #include "Surface.h"
 #include "Logger.h"
 #include "AsyncIn.h"
 #include "Timer.h"
+#include "FontManager.h"
 #include <SDL_ttf.h>
 
 namespace surface
@@ -12,6 +14,8 @@ namespace surface
 	template<typename T>
 	class Application : public T
 	{
+		typedef std::vector<std::string> params_t;
+
 		public:
 			Application(int = SDL_WINDOWPOS_CENTERED, int = SDL_WINDOWPOS_CENTERED, int = 0, int = 0);
 			~Application( );
@@ -21,11 +25,12 @@ namespace surface
 			void execute(const std::string&);
 		private:
 			bool running;
+			std::map<std::string, std::function<void(params_t)>> cmds;
 
+			static params_t split(const std::string&);
 			static Image *init(int, int, int, int);
 			static void end( );
 			static Image *image;
-			static TTF_Font *font;
 			static SDL_Window *win;
 			static SDL_Renderer *render;
 
@@ -35,6 +40,7 @@ namespace surface
 	template<typename T>
 	Application<T>::Application(int x, int y, int w, int h) : T(init(x, y, w, h)), running(false)
 	{
+		cmds["quit"] = [this](params_t p) { running = false; };
 	}
 
 	template<typename T>
@@ -75,6 +81,7 @@ namespace surface
 				SDL_RenderClear(render);
 				SDL_RenderCopy(render, static_cast<SDL_Texture *>(*image), NULL, NULL);
 				SDL_RenderPresent(render);
+				SDL_UpdateWindowSurface(win);
 
 				if(running) t.keepRate(FRAME_RATE);
 			}
@@ -122,7 +129,33 @@ namespace surface
 	template<typename T>
 	void Application<T>::execute(const std::string& cmd)
 	{
-		if(cmd.compare("quit") == 0) running = false;
+		params_t p = split(cmd);
+
+		if(p.empty()) return;
+
+		const std::string &c = p[0];
+		if(cmds.count(c) > 0)
+		{
+			cmds.at(c)(p);
+		}
+	}
+
+// # ===========================================================================
+
+	template<typename T>
+	typename Application<T>::params_t Application<T>::split(const std::string& cmd)
+	{
+		std::istringstream iss(cmd);
+		std::vector<std::string> v;
+
+		while(iss)
+		{
+			std::string s;
+			iss >> s;
+			if(!s.empty()) v.push_back(s);
+		}
+
+		return v;
 	}
 
 	template<typename T>
@@ -147,9 +180,7 @@ namespace surface
 
 		SDL_SetRenderDrawColor(render, 255, 255, 255, 255);
 
-		if(!(font = TTF_OpenFont("tahomabd.ttf", 12))) throw SDLException(TTF_GetError());
-
-		Image::init(render, font);
+		Image::init(render);
 
 		return image = new Image(w, h);
 	}
@@ -159,12 +190,12 @@ namespace surface
 	{
 		delete image;
 
-		TTF_CloseFont(font);
+		FontManager::end();
 
 		SDL_DestroyRenderer(render);
 		SDL_DestroyWindow(win);
 
-		Image::init(NULL, NULL);
+		Image::init(NULL);
 
 		TTF_Quit();
 		IMG_Quit();
@@ -179,9 +210,6 @@ namespace surface
 
 	template<typename T>
 	Image *Application<T>::image = NULL;
-
-	template<typename T>
-	TTF_Font *Application<T>::font = NULL;
 }
 
 #endif

@@ -1,10 +1,10 @@
 #include <NBT/NBT.h>
 #include <Misc/SDLException.h>
-#include <MapEdit/Editor.h>
 #include <iostream>
 #include <vector>
 #include "Game.h"
 #include "Screen.h"
+#include "MapEditor.h"
 
 void writePreparationFiles( );
 
@@ -13,6 +13,8 @@ int launchEditor( );
 
 int main(int argc, char *argv[])
 {
+	chdir("resource");
+
 	if(argc > 1 && std::string(argv[1]).compare("--editor") == 0)
 	{
 		return launchEditor();

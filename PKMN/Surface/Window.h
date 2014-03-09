@@ -19,7 +19,7 @@ namespace surface
 		private:
 			Image *createBg( );
 			StatusBar *status;
-			Scrolling<T> *scroll;
+			T *content;
 			std::string title;
 			Image *bg;
 	};
@@ -29,7 +29,7 @@ namespace surface
 		: Surface(new SubImage(i, 0, 0, i->width(), i->height())), title(t)
 	{
 		registerSurface(status = new StatusBar(i, BORDER_SIZE, BORDER_SIZE, i->width() - 2 * BORDER_SIZE, title));
-		registerSurface(scroll = new Scrolling<T>(i, BORDER_SIZE, BORDER_SIZE + StatusBar::BAR_SIZE + 2, W() - 2 * BORDER_SIZE, H() - 2 * BORDER_SIZE - StatusBar::BAR_SIZE - 2));
+		registerSurface(content = new T(i, BORDER_SIZE, BORDER_SIZE + StatusBar::BAR_SIZE + 2, W() - 2 * BORDER_SIZE, H() - 2 * BORDER_SIZE - StatusBar::BAR_SIZE - 2));
 		bg = createBg();
 	}
 
@@ -37,7 +37,7 @@ namespace surface
 	Window<T>::~Window(void)
 	{
 		delete bg;
-		delete scroll;
+		delete content;
 		delete status;
 	}
 

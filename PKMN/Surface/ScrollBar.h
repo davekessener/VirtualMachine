@@ -2,6 +2,7 @@
 #define _SCROLLBAR_H
 
 #include <array>
+#include <functional>
 #include "Surface.h"
 #include "Button.h"
 

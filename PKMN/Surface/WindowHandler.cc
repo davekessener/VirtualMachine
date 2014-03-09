@@ -2,7 +2,7 @@
 
 Image *WindowHandler::getIcon(const std::string& fn)
 {
-	return instance()._getIcon(fn.substr(fn.length() - 4).compare(FE) != 0 ? fn + FE : fn);
+	return instance()._getIcon(std::string("./icons/") + (fn.substr(fn.length() - 4).compare(FE) != 0 ? fn + FE : fn));
 }
 
 void WindowHandler::returnIcon(Image *i)
@@ -81,6 +81,9 @@ void WindowHandler::_returnIcon(Image *i)
 WindowHandler::WindowHandler(void) : nextPos(0)
 {
 	stitch = new Image(CX_ELEMS * TILE_SIZE, CY_ELEMS * TILE_SIZE);
+	stitch->startBlit();
+	stitch->clear(0);
+	stitch->endBlit();
 }
 
 WindowHandler::~WindowHandler(void)

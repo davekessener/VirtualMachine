@@ -2,6 +2,7 @@
 #define _SURFACE_H
 
 #include <vector>
+#include <functional>
 #include "Geometry.h"
 #include "Image.h"
 
@@ -21,15 +22,18 @@ namespace surface
 			virtual void mouseUp(button_t, int, int);
 		protected:
 			virtual void draw(Image *) = 0;
+			virtual bool capturing( );
 			void registerSurface(Surface *);
+			Image *getDrawSurface( ) { return surface; }
 			void dirty( );
-			inline int X( ) { return _x; }
-			inline int Y( ) { return _y; }
-			inline int W( ) { return _w; }
-			inline int H( ) { return _h; }
+			virtual bool isDirty( );
+			inline int X( ) const { return _x; }
+			inline int Y( ) const { return _y; }
+			inline int W( ) const { return _w; }
+			inline int H( ) const { return _h; }
 		private:
 			const int _x, _y, _w, _h;
-			bool isDirty;
+			bool _dirty;
 			std::vector<Surface *> surfaces;
 			button_t pressed;
 			Image *surface;
