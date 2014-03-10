@@ -23,7 +23,6 @@ namespace surface
 	void Button::mouseDown(button_t b, int x, int y)
 	{
 		changeState(PRESSED);
-		LOG("Clicked @(%d|%d)!", x, y);
 	}
 	
 	void Button::mouseDrag(button_t b, int x, int y)
@@ -37,7 +36,6 @@ namespace surface
 	void Button::mouseUp(button_t b, int x, int y)
 	{
 		changeState(hit(x, y) ? RELEASED : NONE);
-		state = NONE;
 	}
 	
 	void Button::draw(Image *dI)

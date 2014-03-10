@@ -35,8 +35,9 @@ namespace surface
 			};
 		protected:
 			void draw(Image *);
-		private:
 			void changeState(button_state);
+			button_state getState( ) { return state; }
+		private:
 			button_state state;
 			onAction_fn action;
 			Image *buttons[2];

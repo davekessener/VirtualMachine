@@ -4,7 +4,7 @@
 #include <vector>
 #include "Game.h"
 #include "Screen.h"
-#include "MapEditor.h"
+#include <Editor/Editor.h>
 
 void writePreparationFiles( );
 
@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
 
 int launchEditor(void)
 {
-	return Editor::run(0, NULL);
+	return editor::Editor::run(0, NULL);
 }
 
 int launchGame(void)
