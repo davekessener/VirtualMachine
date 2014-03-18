@@ -12,7 +12,17 @@ namespace editor
 			static bool getBool(const std::string&);
 			static void setBool(const std::string&, bool);
 			static const std::string TS_GRID;
+			static const std::string MAP_GRID;
 			static const std::string TS_BUTTON_GRID;
+			static const std::string NBT_MAP_NAME;
+			static const std::string NBT_MAP_ID;
+			static const std::string NBT_MAP_WIDTH;
+			static const std::string NBT_MAP_HEIGHT;
+			static const std::string NBT_MAP_DATA;
+			static const std::string NBT_MAP_DATA_BOTTOM;
+			static const std::string NBT_MAP_DATA_INTER;
+			static const std::string NBT_MAP_DATA_ANIMATION;
+			static const std::string NBT_MAP_DATA_TOP;
 		private:
 			Settings( ) { }
 			static Settings& instance( ) { static Settings s; return s; }

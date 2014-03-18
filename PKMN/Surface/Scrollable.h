@@ -30,11 +30,12 @@ namespace surface
 	class Scrolling : public Surface
 	{
 		public:
-			Scrolling(Image *, int, int, int, int);
+			Scrolling(Image *, int, int, int, int, std::function<T *(Image *, int, int, int, int)> = std::function<T *(Image *, int, int, int, int)>{});
 			~Scrolling( );
 			void mouseDown(button_t, int, int);
 			void mouseDrag(button_t, int, int);
 			void mouseUp(button_t, int, int);
+			T& getContent( );
 		protected:
 			void draw(Image *);
 			bool isDirty( );
@@ -46,9 +47,10 @@ namespace surface
 // # ---------------------------------------------------------------------------
 
 	template<typename T>
-	Scrolling<T>::Scrolling(Image *i, int x, int y, int w, int h) : Surface(i = new SubImage(i, x, y, w, h))
+	Scrolling<T>::Scrolling(Image *i, int x, int y, int w, int h, std::function<T *(Image *, int, int, int, int)> mc)
+		: Surface(i = new SubImage(i, x, y, w, h))
 	{
-		content = new T(i, 0, 0, w - TILE_SIZE, h - TILE_SIZE);
+		content = static_cast<bool>(mc) ? mc(i, 0, 0, w - TILE_SIZE, h - TILE_SIZE) : new T(i, 0, 0, w - TILE_SIZE, h - TILE_SIZE);
 		std::pair<int, int> ranges = content->getScrollRanges();
 		registerSurface(hscroll = new HScrollBar(i, 0, h - TILE_SIZE, w - TILE_SIZE, ranges.first));
 		registerSurface(vscroll = new VScrollBar(i, w - TILE_SIZE, 0, h - TILE_SIZE, ranges.second));
@@ -90,6 +92,12 @@ namespace surface
 	void Scrolling<T>::draw(Image *dI)
 	{
 		content->draw(content->getDrawSurface(), hscroll->getRelativePosition(), vscroll->getRelativePosition());
+	}
+
+	template<typename T>
+	T& Scrolling<T>::getContent(void)
+	{
+		return *dynamic_cast<T *>(content);
 	}
 }
 
