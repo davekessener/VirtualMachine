@@ -122,6 +122,15 @@ class NBTList : public _NBTBase<ID>, protected std::vector<NBT_ptr_t>
 	template<typename T>
 		NBTList(T t1, T t2);
 	NBTList(std::initializer_list<NBT_ptr_t> v);
+
+	int size( );
+	int tagID( );
+	template<typename T>
+		std::shared_ptr<T> tagAt(int i);
+	NBT_ptr_t tagAt(int i);
+	template<typename T>
+		void addTag(std::shared_ptr<T> tag);
+	void addTag(NBT_ptr_t tag);
 };
 
 // # ---------------------------------------------------------------------------

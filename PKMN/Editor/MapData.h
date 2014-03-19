@@ -15,6 +15,7 @@ namespace editor
 		{
 			public:
 				Layer(int = 1, int = 1);
+				Layer(std::vector<unsigned int>::const_iterator, int, int);
 				~Layer( );
 				std::vector<int>& operator[](int);
 				void resize(int, int);
@@ -37,6 +38,7 @@ namespace editor
 			void addLayer(int);
 			std::vector<map::Layer>& operator[](int);
 			nbt::TAG_Compound::ptr_t save( );
+			static MapData *load(nbt::TAG_Compound::ptr_t);
 			enum
 			{
 				LAYER_BOTTOM = 0,
@@ -45,6 +47,7 @@ namespace editor
 			};
 		protected:
 			virtual void writeToNBT(nbt::TAG_Compound::ptr_t);
+			virtual void readFromNBT(nbt::TAG_Compound::ptr_t);
 		public:
 			const std::string name;
 			const long ID;

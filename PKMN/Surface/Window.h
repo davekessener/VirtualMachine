@@ -13,6 +13,7 @@ namespace surface
 		public:
 			Window(Image *, const std::string&);
 			virtual ~Window( );
+			T& getContent( );
 			static const int BORDER_SIZE = 4;
 		protected:
 			void draw(Image *);
@@ -39,6 +40,12 @@ namespace surface
 		delete bg;
 		delete content;
 		delete status;
+	}
+
+	template<typename T>
+	T& Window<T>::getContent(void)
+	{
+		return *content;
 	}
 
 	template<typename T>

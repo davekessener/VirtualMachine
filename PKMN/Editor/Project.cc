@@ -28,5 +28,28 @@ namespace editor
 
 		assert(!"ERR: Map not found!");
 	}
+
+	void Project::save(void)
+	{
+		std::ofstream o(_fn, std::ios::out | std::ios::binary);
+
+		if(!o.is_open())
+		{
+			throw SDLException("File '%s' couldn't be opened!", _fn.c_str());
+		}
+
+		nbt::TAG_Compound::ptr_t nbt = nbt::Make<nbt::TAG_Compound>();
+		nbt::TAG_List::ptr_t list = nbt::Make<nbt::TAG_List>(Settings::NBT_MAPS);
+
+		for(std::shared_ptr<MapData>& map : _maps)
+		{
+			list->addTag(map->save());
+		}
+
+		nbt->setTagList(list);
+		nbt->write(o);
+
+		o.close();
+	}
 }
 

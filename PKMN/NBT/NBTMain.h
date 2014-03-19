@@ -174,8 +174,9 @@ namespace nbt
 			std::shared_ptr<T> tagAt(int i) { return std::dynamic_pointer_cast<T>(tagAt(i)); }
 			NBT_ptr_t tagAt(int i) { assert(i>=0&&i<vec_t::size()); return vec_t::at(i); }
 			template<typename T>
-			void addTag(std::shared_ptr<T> tag) { assert(tagIds==tag->getID()); vec_t::push_back(std::dynamic_pointer_cast<NBTBase>(tag)); }
-			void addTag(NBT_ptr_t tag) { assert(tagIds==tag->getID()); vec_t::push_back(tag); }
+			void addTag(std::shared_ptr<T> tag) 
+				{ assert(!tagIds||tagIds==tag->getID()); vec_t::push_back(std::dynamic_pointer_cast<NBTBase>(tag)); if(!tagIds) tagIds = tag->getID(); }
+			void addTag(NBT_ptr_t tag) { assert(!tagIds||tagIds==tag->getID()); vec_t::push_back(tag); if(!tagIds) tagIds = tag->getID(); }
 		protected:
 			void _write(const nbtostream&);
 			void _read(const nbtistream&);

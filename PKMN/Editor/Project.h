@@ -2,6 +2,7 @@
 #define EDITOR_PROJECT_H
 
 #include <cstdint>
+#include <Surface/Geometry.h>
 #include "MapData.h"
 
 namespace editor
@@ -17,6 +18,7 @@ namespace editor
 			~Project( );
 			map_id createMap(const std::string&, int, int);
 			map_ptr getMap(map_id);
+			void save( );
 		private:
 			map_id _nextID;
 			std::string _fn;

@@ -23,6 +23,7 @@ namespace editor
 			static const std::string NBT_MAP_DATA_INTER;
 			static const std::string NBT_MAP_DATA_ANIMATION;
 			static const std::string NBT_MAP_DATA_TOP;
+			static const std::string NBT_MAPS;
 		private:
 			Settings( ) { }
 			static Settings& instance( ) { static Settings s; return s; }

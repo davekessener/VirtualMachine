@@ -15,6 +15,8 @@ namespace surface
 	class Application : public T
 	{
 		typedef std::vector<std::string> params_t;
+		public:
+		typedef std::function<void(params_t)> cmd_t;
 
 		public:
 			Application(int = SDL_WINDOWPOS_CENTERED, int = SDL_WINDOWPOS_CENTERED, int = 0, int = 0);
@@ -23,6 +25,7 @@ namespace surface
 		protected:
 			void handle(SDL_Event&);
 			void execute(const std::string&);
+			void quit( );
 		private:
 			bool running;
 			std::map<std::string, std::function<void(params_t)>> cmds;
@@ -40,7 +43,9 @@ namespace surface
 	template<typename T>
 	Application<T>::Application(int x, int y, int w, int h) : T(init(x, y, w, h)), running(false)
 	{
-		cmds["quit"] = [this](params_t p) { running = false; };
+		cmds["quit"] = std::bind(&Application<T>::quit, this);
+
+		T::registerCommands([this](const std::string& s, cmd_t cmd) { cmds[s] = cmd; });
 	}
 
 	template<typename T>
@@ -91,7 +96,7 @@ namespace surface
 			std::cerr << "ERR: " << e.what() << std::endl;
 		}
 
-		running = false;
+		quit();
 	}
 
 	template<typename T>
@@ -102,7 +107,7 @@ namespace surface
 		switch(e.type)
 		{
 			case SDL_QUIT:
-				running = false;
+				quit();
 				break;
 			case SDL_MOUSEBUTTONDOWN:
 				locked = T::lock(e.button.x, e.button.y);
@@ -124,6 +129,12 @@ namespace surface
 				}
 				break;
 		}
+	}
+
+	template<typename T>
+	void Application<T>::quit(void)
+	{
+		running = false;
 	}
 
 	template<typename T>
