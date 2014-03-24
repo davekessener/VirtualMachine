@@ -18,7 +18,7 @@ namespace editor
 			void draw(Image *, int, int);
 			std::pair<int, int> getScrollRanges( );
 		private:
-			Image *tileset, *bg, *grid;
+			Image *bg, *grid;
 			color_rgba_t bgColor;
 			bool bgPlain;
 			int select;

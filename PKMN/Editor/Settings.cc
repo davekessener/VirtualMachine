@@ -13,6 +13,7 @@ const std::string editor::Settings::NBT_MAP_DATA_INTER("Intermediate");
 const std::string editor::Settings::NBT_MAP_DATA_ANIMATION("Animation");
 const std::string editor::Settings::NBT_MAP_DATA_TOP("Top");
 const std::string editor::Settings::NBT_MAPS("Maps");
+const std::string editor::Settings::TS_FN("tileset.png");
 
 namespace editor
 {
@@ -28,6 +29,24 @@ namespace editor
 		std::map<std::string, bool> &map = instance().boolMap;
 
 		map[key] = val;
+	}
+
+	Image *Settings::getTileset(void)
+	{
+		if(!instance()._ts)
+		{
+			instance()._ts = new Image(TS_FN);
+		}
+
+		return instance()._ts;
+	}
+
+	Settings::Settings(void) : _ts(NULL)
+	{
+	}
+
+	Settings::~Settings(void)
+	{
 	}
 }
 

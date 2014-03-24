@@ -3,6 +3,7 @@
 
 #include <Surface/Scrollable.h>
 #include "MapData.h"
+#include "Layer.h"
 
 namespace editor
 {
@@ -17,6 +18,7 @@ namespace editor
 		private:
 			Image *_map, *_grid;
 			MapData *_data;
+			std::vector<Layer> _layers;
 	};
 }
 

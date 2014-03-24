@@ -5,6 +5,7 @@
 #include <vector>
 #include <cassert>
 #include <NBT/NBT.h>
+#include <Misc/Logger.h>
 #include "Settings.h"
 
 namespace editor
@@ -35,7 +36,8 @@ namespace editor
 			~MapData( );
 			int width( ) const;
 			int height( ) const;
-			void addLayer(int);
+			int layerCount( );
+			map::Layer addLayer(int);
 			std::vector<map::Layer>& operator[](int);
 			nbt::TAG_Compound::ptr_t save( );
 			static MapData *load(nbt::TAG_Compound::ptr_t);
@@ -43,7 +45,8 @@ namespace editor
 			{
 				LAYER_BOTTOM = 0,
 				LAYER_INTER = 1,
-				LAYER_TOP = 2
+				LAYER_TOP = 2,
+				LAYERS = 3
 			};
 		protected:
 			virtual void writeToNBT(nbt::TAG_Compound::ptr_t);

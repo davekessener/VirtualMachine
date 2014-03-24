@@ -26,6 +26,7 @@ namespace editor
 		private:
 			Project(const Project&);
 			Project& operator=(const Project&);
+			void load( );
 	};
 }
 

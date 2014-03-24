@@ -4,7 +4,6 @@ namespace editor
 {
 	Tileset::Tileset(Image *i, int x, int y, int w, int h) : surface::Scrollable(i, x, y, w, h), bgColor(0xff00ffff), bgPlain(false), select(0)
 	{
-		tileset = new Image("./tileset.png");
 		bg = new Image(W(), H());
 		grid = new Image(W(), H());
 	
@@ -15,20 +14,20 @@ namespace editor
 	Tileset::~Tileset(void)
 	{
 		delete bg;
-		delete tileset;
 	}
 	
 	void Tileset::mouseDown(button_t b, int x, int y)
 	{
 		x -= X(); y -= Y();
 	
-		select = (y / TILE_SIZE) * (tileset->width() / TILE_SIZE) + (x / TILE_SIZE);
+		select = (y / TILE_SIZE) * (Settings::getTileset()->width() / TILE_SIZE) + (x / TILE_SIZE);
 		dirty();
 	}
 	
 	void Tileset::draw(Image *dI, int dx, int dy)
 	{
 		bool showGrid = Settings::getBool(Settings::TS_GRID);
+		Image *tileset = Settings::getTileset();
 
 		dI->startBlit();
 	
@@ -57,6 +56,8 @@ namespace editor
 	
 	std::pair<int, int> Tileset::getScrollRanges(void)
 	{
+		Image *tileset = Settings::getTileset();
+
 		return std::make_pair((tileset->width() - W() + TILE_SIZE - 1) / TILE_SIZE, (tileset->height() - H() + TILE_SIZE - 1) / TILE_SIZE);
 	}
 	

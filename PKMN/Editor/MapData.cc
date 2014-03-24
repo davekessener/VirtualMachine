@@ -82,7 +82,9 @@ namespace editor
 
 		std::vector<unsigned int> Layer::flatten(void) const
 		{
-			std::vector<unsigned int> v(_w * _h);
+			std::vector<unsigned int> v;
+
+			v.reserve(_w * _h);
 
 			for(auto i = _data->begin() ; i != _data->end() ; ++i)
 			{
@@ -114,9 +116,22 @@ namespace editor
 		return _h;
 	}
 
-	void MapData::addLayer(int idx)
+	int MapData::layerCount(void)
 	{
-		this->operator[](idx).push_back(map::Layer(_w, _h));
+		int c = 0;
+		for(int i = 0 ; i < LAYERS ; ++i)
+		{
+			c += this->operator[](i).size();
+		}
+
+		return c;
+	}
+
+	map::Layer MapData::addLayer(int idx)
+	{
+		map::Layer l(_w, _h);
+		this->operator[](idx).push_back(l);
+		return l;
 	}
 
 	std::vector<map::Layer>& MapData::operator[](int i)
@@ -150,7 +165,7 @@ namespace editor
 	std::vector<unsigned int> MapData::flatten(std::vector<map::Layer> layers)
 	{
 		std::vector<unsigned int> v;
-		
+
 		v.reserve(layers.size() * _w * _h);
 
 		for(auto i = layers.begin() ; i != layers.end() ; ++i)
@@ -182,19 +197,30 @@ namespace editor
 	{
 		nbt::TAG_Compound::ptr_t data = nbt->getCompoundTag(Settings::NBT_MAP_DATA);
 
-		auto read = [this](std::vector<unsigned int> d, std::vector<map::Layer> v)
+		auto read = [this, data](const std::string& name, std::vector<map::Layer>& v)
 			{
-				assert(d.size()%(_w*_h)==0);
-
-				for(auto i = d.cbegin() ; i != d.cend() ; i += _w * _h)
+				if(data->hasTag(name))
 				{
-					v.push_back(map::Layer(i, _w, _h));
+					std::vector<unsigned int> d = data->getIntArray(name);
+
+					assert(d.size()%(_w*_h)==0);
+
+					v.clear();
+
+					for(auto i = d.cbegin() ; i != d.cend() ; i += _w * _h)
+					{
+						v.push_back(map::Layer(i, _w, _h));
+					}
+				}
+				else
+				{
+					LOG("Map '%s'(%d) cannot load layer '%s', will use default.", this->name.c_str(), ID, name.c_str());
 				}
 			};
 
-		read(data->getIntArray(Settings::NBT_MAP_DATA_BOTTOM), _bottom);
-		read(data->getIntArray(Settings::NBT_MAP_DATA_INTER), _inter);
-		read(data->getIntArray(Settings::NBT_MAP_DATA_TOP), _top);
+		read(Settings::NBT_MAP_DATA_BOTTOM, _bottom);
+		read(Settings::NBT_MAP_DATA_INTER, _inter);
+		read(Settings::NBT_MAP_DATA_TOP, _top);
 	}
 }
 

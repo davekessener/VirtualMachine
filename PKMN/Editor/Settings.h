@@ -3,6 +3,7 @@
 
 #include <string>
 #include <map>
+#include <Surface/Image.h>
 
 namespace editor
 {
@@ -11,6 +12,7 @@ namespace editor
 		public:
 			static bool getBool(const std::string&);
 			static void setBool(const std::string&, bool);
+			static Image *getTileset( );
 			static const std::string TS_GRID;
 			static const std::string MAP_GRID;
 			static const std::string TS_BUTTON_GRID;
@@ -24,10 +26,13 @@ namespace editor
 			static const std::string NBT_MAP_DATA_ANIMATION;
 			static const std::string NBT_MAP_DATA_TOP;
 			static const std::string NBT_MAPS;
+			static const std::string TS_FN;
 		private:
-			Settings( ) { }
+			Settings( );
+			~Settings( );
 			static Settings& instance( ) { static Settings s; return s; }
 			std::map<std::string, bool> boolMap;
+			Image *_ts;
 	};
 }
 

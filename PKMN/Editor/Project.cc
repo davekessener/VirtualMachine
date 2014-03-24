@@ -4,6 +4,7 @@ namespace editor
 {
 	Project::Project(const std::string& name) : _fn(name), _nextID(0)
 	{
+		load();
 	}
 
 	Project::~Project(void)
@@ -50,6 +51,27 @@ namespace editor
 		nbt->write(o);
 
 		o.close();
+	}
+
+	void Project::load(void)
+	{
+		std::ifstream in(_fn, std::ios::in | std::ios::binary);
+
+		if(!in.is_open())
+		{
+			LOG("New project created.");
+			return;
+		}
+
+		nbt::TAG_Compound::ptr_t nbt = nbt::Read(in);
+		nbt::TAG_List::ptr_t list = nbt->getTagList(Settings::NBT_MAPS);
+
+		in.close();
+
+		for(auto i = list->begin<nbt::TAG_Compound>() ; i != list->end<nbt::TAG_Compound>() ; ++i)
+		{
+			_maps.push_back(std::shared_ptr<MapData>(MapData::load(*i)));
+		}
 	}
 }
 

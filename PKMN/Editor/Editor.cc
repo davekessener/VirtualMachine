@@ -34,8 +34,6 @@ namespace editor
 	void Editor::registerCommands(std::function<void(const std::string&, std::function<void(std::vector<std::string>)>)> reg)
 	{
 		typedef std::vector<std::string> params_t;
-
-		reg("test", [](params_t _p) { Project p("tstp.nbt"); p.createMap("Pallet Town", 24, 20); p.save(); });
 	}
 	
 	int Editor::run(int argc, char *argv[])
