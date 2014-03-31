@@ -1,7 +1,7 @@
 #include "Image.h"
 
 SDL_Renderer *Image::render = NULL;
-bool Image::isBlitting = false;
+std::stack<SDL_Texture *> Image::blitting;
 
 Image::Image(void) : img(NULL)
 {
@@ -36,8 +36,8 @@ void Image::create(int w, int h)
 	SDL_Renderer *r = render;
 	img = SDL_CreateTexture(r, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, w, h);
 	if(!img) throw SDLException();
-	SDL_SetRenderTarget(r, img);
 	SDL_SetTextureBlendMode(img, SDL_BLENDMODE_BLEND);
+	SDL_SetRenderTarget(r, img);
 	SDL_RenderClear(r);
 	SDL_SetRenderTarget(r, NULL);
 }
@@ -65,29 +65,57 @@ void Image::close(void)
 
 void Image::startBlit(void)
 {
-	if(!isBlitting)
+	SDL_Texture *target = static_cast<SDL_Texture *>(*this);
+
+	if(!render) throw SDLException("ERR: Can't blit without renderer.");
+
+	LOG("Blitting with '%p' [...]", target);
+
+	if(!blitting.empty() && blitting.top() == target)
 	{
-		if(!render) throw SDLException("ERR: Can't blit without renderer.");
-		SDL_SetRenderTarget(render, static_cast<SDL_Texture *>(*this));
-		isBlitting = true;
+		blitting.push(target);
+		return;
 	}
-	else throw SDLException("ALREADY BLITTING!");
+
+	blitting.push(target);
+
+	SDL_SetRenderTarget(render, target);
 }
 
 void Image::endBlit(void)
 {
-	if(isBlitting)
+	if(!render) throw SDLException("ERR: Can't blit without renderer.");
+
+	if(blitting.empty())
 	{
-		if(!render) throw SDLException("ERR: Can't blit without renderer.");
+		LOG("Isn't blitting!");
+		return;
+	}
+
+	SDL_Texture *target = blitting.top();
+
+	LOG("Stop blitting with '%p' [DONE]", target);
+
+	blitting.pop();
+
+	if(blitting.empty() || target != blitting.top())
+	{
 		SDL_SetRenderDrawColor(render, 255, 255, 255, 255);
-		SDL_SetRenderTarget(render, NULL);
-		isBlitting = false;
+		SDL_SetRenderTarget(render, blitting.empty() ? NULL : blitting.top());
+	}
+}
+
+void Image::checkBlit(void)
+{
+	if(blitting.empty() || blitting.top() != static_cast<SDL_Texture *>(*this))
+	{
+		assert(!"ERR: Needs to be blitting!");
 	}
 }
 
 void Image::blit(const Image *_i, Point t, Rect r)
 {
-	if(!isBlitting) SDL_SetRenderTarget(render, img);
+	checkBlit();
 
 	if(r.x < _i->width() && r.y < _i->height())
 	{
@@ -98,8 +126,6 @@ void Image::blit(const Image *_i, Point t, Rect r)
 
 		SDL_RenderCopy(render, static_cast<SDL_Texture *>(*_i), &ro, &rt);
 	}
-
-	if(!isBlitting) SDL_SetRenderTarget(render, NULL);
 }
 
 Image::operator SDL_Texture *(void) const
@@ -109,6 +135,8 @@ Image::operator SDL_Texture *(void) const
 
 void Image::gradientFill(color_rgba_t c1, color_rgba_t c2, color_rgba_t c3, color_rgba_t c4)
 {
+	checkBlit();
+
 	unsigned int *pix = new unsigned int[_width * _height];
 	unsigned int r[4], g[4], b[4];
 	std::vector<color_rgba_t> _c{c1, c2, c3, c4};
@@ -141,6 +169,8 @@ void Image::gradientFill(color_rgba_t c1, color_rgba_t c2, color_rgba_t c3, colo
 
 void Image::drawRect(color_rgba_t c, int x, int y, int w, int h)
 {
+	checkBlit();
+
 	if(x <= -w || y <= -h) return;
 	if(x + w > _width) w = _width - x;
 	if(y + h > _height) h = _height - y;
@@ -157,6 +187,8 @@ void Image::drawRect(color_rgba_t c, int x, int y, int w, int h)
 
 void Image::fillRect(color_rgba_t c, int x, int y, int w, int h)
 {
+	checkBlit();
+
 	x = std::max(0, x);
 	y = std::max(0, y);
 	if(x + w > _width) w = _width - x;
@@ -178,6 +210,8 @@ void Image::fillRect(color_rgba_t c, int x, int y, int w, int h)
 
 void Image::drawLine(color_rgba_t c, int x, int y, int dx, int dy)
 {
+	checkBlit();
+
 	x = std::max(0, x);
 	y = std::max(0, y);
 	if(x + dx > _width) dx = _width - x;
@@ -196,6 +230,8 @@ void Image::drawLine(color_rgba_t c, int x, int y, int dx, int dy)
 
 void Image::renderText(const std::string& t, int x, int y, color_rgba_t _c)
 {
+	checkBlit();
+
 	SDL_Color c = static_cast<SDL_Color>(_c);
 
 	if(x >= _width || y >= _height) throw SDLException("%d|%d in %d, %d", x, y, _width, _height);
@@ -222,12 +258,16 @@ void Image::clear(color_rgba_t c, bool bytewise)
 			pix[i] = c;
 		}
 
-		SDL_UpdateTexture(img, NULL, pix, _width * sizeof(unsigned int));
+		SDL_Rect r = {X(), Y(), _width, _height};
+
+		SDL_UpdateTexture(img, &r, pix, _width * sizeof(unsigned int));
 
 		delete[] pix;
 	}
 	else
 	{
+		checkBlit();
+
 		SDL_SetRenderDrawColor(render, c.r(), c.g(), c.b(), c.a());
 		SDL_RenderClear(render);
 	}
@@ -235,6 +275,8 @@ void Image::clear(color_rgba_t c, bool bytewise)
 
 void Image::drawGrid(color_rgba_t c, int dx, int dy)
 {
+	checkBlit();
+
 	Image cell(dx, dy);
 	unsigned int *pix = new unsigned int[dx * dy];
 
@@ -247,8 +289,6 @@ void Image::drawGrid(color_rgba_t c, int dx, int dy)
 
 	delete[] pix;
 
-	startBlit();
-
 	clear(0, true);
 
 	for(int y = 0 ; y < _height ; y += dy)
@@ -258,8 +298,11 @@ void Image::drawGrid(color_rgba_t c, int dx, int dy)
 			blit(&cell, Point(x, y), Rect(0, 0, dx, dy));
 		}
 	}
+}
 
-	endBlit();
+Image *Image::base(void)
+{
+	return &*this;
 }
 
 Image::Image(SDL_Surface *s) : _width(s->w), _height(s->h)

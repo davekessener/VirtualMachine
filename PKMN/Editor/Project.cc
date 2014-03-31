@@ -68,6 +68,8 @@ namespace editor
 
 		in.close();
 
+		LOG("Reading project [...]");
+
 		for(auto i = list->begin<nbt::TAG_Compound>() ; i != list->end<nbt::TAG_Compound>() ; ++i)
 		{
 			_maps.push_back(std::shared_ptr<MapData>(MapData::load(*i)));

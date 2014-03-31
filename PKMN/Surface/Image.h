@@ -2,6 +2,7 @@
 #define _IMAGE_H
 
 #include <iostream>
+#include <stack>
 #include <SDL2/SDL.h>
 #include <SDL_image.h>
 #include <SDL_ttf.h>
@@ -47,6 +48,7 @@ class Image
 		virtual void blit(const Image *, Point, Rect);
 		void startBlit( );
 		void endBlit( );
+		void checkBlit( );
 		bool opened( ) { return img != NULL; }
 		virtual int X( ) const { return 0; }
 		virtual int Y( ) const { return 0; }
@@ -59,6 +61,7 @@ class Image
 		void renderText(const std::string&, int, int, color_rgba_t = 0x000000ff);
 		void clear(color_rgba_t, bool = false);
 		void drawGrid(color_rgba_t, int, int);
+		virtual Image *base( );
 		virtual explicit operator SDL_Texture *( ) const;
 		static void init(SDL_Renderer *r) { render = r; }
 	protected:
@@ -67,7 +70,7 @@ class Image
 		Image(SDL_Surface *);
 		SDL_Texture *img;
 		static SDL_Renderer *render;
-		static bool isBlitting;
+		static std::stack<SDL_Texture *> blitting;
 };
 
 #endif

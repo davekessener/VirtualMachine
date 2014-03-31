@@ -40,7 +40,9 @@ namespace surface
 	
 	void Button::draw(Image *dI)
 	{
+		dI->startBlit();
 		dI->blit(buttons[state == PRESSED], Point(0, 0), Rect(0, 0, TILE_SIZE, TILE_SIZE));
+		dI->endBlit();
 	}
 	
 	void Button::changeState(button_state s)

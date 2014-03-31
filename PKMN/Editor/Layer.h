@@ -2,6 +2,7 @@
 #define EDITOR_LAYER_H
 
 #include <Surface/Image.h>
+#include <Surface/SubImage.h>
 #include "MapData.h"
 
 namespace editor
@@ -13,14 +14,19 @@ namespace editor
 
 		public:
 			Layer(map::Layer);
+			Layer(const Layer&);
 			~Layer( );
+			Layer& operator=(const Layer&);
 			void set(int, int, int);
 			int get(int, int);
 			_first_indirection operator[](int);
 			Image *image( );
 		private:
+			std::shared_ptr<bool> _dirty;
 			map::Layer _layer;
 			std::shared_ptr<Image> _img;
+
+			void dirty( );
 
 // # ---------------------------------------------------------------------------
 

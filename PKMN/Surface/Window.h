@@ -51,7 +51,9 @@ namespace surface
 	template<typename T>
 	void Window<T>::draw(Image *dI)
 	{
+		dI->startBlit();
 		dI->blit(bg, Point(0, 0), Rect(0, 0, bg->width(), bg->height()));
+		dI->endBlit();
 	}
 
 	template<typename T>

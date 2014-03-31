@@ -3,8 +3,9 @@
 
 #include <vector>
 #include <functional>
+#include <memory>
 #include "Geometry.h"
-#include "Image.h"
+#include "SubImage.h"
 
 namespace surface
 {
@@ -24,7 +25,7 @@ namespace surface
 			virtual void draw(Image *) = 0;
 			virtual bool capturing( );
 			void registerSurface(Surface *);
-			Image *getDrawSurface( ) { return surface; }
+			Image *getDrawSurface( );
 			void dirty( );
 			virtual bool isDirty( );
 			inline int X( ) const { return _x; }
@@ -36,7 +37,7 @@ namespace surface
 			bool _dirty;
 			std::vector<Surface *> surfaces;
 			button_t pressed;
-			Image *surface;
+			std::shared_ptr<Image> surface;
 	};
 }
 

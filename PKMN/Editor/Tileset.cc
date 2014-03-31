@@ -8,7 +8,9 @@ namespace editor
 		grid = new Image(W(), H());
 	
 		createBg();
+		grid->startBlit();
 		grid->drawGrid(0x000000ff, TILE_SIZE, TILE_SIZE);
+		grid->endBlit();
 	}
 	
 	Tileset::~Tileset(void)
@@ -51,6 +53,7 @@ namespace editor
 		((select % (tileset->width() / TILE_SIZE)) - dx) * TILE_SIZE + (showGrid ? 1 : 0), 
 		((select / (tileset->width() / TILE_SIZE)) - dy) * TILE_SIZE + (showGrid ? 1 : 0), 
 		TILE_SIZE - (showGrid ? 1 : 0), TILE_SIZE - (showGrid ? 1 : 0));
+
 		dI->endBlit();
 	}
 	
@@ -82,6 +85,18 @@ namespace editor
 		}
 	
 		bg->endBlit();
+	}
+
+	int Tileset::get(void) const
+	{
+		return select;
+	}
+
+	void Tileset::set(int v)
+	{
+		assert(v>=0&&v<4096);
+		select = v;
+		dirty();
 	}
 }
 

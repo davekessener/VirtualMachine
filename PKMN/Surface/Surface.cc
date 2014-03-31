@@ -2,22 +2,20 @@
 
 namespace surface
 {
-	Surface::Surface(Image *i) : surface(i), _x(i->X()), _y(i->Y()), _w(i->width()), _h(i->height()), _dirty(true)
+	Surface::Surface(Image *i) : surface(new SubImage(i)), _x(i->X()), _y(i->Y()), _w(i->width()), _h(i->height()), _dirty(true)
 	{
 		LOG("Created surface @(%d|%d): %d x %d", _x, _y, _w, _h);
 	}
 	
 	Surface::~Surface(void)
 	{
-		delete surface;
-		surface = NULL;
 	}
 	
 	void Surface::redraw(void)
 	{
 		if(isDirty())
 		{
-			draw(surface);
+			draw(&*surface);
 		}
 	
 		for(Surface *s : surfaces)
@@ -30,7 +28,7 @@ namespace surface
 	
 	void Surface::forceRedraw(void)
 	{
-		draw(surface);
+		draw(&*surface);
 	
 		for(Surface *s : surfaces)
 		{
@@ -88,6 +86,11 @@ namespace surface
 		{
 			surfaces.push_back(s);
 		}
+	}
+
+	Image *Surface::getDrawSurface(void)
+	{
+		return &*surface;
 	}
 
 	bool Surface::capturing(void)

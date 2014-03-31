@@ -36,17 +36,16 @@ namespace editor
 			~MapData( );
 			int width( ) const;
 			int height( ) const;
-			int layerCount( );
-			map::Layer addLayer(int);
-			std::vector<map::Layer>& operator[](int);
+			map::Layer operator[](int);
 			nbt::TAG_Compound::ptr_t save( );
 			static MapData *load(nbt::TAG_Compound::ptr_t);
 			enum
 			{
-				LAYER_BOTTOM = 0,
-				LAYER_INTER = 1,
-				LAYER_TOP = 2,
-				LAYERS = 3
+				LAYER_BOTTOM1 = 0,
+				LAYER_BOTTOM2 = 1,
+				LAYER_INTER = 2,
+				LAYER_TOP = 3,
+				LAYERS = 4
 			};
 		protected:
 			virtual void writeToNBT(nbt::TAG_Compound::ptr_t);
@@ -56,12 +55,10 @@ namespace editor
 			const long ID;
 		private:
 			int _w, _h;
-			std::vector<map::Layer> _bottom, _inter, _top;
+			std::vector<map::Layer> _layers;
 		private:
 			MapData(const MapData&);
 			MapData& operator=(const MapData&);
-
-			std::vector<unsigned int> flatten(std::vector<map::Layer>);
 	};
 }
 

@@ -2,39 +2,37 @@
 
 namespace editor
 {
-	Layer::Layer(map::Layer l) : _layer(l), 
-		_img(new Image(l.width() * TILE_SIZE, l.height() * TILE_SIZE))
+	Layer::Layer(map::Layer l) : _layer(l), _dirty(new bool)
 	{
-		Image *tileset = Settings::getTileset();
-		const int w = _layer.width(), h = _layer.height();
-		const int d = TILE_SIZE, s = 1024 / d;
+		*_dirty = true;
 
-		_img->startBlit();
-		for(int y = 0 ; y < h ; ++y)
-		{
-			for(int x = 0 ; x < w ; ++x)
-			{
-				_img->blit(tileset, Point(x * d, y * d), Rect((get(x, y) % s) * d, (get(x, y) / s) * d, d, d));
-			}
-		}
-		_img->endBlit();
+		std::cerr << "ATTENTION: '_dirty' is @" << &*_dirty << std::endl;
+	}
+
+	Layer::Layer(const Layer& layer) : _layer(layer._layer), _dirty(layer._dirty), _img(layer._img)
+	{
 	}
 
 	Layer::~Layer(void)
 	{
 	}
 
+	Layer& Layer::operator=(const Layer& layer)
+	{
+		_layer = layer._layer;
+		_dirty = layer._dirty;
+		_img = layer._img;
+
+		return *this;
+	}
+
 	void Layer::set(int x, int y, int v)
 	{
 		assert(x>=0&&x<_layer.width()&&y>=0&&y<_layer.height()&&v>=0&&v<4096);
+
+		if(_layer[x][y] != v) dirty();
+
 		_layer[x][y] = v;
-
-		const int d = TILE_SIZE, s = 1024 / d;
-
-		_img->startBlit();
-		_img->fillRect(0x00000000, x * d, y * d, d, d);
-		_img->blit(Settings::getTileset(), Point(x * d, y * d), Rect((v % s) * d, (v / s) * d, d, d));
-		_img->endBlit();
 	}
 
 	int Layer::get(int x, int y)
@@ -50,7 +48,45 @@ namespace editor
 
 	Image *Layer::image(void)
 	{
+		if(*_dirty || !static_cast<bool>(_img))
+		{
+			LOG("(%d && %d) Redraw of layer.", *_dirty, static_cast<bool>(_img));
+
+			Image *tileset = Settings::getTileset();
+			const int w = _layer.width(), h = _layer.height();
+			const int d = TILE_SIZE, s = 1024 / d;
+
+			_img.reset(new Image(w * d, h * d));
+
+			_img->startBlit();
+			_img->clear(0x00000000);
+			for(int y = 0 ; y < h ; ++y)
+			{
+				for(int x = 0 ; x < w ; ++x)
+				{
+					int v = get(x, y);
+
+					if(!v) continue;
+
+					_img->blit(tileset, Point(x * d, y * d), Rect((v % s) * d, (v / s) * d, d, d));
+				}
+			}
+			_img->endBlit();
+
+			*_dirty = false;
+		}
+		else
+		{
+			LOG("NOT dirty.");
+		}
+
 		return &*_img;
+	}
+
+	void Layer::dirty(void)
+	{
+		*_dirty = true;
+		LOG("Dirtying layer.");
 	}
 }
 

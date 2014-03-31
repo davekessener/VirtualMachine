@@ -83,6 +83,7 @@ namespace surface
 
 				T::redraw();
 
+				SDL_SetRenderDrawColor(render, 255, 255, 255, 255);
 				SDL_RenderClear(render);
 				SDL_RenderCopy(render, static_cast<SDL_Texture *>(*image), NULL, NULL);
 				SDL_RenderPresent(render);

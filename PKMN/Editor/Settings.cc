@@ -2,6 +2,7 @@
 
 const std::string editor::Settings::TS_GRID("show_tileset_grid");
 const std::string editor::Settings::MAP_GRID("show_map_grid");
+const std::string editor::Settings::MAP_BLUR("show_map_blur");
 const std::string editor::Settings::TS_BUTTON_GRID("grid_btn");
 const std::string editor::Settings::NBT_MAP_NAME("Name");
 const std::string editor::Settings::NBT_MAP_ID("ID");

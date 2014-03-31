@@ -59,16 +59,31 @@ int main(void)
 		ro.w = ro.h = rt.w = rt.h = 64;
 
 		SDL_SetRenderTarget(renderer, img);
+		SDL_SetRenderDrawColor(renderer, 255, 255, 255, 0);
+		SDL_RenderClear(renderer);
+		SDL_SetRenderTarget(renderer, NULL);
+
+		SDL_SetRenderTarget(renderer, img);
 		SDL_RenderCopy(renderer, ts, &ro, &rt);
+		SDL_SetRenderTarget(renderer, NULL);
+		SDL_RenderClear(renderer);
+		SDL_RenderCopy(renderer, img, NULL, NULL);
+		SDL_RenderPresent(renderer);
+		SDL_SetRenderTarget(renderer, img);
 		rt.x = 16; rt.y = 16; rt.w = rt.h = 16;
 		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
 		SDL_RenderFillRect(renderer, &rt);
+		SDL_SetRenderTarget(renderer, NULL);
+		SDL_RenderClear(renderer);
+		SDL_RenderCopy(renderer, img, NULL, NULL);
+		SDL_RenderPresent(renderer);
+		SDL_SetRenderTarget(renderer, img);
 		rt = ro;
 		ro.x = 96;
 		SDL_RenderCopy(renderer, ts, &ro, &rt);
 		SDL_SetRenderTarget(renderer, NULL);
 
-		SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+		SDL_SetRenderDrawColor(renderer, 255, 0, 255, 255);
 
 //		SDL_SetRenderTarget(renderer, img);
 //		SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);

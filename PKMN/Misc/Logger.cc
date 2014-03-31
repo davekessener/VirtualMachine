@@ -49,6 +49,7 @@ void Logger::logMsg(const char *s, va_list l)
 	fprintf(_f, "[%s] ", getTime().c_str());
 	vfprintf(_f, s, l);
 	putc('\n', _f);
+	fflush(_f);
 
 	mtx.unlock();
 }
@@ -61,6 +62,7 @@ void Logger::logMsgFrom(const char *f, int i, const char *s, va_list l)
 	fprintf(_f, "[%s:%d] ", f, i);
 	vfprintf(_f, s, l);
 	putc('\n', _f);
+	fflush(_f);
 
 	mtx.unlock();
 }

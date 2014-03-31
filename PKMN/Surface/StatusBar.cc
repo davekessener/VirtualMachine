@@ -30,8 +30,10 @@ namespace surface
 			}, __SB_MINIMIZE_BTN));
 
 		bg = new Image(W(), H());
+		bg->startBlit();
 		bg->gradientFill(LIGHT, LIGHT, DARK, DARK);
 		bg->renderText(title, 4, 2, 0xffffffff);
+		bg->endBlit();
 	}
 
 	StatusBar::~StatusBar(void)

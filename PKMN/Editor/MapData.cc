@@ -98,7 +98,7 @@ namespace editor
 // # ===========================================================================
 
 	MapData::MapData(int id, const std::string& n, int w, int h)
-		: ID(id), name(n), _w(w), _h(h), _bottom(1, map::Layer(w, h)), _inter(1, map::Layer(w, h)), _top(1, map::Layer(w, h))
+		: ID(id), name(n), _w(w), _h(h), _layers(LAYERS, map::Layer(w, h))
 	{
 	}
 
@@ -116,29 +116,9 @@ namespace editor
 		return _h;
 	}
 
-	int MapData::layerCount(void)
+	map::Layer MapData::operator[](int i)
 	{
-		int c = 0;
-		for(int i = 0 ; i < LAYERS ; ++i)
-		{
-			c += this->operator[](i).size();
-		}
-
-		return c;
-	}
-
-	map::Layer MapData::addLayer(int idx)
-	{
-		map::Layer l(_w, _h);
-		this->operator[](idx).push_back(l);
-		return l;
-	}
-
-	std::vector<map::Layer>& MapData::operator[](int i)
-	{
-		assert(i>=0&&i<3);
-
-		return i ? (i == 1 ? _inter : _top) : _bottom;
+		return _layers.at(i);
 	}
 
 	nbt::TAG_Compound::ptr_t MapData::save(void)
@@ -159,23 +139,9 @@ namespace editor
 
 		map->readFromNBT(nbt);
 
+		LOG("Read map '%s'(%d) %d x %d", map->name.c_str(), map->ID, map->_w, map->_h);
+
 		return map;
-	}
-
-	std::vector<unsigned int> MapData::flatten(std::vector<map::Layer> layers)
-	{
-		std::vector<unsigned int> v;
-
-		v.reserve(layers.size() * _w * _h);
-
-		for(auto i = layers.begin() ; i != layers.end() ; ++i)
-		{
-			std::vector<unsigned int> t(i->flatten());
-
-			v.insert(v.end(), t.begin(), t.end());
-		}
-
-		return v;
 	}
 
 	void MapData::writeToNBT(nbt::TAG_Compound::ptr_t nbt)
@@ -184,11 +150,15 @@ namespace editor
 		nbt->setLong(Settings::NBT_MAP_ID, ID);
 		nbt->setInt(Settings::NBT_MAP_WIDTH, _w);
 		nbt->setInt(Settings::NBT_MAP_HEIGHT, _h);
+
+		std::vector<unsigned int> btm(_layers.at(LAYER_BOTTOM1).flatten());
+		std::vector<unsigned int> t(_layers.at(LAYER_BOTTOM2).flatten());
+		btm.insert(btm.end(), t.begin(), t.end());
 		
 		nbt::TAG_Compound::ptr_t data = nbt::Make<nbt::TAG_Compound>(Settings::NBT_MAP_DATA);
-		data->setIntArray(Settings::NBT_MAP_DATA_BOTTOM, flatten(_bottom));
-		data->setIntArray(Settings::NBT_MAP_DATA_INTER, flatten(_inter));
-		data->setIntArray(Settings::NBT_MAP_DATA_TOP, flatten(_top));
+		data->setIntArray(Settings::NBT_MAP_DATA_BOTTOM, btm);
+		data->setIntArray(Settings::NBT_MAP_DATA_INTER, _layers.at(LAYER_INTER).flatten());
+		data->setIntArray(Settings::NBT_MAP_DATA_TOP, _layers.at(LAYER_TOP).flatten());
 
 		nbt->setCompoundTag(data);
 	}
@@ -199,13 +169,13 @@ namespace editor
 
 		auto read = [this, data](const std::string& name, std::vector<map::Layer>& v)
 			{
+				v.clear();
+
 				if(data->hasTag(name))
 				{
 					std::vector<unsigned int> d = data->getIntArray(name);
 
 					assert(d.size()%(_w*_h)==0);
-
-					v.clear();
 
 					for(auto i = d.cbegin() ; i != d.cend() ; i += _w * _h)
 					{
@@ -218,9 +188,22 @@ namespace editor
 				}
 			};
 
-		read(Settings::NBT_MAP_DATA_BOTTOM, _bottom);
-		read(Settings::NBT_MAP_DATA_INTER, _inter);
-		read(Settings::NBT_MAP_DATA_TOP, _top);
+		_layers.clear();
+
+		std::vector<map::Layer> v;
+
+		read(Settings::NBT_MAP_DATA_BOTTOM, v);
+
+		_layers.push_back(v.size() == 0 ? map::Layer(_w, _h) : v.at(0));
+		_layers.push_back(v.size() <= 1 ? map::Layer(_w, _h) : v.at(1));
+
+		read(Settings::NBT_MAP_DATA_INTER, v);
+
+		_layers.push_back(v.empty() ? map::Layer(_w, _h) : v.at(0));
+
+		read(Settings::NBT_MAP_DATA_TOP, v);
+
+		_layers.push_back(v.empty() ? map::Layer(_w, _h) : v.at(0));
 	}
 }
 

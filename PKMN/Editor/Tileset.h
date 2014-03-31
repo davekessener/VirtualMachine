@@ -14,6 +14,8 @@ namespace editor
 			void mouseDown(button_t, int, int);
 			void setBackgroundColor(color_rgba_t c) { bgColor = c; }
 			void setBackgroundPlain(bool f) { bgPlain = f; }
+			int get( ) const;
+			void set(int);
 		protected:
 			void draw(Image *, int, int);
 			std::pair<int, int> getScrollRanges( );

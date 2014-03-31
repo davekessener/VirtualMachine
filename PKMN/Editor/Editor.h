@@ -4,7 +4,9 @@
 #include <Surface/Window.h>
 #include <Surface/Application.h>
 #include <Surface/ButtonToggle.h>
+#include <Selector.h>
 #include "Tileset.h"
+#include "Map.h"
 #include "Project.h"
 
 namespace editor
@@ -18,8 +20,12 @@ namespace editor
 			void registerCommands(std::function<void(const std::string&, std::function<void(std::vector<std::string>)>)>);
 			static int run(int, char **);
 		private:
+			void openMap(Project::map_id);
 			surface::Scrolling<Tileset> *_tileset;
-			surface::ButtonToggle *_tsGrid;
+			surface::Scrolling<Map> *_map;
+			surface::ButtonToggle *_tsGrid, *_mapGrid;
+			Project *_project;
+			Image *_image;
 	};
 }
 

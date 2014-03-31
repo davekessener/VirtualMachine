@@ -34,7 +34,9 @@ Image *WindowHandler::_getIcon(const std::string& fn)
 		int x = (id % CX_ELEMS) * TILE_SIZE;
 		int y = (id / CX_ELEMS) * TILE_SIZE;
 
+		stitch->startBlit();
 		stitch->blit(i, Point(x, y), Rect(0, 0, TILE_SIZE, TILE_SIZE));
+		stitch->endBlit();
 
 		delete i;
 

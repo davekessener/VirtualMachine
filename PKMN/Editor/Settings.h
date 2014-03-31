@@ -15,6 +15,7 @@ namespace editor
 			static Image *getTileset( );
 			static const std::string TS_GRID;
 			static const std::string MAP_GRID;
+			static const std::string MAP_BLUR;
 			static const std::string TS_BUTTON_GRID;
 			static const std::string NBT_MAP_NAME;
 			static const std::string NBT_MAP_ID;
