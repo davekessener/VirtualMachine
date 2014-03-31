@@ -125,10 +125,11 @@ namespace editor
 	{
 		bool showGrid = Settings::getBool(Settings::MAP_GRID);
 		bool showBlur = Settings::getBool(Settings::MAP_BLUR);
+		Rect r(0, 0, std::min(W(), _data->width() * TILE_SIZE), std::min(H(), _data->height() * TILE_SIZE));
 
 		dI->startBlit();
 
-		dI->fillRect(0x000000ff, 0, 0, dI->width(), dI->height());
+		dI->fillRect(0x000000ff, 0, 0, r.w, r.h);
 		
 		for(int i = 0 ; i < _layers.size() ; ++i)
 		{
@@ -148,7 +149,7 @@ namespace editor
 
 		if(showGrid)
 		{
-			dI->blit(_grid, Point(0, 0), Rect(0, 0, std::min(W(), _data->width() * TILE_SIZE), std::min(H(), _data->height() * TILE_SIZE)));
+			dI->blit(_grid, Point(0, 0), r);
 		}
 		
 		dI->endBlit();

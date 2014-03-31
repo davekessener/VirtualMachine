@@ -285,7 +285,9 @@ void Image::drawGrid(color_rgba_t c, int dx, int dy)
 		pix[i] = (i < dx || i % dx == 0) ? static_cast<unsigned int>(c) : 0;
 	}
 
+	cell.startBlit();
 	SDL_UpdateTexture(static_cast<SDL_Texture *>(cell), NULL, pix, dx * sizeof(unsigned int));
+	cell.endBlit();
 
 	delete[] pix;
 

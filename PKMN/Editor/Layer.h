@@ -24,7 +24,7 @@ namespace editor
 		private:
 			std::shared_ptr<bool> _dirty;
 			map::Layer _layer;
-			std::shared_ptr<Image> _img;
+			std::shared_ptr<std::shared_ptr<Image>> _img;
 
 			void dirty( );
 
