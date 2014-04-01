@@ -28,6 +28,11 @@ namespace editor
 				{
 					Settings::setBool(Settings::MAP_GRID, s == surface::Button::PRESSED);
 				}, Settings::TS_BUTTON_GRID));
+		registerSurface(_mapBlur = new surface::ButtonToggle
+			(i, TILE_SIZE, 0, [this](surface::Button::button_state s)
+				{
+					Settings::setBool(Settings::MAP_BLUR, s == surface::Button::PRESSED);
+				}, Settings::MAP_BUTTON_BLUR));
 		_image = i;
 	}
 	

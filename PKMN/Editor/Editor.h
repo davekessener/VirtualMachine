@@ -23,7 +23,7 @@ namespace editor
 			void openMap(Project::map_id);
 			surface::Scrolling<Tileset> *_tileset;
 			surface::Scrolling<Map> *_map;
-			surface::ButtonToggle *_tsGrid, *_mapGrid;
+			surface::ButtonToggle *_tsGrid, *_mapGrid, *_mapBlur;
 			Project *_project;
 			Image *_image;
 	};
