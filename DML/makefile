@@ -1,5 +1,5 @@
 CC=g++-4.7
-CFLAGS=-std=c++0x -ggdb -DDEBUG
+CFLAGS=-std=c++0x -ggdb -O0 -DDEBUG
 SRC=$(wildcard *.cc)
 OBJ=$(SRC:.cc=.o)
 TEMPLATES=$(wildcard *.hpp)
