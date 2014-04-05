@@ -1,8 +1,8 @@
-CC=g++
+CC=g++-4.7
 CFLAGS=-std=c++0x -ggdb -DDEBUG
 SRC=$(wildcard *.cc)
 OBJ=$(SRC:.cc=.o)
-TEMPLATES=$(wildcard *.cpp)
+TEMPLATES=$(wildcard *.hpp)
 TARGET=test
 
 %.o: %.cc $(TEMPLATES)
@@ -12,5 +12,5 @@ all: $(OBJ)
 	$(CC) $(OBJ) -o $(TARGET)
 
 clean:
-	-rm $(OBJ) $(TARGET)
+	-rm *.o $(TARGET)
 

@@ -1,5 +1,5 @@
-#ifndef LOKI_H
-#define LOKI_H
+#ifndef DML_H
+#define DML_H
 
 #ifdef NULL
 #undef NULL
