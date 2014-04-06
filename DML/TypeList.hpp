@@ -62,6 +62,47 @@ namespace dml
 
 // # ---------------------------------------------------------------------------
 
+		template<typename, int = 0>
+		struct Length;
+
+		template<typename H, typename T, int I>
+		struct Length<TypeList<H, T>, I>
+		{
+			struct RET { enum { VAL = Length<T, I + 1>::VAL }; };
+			enum { VAL = RET::VAL };
+		};
+
+		template<int I>
+		struct Length<NULL_t, I>
+		{
+			struct RET { enum { VAL = I }; };
+			enum { VAL = RET::VAL };
+		};
+
+// # ---------------------------------------------------------------------------
+
+		template<typename, int>
+		struct Get;
+
+		template<typename H, typename T, int I>
+		struct Get<TypeList<H, T>, I>
+		{
+			typedef typename Get<T, I - 1>::RET RET;
+		};
+
+		template<typename H, typename T>
+		struct Get<TypeList<H, T>, 0>
+		{
+			typedef H RET;
+		};
+
+		template<int I>
+		struct Get<NULL_t, I>
+		{
+		};
+
+// # ---------------------------------------------------------------------------
+
 		template<typename, template<typename, typename> class>
 		struct Transfer;
 

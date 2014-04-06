@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cassert>
 #include "DML.h"
 #include "TypeList.hpp"
 
@@ -7,9 +8,9 @@ struct Print
 {
 	typedef typename dml::typelist::Transfer<T, std::pair>::RET TT;
 
-	Print(TT& t) : _v(t) { }
+	constexpr Print(const TT& t) : _v(t) { }
 
-	void print( )
+	constexpr void print( )
 	{
 		std::cout << _v.first << std::endl;
 
@@ -18,20 +19,20 @@ struct Print
 		p.print();
 	}
 
-	TT& _v;
+	const TT& _v;
 };
 
 template<typename T>
 struct Print<dml::TypeList<T, NULL_t>>
 {
-	Print(T& t) : _v(t) { }
+	constexpr Print(const T& t) : _v(t) { }
 
-	void print( )
+	constexpr void print( )
 	{
 		std::cout << _v << std::endl;
 	}
 
-	T& _v;
+	const T& _v;
 };
 
 template<typename ... T>
@@ -40,7 +41,7 @@ struct Tuple
 	typedef typename dml::typelist::MakeTypeList<T...>::RET typelist;
 	typedef typename dml::typelist::Transfer<typelist, std::pair>::RET type;
 
-	void print( )
+	constexpr void print( )
 	{
 		Print<typelist> p(_v);
 
@@ -52,24 +53,29 @@ struct Tuple
 
 int main(int argc, char *argv[])
 {
-	auto a = new dml::typelist::MakeTypeList<int, long, short, char>::RET;
-	auto b = new Tuple<double, int, char, short>;
+	typedef typename dml::typelist::MakeTypeList<int, long, float, short, char>::RET list;
+	Tuple<double, int, char, short> b;
 
-	b->_v.first = 3.141;
-	b->_v.second.first = 1;
-	b->_v.second.second.first = 'Z';
-	b->_v.second.second.second = -1;
+	dml::typelist::Get<list, dml::typelist::Find<list, char>::VAL>::RET v;
 
-	b->print();
+	v = 'a';
+
+	b._v.first = 3.141;
+	b._v.second.first = 1;
+	b._v.second.second.first = 'Z';
+	b._v.second.second.second = -1;
+
+	b.print();
 
 	std::cout << "---" << std::endl;
 
-	std::cout << dml::typelist::Find<decltype(*a), short>::VAL << std::endl;
+	std::cout << v << std::endl;
 
-	std::cout << sizeof(*b) << std::endl;
+	std::cout << dml::typelist::Length<list>::VAL << std::endl;
 
-	delete a;
-	delete b;
+	std::cout << dml::typelist::Find<list, short>::VAL << std::endl;
+
+	std::cout << sizeof(b) << std::endl;
 
 	return 0;
 }
