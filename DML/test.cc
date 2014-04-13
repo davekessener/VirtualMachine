@@ -2,6 +2,8 @@
 #include <cassert>
 #include "DML.h"
 #include "TypeList.hpp"
+#include "Integral.hpp"
+#include "Logic.hpp"
 
 template<typename T>
 struct Print
@@ -53,29 +55,11 @@ struct Tuple
 
 int main(int argc, char *argv[])
 {
-	typedef typename dml::typelist::MakeTypeList<int, long, float, short, char>::RET list;
-	Tuple<double, int, char, short> b;
+	typename dml::If<dml::Bool<false>, int, double>::RET val;
 
-	dml::typelist::Get<list, dml::typelist::Find<list, char>::VAL>::RET v;
+	val = static_cast<decltype(val)>(3.1);
 
-	v = 'a';
-
-	b._v.first = 3.141;
-	b._v.second.first = 1;
-	b._v.second.second.first = 'Z';
-	b._v.second.second.second = -1;
-
-	b.print();
-
-	std::cout << "---" << std::endl;
-
-	std::cout << v << std::endl;
-
-	std::cout << dml::typelist::Length<list>::VAL << std::endl;
-
-	std::cout << dml::typelist::Find<list, short>::VAL << std::endl;
-
-	std::cout << sizeof(b) << std::endl;
+	std::cout << val << std::endl;
 
 	return 0;
 }
