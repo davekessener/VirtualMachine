@@ -1,8 +1,0 @@
-.CHIP XOR 2 1
-NOT #0 %0
-NOT #1 %1
-AND #0 %1 %2
-AND #1 %0 %3
-OR %0 %3 $0
-.CHIP
-
