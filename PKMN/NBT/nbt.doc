@@ -1,0 +1,268 @@
+typedef NBTSimple		<1, BYTE> 			TAG_Byte;
+typedef NBTSimple		<2, WORD> 			TAG_Short;
+typedef NBTSimple		<3, DWORD> 			TAG_Int;
+typedef NBTSimple		<4, QWORD> 			TAG_Long;
+typedef NBTSimple		<5, float>	 		TAG_Float;
+typedef NBTSimple		<6, double> 		TAG_Double;
+typedef NBTArray		<7, DWORD, BYTE> 	TAG_Byte_Array;
+typedef NBTString		<8> 				TAG_String;
+typedef NBTList			<9> 				TAG_List;
+typedef NBTTagCompound	<10> 				TAG_Compound;
+typedef NBTArray		<11, DWORD, DWORD> 	TAG_Int_Array;
+
+TAG_Compound::ptr_t readFile(const std::string&);
+void writeFile(const std::string&, TAG_Compound::ptr_t, bool = false);
+
+class NBTBase
+{
+	void write(std::ostream&);
+	void write(gzip::ogzstream&);
+  	void write(const nbtostream&);
+
+	void read(std::istream&);
+	void read(gzip::igzstream&);
+	void read(const nbtistream&);
+
+	void setName(const std::string&);
+	std::string getName( );
+
+	BYTE getID( );
+};
+
+// # ---------------------------------------------------------------------------
+
+template<BYTE id>
+class _NBTBase : public NBTBase
+{
+	static const BYTE ID;
+};
+
+template<BYTE id>
+const BYTE _NBTBase<id>::ID = id;
+
+// # ---------------------------------------------------------------------------
+
+template<BYTE ID, typename T>
+class NBTSimple : public _NBTBase<ID>
+{
+	typedef std::shared_ptr<NBTSimple<ID, T>> ptr_t;
+
+	NBTSimple(T t);
+	NBTSimple(const std::string& = "", T = T());
+	T get( );
+	void set(T);
+};
+
+// # ---------------------------------------------------------------------------
+
+template<BYTE ID, typename T1, typename T2>
+class NBTArray : public _NBTBase<ID>, public std::vector<T2>
+{
+	typedef std::shared_ptr<NBTArray<ID, T1, T2>> ptr_t;
+
+	NBTArray(const std::string& s = "");
+	template<template<typename T, typename = std::allocator<T>> class C>
+		NBTArray(const std::string& s, C<NBT_ptr_t>& c);
+	template<typename T>
+		NBTArray(const std::string& s, T t1, T t2);
+	NBTArray(const std::string& s, std::initializer_list<T2> v);
+	template<template<typename T, typename = std::allocator<T>> class C>
+		NBTArray(C<NBT_ptr_t>& c);
+	template<typename T>
+		NBTArray(T t1, T t2);
+	NBTArray(std::initializer_list<T2> v);
+
+	std::vector<T2> get();
+};
+
+template<BYTE ID>
+class NBTString : public NBTArray<ID, WORD, BYTE>
+{
+	typedef std::shared_ptr<NBTString<ID>> ptr_t;
+
+	NBTString(const std::string& s, const std::string& v);
+	NBTString(const std::string& s = "");
+	std::string get();
+};
+
+// # ---------------------------------------------------------------------------
+
+template<BYTE ID>
+class NBTList : public _NBTBase<ID>, protected std::vector<NBT_ptr_t>
+{
+	typedef std::shared_ptr<NBTList<ID>> ptr_t;
+
+	template<typename T>
+	class iterator
+	{
+		std::shared_ptr<T> operator*();
+		T& operator->();
+		iterator<T>& operator++();
+		bool operator==(const iterator& _i);
+		bool operator!=(const iterator& _i);
+	};
+
+	template<typename T>
+		iterator<T> begin(void);
+	std::vector<NBT_ptr_t>::iterator begin(void);
+
+	template<typename T>
+		iterator<T> end(void);
+	std::vector<NBT_ptr_t>::iterator end(void);
+
+	NBTList(const std::string& s = "", BYTE id = 0);
+	template<template<typename T, typename = std::allocator<T>> class C>
+		NBTList(const std::string& s, C<NBT_ptr_t>& c);
+	template<typename T>
+		NBTList(const std::string& s, T t1, T t2);
+	NBTList(const std::string& s, std::initializer_list<NBT_ptr_t> v);
+	NBTList(BYTE id);
+	template<template<typename T, typename = std::allocator<T>> class C>
+		NBTList(C<NBT_ptr_t>& c);
+	template<typename T>
+		NBTList(T t1, T t2);
+	NBTList(std::initializer_list<NBT_ptr_t> v);
+
+	int size( );
+	int tagID( );
+	template<typename T>
+		std::shared_ptr<T> tagAt(int i);
+	NBT_ptr_t tagAt(int i);
+	template<typename T>
+		void addTag(std::shared_ptr<T> tag);
+	void addTag(NBT_ptr_t tag);
+};
+
+// # ---------------------------------------------------------------------------
+
+template<BYTE ID>
+class NBTTagCompound : public _NBTBase<ID>, protected std::map<std::string, NBT_ptr_t>
+{
+	typedef std::shared_ptr<NBTTagCompound<ID>> ptr_t;
+
+	class Names
+	{
+		class iterator
+		{
+			std::string operator*();
+			const std::string *operator->();
+			iterator& operator++();
+			bool operator==(const iterator& i);
+			bool operator!=(const iterator& i);
+		};
+		iterator begin();
+		iterator end();
+	} Names;
+	class Tags
+	{
+		class iterator
+		{
+			NBT_ptr_t operator*();
+			NBT_ptr_t operator->();
+			iterator& operator++();
+			bool operator==(const iterator& i);
+			bool operator!=(const iterator& i);
+		};
+		iterator begin();
+		iterator end();
+	} Tags;
+
+	NBTTagCompound(const std::string& s = "");
+	template<typename T>
+		NBTTagCompound(const std::string& s, T t1, T t2);
+	template<template<typename T, typename = std::allocator<T>> class C>
+		NBTTagCompound(const std::string& s, C<NBT_ptr_t> c);
+	NBTTagCompound(const std::string& s, std::initializer_list<NBT_ptr_t> v);
+	template<typename T>
+		NBTTagCompound(T t1, T t2);
+	template<template<typename T, typename = std::allocator<T>> class C>
+		NBTTagCompound(C<NBT_ptr_t>& c);
+	NBTTagCompound(std::initializer_list<NBT_ptr_t> v);
+
+	bool hasTag(const std::string& s);
+	bool empty( );
+	
+	NBT_ptr_t getTag(const std::string& s);
+	template<typename T>
+		std::shared_ptr<T> getTag(const std::string& s);
+	void setTag(const std::string& s, NBT_ptr_t p);
+	void setTag(NBT_ptr_t p);
+	template<typename T>
+		void setTag(const std::string& name, std::shared_ptr<T> p);
+	template<typename T>
+		void setTag(std::shared_ptr<T> p);
+	bool removeTag(const std::string& s);
+	template<typename T>
+		void set(const std::string& name, T t);
+
+	void setByte(const std::string& s, BYTE v);
+	void setShort(const std::string& s, WORD v);
+	void setInt(const std::string& s, DWORD v);
+	void setLong(const std::string& s, QWORD v);
+	void setFloat(const std::string& s, float v);
+	void setDouble(const std::string& s, double v);
+	void setString(const std::string& name, const std::string& s);
+	void setByteArray(const std::string&s, BYTE *v, int n);
+	template<template<typename T, typename = std::allocator<T>> class C>
+		void setByteArray(const std::string&s, C<BYTE> c);
+	template<typename I>
+		void setByteArray(const std::string& s, I i1, I i2);
+	void setIntArray(const std::string&s, DWORD *v, int n);
+	template<template<typename T, typename = std::allocator<T>> class C>
+		void setIntArray(const std::string&s, C<DWORD> c);
+	template<typename I>
+		void setIntArray(const std::string& s, I i1, I i2);
+	void setTagList(const std::string& s, TAG_List::ptr_t p);
+	void setTagList(TAG_List::ptr_t p);
+	template<template<typename T, typename = std::allocator<T>> class C>
+		void setTagList(const std::string& s, C<NBT_ptr_t> c);
+	template<typename I>
+		void setTagList(const std::string& s, I i1, I i2);
+	void setCompoundTag(const std::string& s, TAG_Compound_ptr_t p);
+	void setCompoundTag(TAG_Compound_ptr_t p);
+	template<template<typename T, typename = std::allocator<T>> class C>
+		void setCompoundTag(const std::string& s, C<NBT_ptr_t> c);
+	template<typename I>
+		void setCompoundTag(const std::string& s, I i1, I i2);
+
+	BYTE getByte(const std::string& s);
+	WORD getShort(const std::string& s);
+	DWORD getInt(const std::string& s);
+	QWORD getLong(const std::string& s);
+	float getFloat(const std::string& s);
+	double getDouble(const std::string& s);
+	std::vector<BYTE> getByteArray(const std::string& s);
+	std::string getString(const std::string& s);
+	TAG_List::ptr_t getTagList(const std::string& s);
+	ptr_t getCompoundTag(const std::string& s);
+	std::vector<DWORD> getIntArray(const std::string& s);
+};
+
+// # ---------------------------------------------------------------------------
+
+class NBTHelper
+{
+	NBT_ptr_t Read(std::istream&);
+	NBT_ptr_t Read(gzip::igzstream&);
+	NBTBase *Default(BYTE);
+	NBTBase *Read(const nbtistream&);
+	static NBTHelper& Instance( );
+};
+
+// # ===========================================================================
+
+template<class T>
+TAG_Compound::ptr_t Read(T& t)
+{
+	return std::dynamic_pointer_cast<TAG_Compound>(NBTHelper::Instance().Read(t));
+}
+
+//#define MAKE_TAG_COMPOUND(...) Make<TAG_Compound>(__VAR_ARGS__)
+
+template<class T, typename ... A>
+std::shared_ptr<T> Make(A ... a)
+{
+	return std::shared_ptr<T>(new T(a...));
+}
+
+

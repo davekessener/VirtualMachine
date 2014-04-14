@@ -1,0 +1,17 @@
+- rattodile
+	- gold
+		- lazorgator
+		- steelix
+		- espeon
+		- pigeot
+		- dragonite
+		- nidoqueen
+	- joey
+		- raticate
+		- slaking
+		- tauros
+		- ursaring
+		- exploud
+		- nidoking
+- attract works dependant on egg-group (+ type, size/weight, etc.)
+
