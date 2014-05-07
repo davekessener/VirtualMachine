@@ -84,11 +84,11 @@ namespace sim
 					{
 						case 'o':
 							assert(outs_.empty());
-							readLineOfInts(outs_, line);
+							readLineOfInts(outs_, line.substr(2));
 							break;
 						case 'i':
 							assert(ins_.empty());
-							readLineOfInts(ins_, line);
+							readLineOfInts(ins_, line.substr(2));
 							break;
 						default:
 							assert(!"ERR: 'i' for input or 'o' for output expected!");
@@ -112,28 +112,7 @@ namespace sim
 
 	Chip::Chip_ptr Template::instantiate(void) const
 	{
-		Chip_ptr ch(new Chip());
-
-		for(Scanner *s : components_)
-		{
-			Chip_ptr c = TemplateManager::getTemplate(s->name())->instantiate();
-
-			for(int i = 0, m = s->in().size() ; i < m ; ++i)
-			{
-				int in = s->in().at(i);
-				if(in < 0) continue;
-				ch->getNode(in)->connect(c->getInput(i));
-			}
-
-			for(int i = 0, m = s->out().size() ; i < m ; ++i)
-			{
-				int out = s->out().at(i);
-				if(out < 0) continue;
-				ch->getNode(out)->connect(c->getOutput(i));
-			}
-
-			ch->addChip(c);
-		}
+		Chip::Chip_ptr ch(new Chip());
 
 		for(int in : ins_)
 		{
@@ -143,6 +122,27 @@ namespace sim
 		for(int out : outs_)
 		{
 			ch->setOutput(out);
+		}
+
+		for(Scanner *s : components_)
+		{
+			Chip::Chip_ptr c = TemplateManager::getTemplate(s->name())->instantiate();
+
+			for(int i = 0, m = s->in().size() ; i < m ; ++i)
+			{
+				int in = s->in().at(i);
+				if(in < 0) continue;
+				c->getInput(i)->setInput(ch->getNode(in));
+			}
+
+			for(int i = 0, m = s->out().size() ; i < m ; ++i)
+			{
+				int out = s->out().at(i);
+				if(out < 0) continue;
+				ch->getNode(out)->connect(*c->getOutput(i));
+			}
+
+			ch->addChip(c);
 		}
 	}
 }

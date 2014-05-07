@@ -1,5 +1,5 @@
 #ifndef SIM_TEMPLATE_H
-#define IM_TEMPLATE_H
+#define SIM_TEMPLATE_H
 
 #include <sstream>
 #include <vector>
@@ -15,8 +15,8 @@ namespace sim
 
 		public:
 			Template(const std::vector<std::string>&);
-			~Template( );
-			Chip::Chip_ptr instantiate( ) const;
+			virtual ~Template( );
+			virtual Chip::Chip_ptr instantiate( ) const;
 		private:
 			std::string name_;
 			struct Scanner;

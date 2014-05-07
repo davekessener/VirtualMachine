@@ -4,6 +4,8 @@
 #include <map>
 #include <fstream>
 #include "Template.h"
+#include "AxiomTemplate.hpp"
+#include "Axiom.h"
 
 namespace sim
 {
@@ -11,16 +13,19 @@ namespace sim
 	{
 		public:
 			static TemplateManager& instance( );
-			Template::Template_ptr getTemplate(const std::string&);
+			static Template::Template_ptr getTemplate(const std::string&);
 		private:
 			TemplateManager( );
 			~TemplateManager( );
 			TemplateManager(const TemplateManager&);
 			TemplateManager& operator=(const TemplateManager&);
 
-			std::vector<std::string> readFile(const std::string&);
+			static std::vector<std::string> readFile(const std::string&);
+			Template::Template_ptr getTemplate_(const std::string&);
 
 			std::map<std::string, Template::Template_ptr> templates_;
+
+			static const std::string TEMPLATE_EXT;
 	};
 }
 

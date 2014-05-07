@@ -41,9 +41,9 @@ namespace sim
 	void Chip::setInput(int idx)
 	{
 		Wire_ptr w = getNode(idx);
-		COut_ptr o(new ConnectorOutput(w));
+		Connector_ptr o(new Connector);
 
-//		w->connect(*o);
+		w->connect(*o);
 
 		input_.push_back(o);
 	}
@@ -51,11 +51,31 @@ namespace sim
 	void Chip::setOutput(int idx)
 	{
 		Wire_ptr w = getNode(idx);
-		CIn_ptr i(new ConnectorInput(w));
+		Connector_ptr i(new Connector);
 
-		w->connect(*i);
+		i->setInput(w);
 
 		output_.push_back(i);
+	}
+
+	Connector::Connector_ptr Chip::getInput(int idx)
+	{
+		return input_.at(idx);
+	}
+
+	Connector::Connector_ptr Chip::getOutput(int idx)
+	{
+		return output_.at(idx);
+	}
+
+	int Chip::inpinCount(void) const
+	{
+		return input_.size();
+	}
+
+	int Chip::outpinCount(void) const
+	{
+		return output_.size();
 	}
 }
 

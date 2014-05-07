@@ -15,8 +15,6 @@ namespace sim
 		typedef std::shared_ptr<Chip> Chip_ptr;
 		typedef Wire::Wire_ptr Wire_ptr;
 		typedef Connector::Connector_ptr Connector_ptr;
-		typedef std::shared_ptr<ConnectorInput> CIn_ptr;
-		typedef std::shared_ptr<ConnectorOutput> COut_ptr;
 
 		public:
 			Chip( );
@@ -26,10 +24,13 @@ namespace sim
 			Wire_ptr getNode(int);
 			void setInput(int);
 			void setOutput(int);
+			virtual Connector_ptr getInput(int);
+			virtual Connector_ptr getOutput(int);
+			int inpinCount( ) const;
+			int outpinCount( ) const;
 		protected:
 			std::vector<Chip_ptr> chips_;
-			std::vector<COut_ptr> input_;
-			std::vector<CIn_ptr>  output_;
+			std::vector<Connector_ptr> input_, output_;
 			std::vector<Wire_ptr> wires_;
 	};
 }

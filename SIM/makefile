@@ -6,10 +6,11 @@ LIBS=$(SDLLIBS) -lSDL2_image -lSDL2_ttf -lpthread -lz
 SRC=$(wildcard *.cc)
 OBJ=$(SRC:.cc=.o)
 HEADERS=$(wildcard *.h)
+TEMPLATES=$(wildcard *.hpp)
 SUBS=NBT.a GZ.a
 TARGET=simulator
 
-%.o: %.cc $(HEADERS)
+%.o: %.cc $(HEADERS) $(TEMPLATES)
 	$(CC) -c $(CFLAGS) -I. $< -o $@
 
 %.a:
