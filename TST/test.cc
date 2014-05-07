@@ -1,5 +1,9 @@
 #include <iostream>
 #include <stdint.h>
+#include <string>
+#include <map>
+#include <vector>
+#include <fstream>
 
 template<class T>
 class A
@@ -62,15 +66,28 @@ class Conversion<T, T>
 #define NULL nullptr
 #define NULL_t decltype(nullptr)
 
-void printInt(int i) { std::cout << "Printing int '" << i << "'!" << std::endl; }
-
 int main(void)
 {
 	std::cout << INHERITS(void *, double **) << " "
 			<< INHERITS(int, double) << " "
 			<< INHERITS(char, char) << std::endl;
 
-	printInt(3.141);
+	std::vector<std::string> c;
+	std::ifstream in(std::string("test.txt"));
+
+	while(in)
+	{
+		std::string s;
+		getline(in, s);
+		if(!s.empty()) c.push_back(s);
+	}
+
+	in.close();
+
+	for(std::string &s : c)
+	{
+		std::cout << s << std::endl;
+	}
 
 	return 0;
 }

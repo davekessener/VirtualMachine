@@ -1,17 +1,33 @@
-CC=g++
-CFLAGS=-ggdb -DDEBUG
+CC=g++-4.7
+SDLCFLAGS=$(shell sdl2-config --cflags)
+SDLLIBS=$(shell sdl2-config --libs)
+CFLAGS=-std=c++0x -O0 -Wl,--no-as-needed -ggdb -DDEBUG $(SDLCFLAGS)
+LIBS=$(SDLLIBS) -lSDL2_image -lSDL2_ttf -lpthread -lz
 SRC=$(wildcard *.cc)
 OBJ=$(SRC:.cc=.o)
+HEADERS=$(wildcard *.h)
+SUBS=NBT.a GZ.a
+TARGET=simulator
 
-%.o: %.cc
-	$(CC) -c $(CFLAGS) $< -o $@
+%.o: %.cc $(HEADERS)
+	$(CC) -c $(CFLAGS) -I. $< -o $@
 
-all: $(OBJ)
-	$(CC) $(OBJ) -o simulator
+%.a:
+	$(MAKE) -C $(@:.a=)/
+	cp $(@:.a=)/*.a .
 
-test: test.cpp
-	$(CC) $(CFLAGS) test.cpp -o test
+%.clean:
+	-$(MAKE) -C $(@:.clean=)/ clean
 
-clean:
-	-rm $(OBJ) simulator
+$(TARGET): logs $(SUBS) $(OBJ)
+	$(CC) $(OBJ) -Wl,--start-group $(shell ls *.a) -Wl,--end-group -o $(TARGET) $(LIBS)
+
+.PHONY: logs clean
+
+logs:
+	-mv resource/*.log resource/logs/
+	-rm -f *.a
+
+clean: logs $(SUBS:.a=.clean)
+	-rm -f *.o $(TARGET)
 
