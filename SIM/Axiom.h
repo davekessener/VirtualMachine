@@ -24,37 +24,58 @@ namespace sim
 			virtual Connector_ptr getInput(int);
 	};
 
-	class ChipHI : public OneOutChip
+	template<size_t V>
+	class SomeInChip : public ManyInChip
 	{
 		public:
-			void tick( );
+		using Chip::Connector_ptr;
+
+		public:
+			virtual Connector_ptr getInput(int);
 	};
 
-	class ChipNot : public OneOutChip
+	template<size_t V>
+	Connector::Connector_ptr SomeInChip<V>::getInput(int idx)
+	{
+		assert(idx>=0&&idx<V);
+		return ManyInChip::getInput(idx);
+	}
+
+	class ChipHI : public OneOutChip
+	{
+		using Chip::Connector_ptr;
+
+		public:
+			ChipHI( ) { setName("HI"); }
+			virtual Connector_ptr getOutput(int);
+	};
+
+	class ChipNot : public OneOutChip, public SomeInChip<1>
 	{
 		public:
+			ChipNot( ) { setName("NOT"); }
 			void tick( );
 	};
 
 	class ChipAnd : public OneOutChip, public ManyInChip
 	{
 		public:
+			ChipAnd( ) { setName("AND"); }
 			void tick( );
 	};
 
 	class ChipOr : public OneOutChip, public ManyInChip
 	{
 		public:
+			ChipOr( ) { setName("OR"); }
 			void tick( );
 	};
 
-	class ChipXOr : public OneOutChip, public ManyInChip
+	class ChipXOr : public OneOutChip, public SomeInChip<2>
 	{
-		using Chip::Connector_ptr;
-
 		public:
+			ChipXOr( ) { setName("XOR"); }
 			void tick( );
-			Connector_ptr getInput(int);
 	};
 }
 

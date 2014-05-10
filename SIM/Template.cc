@@ -6,7 +6,7 @@ namespace sim
 	struct Template::Scanner
 	{
 		public:
-			Scanner(const std::string& l)
+			Scanner(const std::string& l) : state(0)
 			{
 				std::istringstream iss(l);
 
@@ -18,15 +18,16 @@ namespace sim
 				}
 			}
 			std::string name( ) { return name_; }
-			std::vector<int> in( ) { return in_; }
-			std::vector<int> out( ) { return out_; }
+			const std::vector<int>& in( ) { return in_; }
+			const std::vector<int>& out( ) { return out_; }
 		private:
 			std::string name_;
 			std::vector<int> in_, out_;
+			int state;
 
 			void scan(const std::string& s)
 			{
-				static int state = 0;
+//				std::cout << "##Scan(" << state << ") '" << s << "'" << std::endl;
 
 				if(s[0] >= '0' && s[0] <= '9')
 				{
@@ -62,13 +63,14 @@ namespace sim
 			{
 				int i;
 				iss >> i;
+				if(!iss) break;
 				v.push_back(i);
 			}
 		}
 	}
 
 
-	Template::Template(const std::vector<std::string>& data) : name_(data.at(0))
+	Template::Template(const std::vector<std::string>& data) : name_(data.at(0)), isOptimized_(false)
 	{
 		components_.reserve(data.size());
 
@@ -89,6 +91,9 @@ namespace sim
 						case 'i':
 							assert(ins_.empty());
 							readLineOfInts(ins_, line.substr(2));
+							break;
+						case '!':
+							isOptimized_ = true;
 							break;
 						default:
 							assert(!"ERR: 'i' for input or 'o' for output expected!");
@@ -113,6 +118,10 @@ namespace sim
 	Chip::Chip_ptr Template::instantiate(void) const
 	{
 		Chip::Chip_ptr ch(new Chip());
+
+		ch->setName(name_);
+
+		if(isOptimized_) ch->enableOptimization();
 
 		for(int in : ins_)
 		{
@@ -144,6 +153,8 @@ namespace sim
 
 			ch->addChip(c);
 		}
+
+		return ch;
 	}
 }
 

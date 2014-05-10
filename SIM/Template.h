@@ -22,6 +22,7 @@ namespace sim
 			struct Scanner;
 			std::vector<Scanner *> components_;
 			std::vector<int> ins_, outs_;
+			bool isOptimized_;
 	};
 }
 

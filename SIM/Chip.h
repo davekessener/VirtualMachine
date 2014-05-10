@@ -28,10 +28,16 @@ namespace sim
 			virtual Connector_ptr getOutput(int);
 			int inpinCount( ) const;
 			int outpinCount( ) const;
+			void enableOptimization( );
+			void setName(const std::string&);
 		protected:
 			std::vector<Chip_ptr> chips_;
 			std::vector<Connector_ptr> input_, output_;
 			std::vector<Wire_ptr> wires_;
+			std::string name_;
+			bool optimized_;
+
+			void tickImpl( );
 	};
 }
 

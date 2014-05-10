@@ -21,11 +21,13 @@ namespace sim
 		return input_.at(idx);
 	}
 
-	void ChipHI::tick(void)
+	Connector::Connector_ptr ChipHI::getOutput(int idx)
 	{
-		output_.at(0)->in(V_t(1));
+		Connector::Connector_ptr o = OneOutChip::getOutput(idx);
 
-		Chip::tick();
+		o->in(V_t(1));
+
+		return o;
 	}
 
 	void ChipNot::tick(void)
@@ -80,13 +82,6 @@ namespace sim
 		output_.at(0)->in(input_.at(0)->out() ^ input_.at(1)->out());
 
 		Chip::tick();
-	}
-
-	Connector::Connector_ptr ChipXOr::getInput(int idx)
-	{
-		assert(idx>=0&&idx<2);
-
-		return ManyInChip::getInput(idx);
 	}
 }
 

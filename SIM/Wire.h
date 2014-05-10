@@ -1,6 +1,7 @@
 #ifndef SIM_WIRE_H
 #define SIM_WIRE_H
 
+#include <iostream>
 #include <vector>
 #include <cassert>
 #include <memory>

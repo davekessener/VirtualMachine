@@ -38,11 +38,15 @@ namespace sim
 	{
 		Chip::Chip_ptr ch(template_->instantiate());
 
-		for(int i = 0 ; i < 10 ; ++i)
+		for(int i = 0 ; i < 0x100 ; ++i)
 		{
-			std::cout << "Tick #" << i << std::endl;
-			log(ch);
-			std::cout << std::endl;
+			if(i < 0x20 || i > 0x0e0)
+			{
+				std::cout << "Tick #" << i << std::endl;
+				log(ch);
+				std::cout << std::endl;
+			}
+
 			ch->tick();
 		}
 	}

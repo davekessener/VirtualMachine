@@ -2,7 +2,35 @@
 
 namespace sim
 {
-	Chip::Chip(void)
+	namespace
+	{
+		std::vector<V_t> captureState(const std::vector<Wire::Wire_ptr>& w)
+		{
+			std::vector<V_t> r;
+			r.reserve(w.size());
+
+			for(const Wire::Wire_ptr& p : w)
+			{
+				r.push_back(p->out());
+			}
+
+			return r;
+		}
+
+		bool checkState(const std::vector<V_t>& s1, const std::vector<V_t>& s2)
+		{
+			if(s1.size() != s2.size()) return false;
+
+			for(int i = 0, s = s1.size() ; i < s ; ++i)
+			{
+				if(s1.at(i) != s2.at(i)) return false;
+			}
+
+			return true;
+		}
+	}
+
+	Chip::Chip(void) : name_("_"), optimized_(false)
 	{
 	}
 
@@ -11,6 +39,30 @@ namespace sim
 	}
 
 	void Chip::tick(void)
+	{
+		if(optimized_)
+		{
+			std::vector<V_t> s;
+
+			for(Chip_ptr &ch : chips_)
+			{
+				ch->enableOptimization();
+			}
+
+			do
+			{
+				s = captureState(wires_);
+
+				tickImpl();
+			} while(!checkState(s, captureState(wires_)));
+		}
+		else
+		{
+			tickImpl();
+		}
+	}
+	
+	void Chip::tickImpl(void)
 	{
 		for(Chip_ptr &ch : chips_)
 		{
@@ -76,6 +128,16 @@ namespace sim
 	int Chip::outpinCount(void) const
 	{
 		return output_.size();
+	}
+
+	void Chip::enableOptimization(void)
+	{
+		optimized_ = true;
+	}
+
+	void Chip::setName(const std::string& n)
+	{
+		name_ = n;
 	}
 }
 
