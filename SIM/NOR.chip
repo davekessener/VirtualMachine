@@ -1,0 +1,6 @@
+#!
+#i a b
+#o o
+ a b $OR c
+ c $NOT o
+

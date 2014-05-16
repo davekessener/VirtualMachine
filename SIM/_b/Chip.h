@@ -3,7 +3,6 @@
 
 #include <string>
 #include <memory>
-#include <map>
 #include "Sim.h"
 #include "Wire.h"
 #include "Connector.h"
@@ -22,21 +21,19 @@ namespace sim
 			virtual ~Chip( );
 			virtual void tick( );
 			void addChip(Chip_ptr);
-			Wire_ptr getNode(const std::string&);
-			void setInput(const std::string&);
-			void setOutput(const std::string&);
+			Wire_ptr getNode(int);
+			void setInput(int);
+			void setOutput(int);
 			virtual Connector_ptr getInput(int);
 			virtual Connector_ptr getOutput(int);
 			int inpinCount( ) const;
 			int outpinCount( ) const;
 			void enableOptimization( );
-			bool isOptimized( ) const;
 			void setName(const std::string&);
-			const std::string& getName( ) const;
 		protected:
 			std::vector<Chip_ptr> chips_;
 			std::vector<Connector_ptr> input_, output_;
-			std::map<std::string, Wire_ptr> wires_;
+			std::vector<Wire_ptr> wires_;
 			std::string name_;
 			bool optimized_;
 

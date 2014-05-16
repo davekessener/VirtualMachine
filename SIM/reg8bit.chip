@@ -1,0 +1,12 @@
+#!
+#i data:8 load clock
+#o out:8
+ data[0] load clock $bit out[0]
+ data[1] load clock $bit out[1]
+ data[2] load clock $bit out[2]
+ data[3] load clock $bit out[3]
+ data[4] load clock $bit out[4]
+ data[5] load clock $bit out[5]
+ data[6] load clock $bit out[6]
+ data[7] load clock $bit out[7]
+

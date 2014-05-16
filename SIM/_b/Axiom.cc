@@ -83,24 +83,5 @@ namespace sim
 
 		Chip::tick();
 	}
-
-	void ChipNAnd::tick(void)
-	{
-		assert(!input_.empty());
-		V_t v(0);
-
-		for(Connector::Connector_ptr& p : input_)
-		{
-			if(!p->out())
-			{
-				v = V_t(1);
-				break;
-			}
-		}
-
-		output_.at(0)->in(v);
-
-		Chip::tick();
-	}
 }
 

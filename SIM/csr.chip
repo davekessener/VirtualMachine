@@ -1,0 +1,7 @@
+#!
+#i s r c
+#o q nq
+ s c $AND n0
+ r c $AND n1
+ n0 n1 $sr q nq
+

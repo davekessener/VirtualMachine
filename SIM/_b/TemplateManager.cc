@@ -18,7 +18,6 @@ namespace sim
 		templates_["AND"].reset(new AxiomTemplate<ChipAnd>);
 		templates_["OR"].reset(new AxiomTemplate<ChipOr>);
 		templates_["XOR"].reset(new AxiomTemplate<ChipXOr>);
-		templates_["NAND"].reset(new AxiomTemplate<ChipNAnd>);
 	}
 
 	TemplateManager::~TemplateManager(void)
@@ -45,10 +44,6 @@ namespace sim
 		std::ifstream in(fn + TEMPLATE_EXT);
 		std::vector<std::string> c;
 
-		if(!in.is_open())
-		{
-			std::cerr << "ERR: Couldn't open file '" << fn << "'" << std::endl;
-		}
 		assert(in.is_open());
 
 		c.push_back(fn);

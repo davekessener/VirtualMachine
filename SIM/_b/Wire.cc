@@ -2,7 +2,7 @@
 
 namespace sim
 {
-	Wire::Wire(void) : pins_(), v_(0), init_(false)
+	Wire::Wire(void) : pins_(), v_(0)
 	{
 	}
 
@@ -27,7 +27,7 @@ namespace sim
 
 	V_t Wire::out(void) const
 	{
-		return init_ ? V_t(1) : v_;
+		return v_;
 	}
 
 	void Wire::update(void)
@@ -38,8 +38,6 @@ namespace sim
 		{
 			v_ += c->out();
 		}
-
-		if(v_ > 0) init_ = false;
 	}
 
 	Wire::cond_vec_t::iterator Wire::find(const Conductable& c)
@@ -51,11 +49,6 @@ namespace sim
 		}
 
 		return end;
-	}
-
-	void Wire::preInit(void)
-	{
-		init_ = true;
 	}
 }
 

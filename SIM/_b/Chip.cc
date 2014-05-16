@@ -4,14 +4,14 @@ namespace sim
 {
 	namespace
 	{
-		std::vector<V_t> captureState(const std::map<std::string, Wire::Wire_ptr>& w)
+		std::vector<V_t> captureState(const std::vector<Wire::Wire_ptr>& w)
 		{
 			std::vector<V_t> r;
 			r.reserve(w.size());
 
-			for(auto p : w)
+			for(const Wire::Wire_ptr& p : w)
 			{
-				r.push_back(p.second->out());
+				r.push_back(p->out());
 			}
 
 			return r;
@@ -69,9 +69,9 @@ namespace sim
 			ch->tick();
 		}
 
-		for(auto p : wires_)
+		for(Wire_ptr &w : wires_)
 		{
-			p.second->update();
+			w->update();
 		}
 	}
 
@@ -80,17 +80,17 @@ namespace sim
 		chips_.push_back(c);
 	}
 
-	Wire::Wire_ptr Chip::getNode(const std::string &idx)
+	Wire::Wire_ptr Chip::getNode(int idx)
 	{
-		if(!static_cast<bool>(wires_[idx]))
+		while(idx >= wires_.size())
 		{
-			wires_[idx].reset(new Wire);
+			wires_.push_back(Wire_ptr(new Wire()));
 		}
 
-		return wires_[idx];
+		return wires_.at(idx);
 	}
 
-	void Chip::setInput(const std::string &idx)
+	void Chip::setInput(int idx)
 	{
 		Wire_ptr w = getNode(idx);
 		Connector_ptr o(new Connector);
@@ -100,7 +100,7 @@ namespace sim
 		input_.push_back(o);
 	}
 
-	void Chip::setOutput(const std::string &idx)
+	void Chip::setOutput(int idx)
 	{
 		Wire_ptr w = getNode(idx);
 		Connector_ptr i(new Connector);
@@ -135,19 +135,9 @@ namespace sim
 		optimized_ = true;
 	}
 
-	bool Chip::isOptimized(void) const
-	{
-		return optimized_;
-	}
-
 	void Chip::setName(const std::string& n)
 	{
 		name_ = n;
-	}
-
-	const std::string& Chip::getName(void) const
-	{
-		return name_;
 	}
 }
 

@@ -23,14 +23,12 @@ namespace sim
 			void disconnect(const Conductable&);
 			V_t out( ) const;
 			void update( );
-			void preInit( );
 		protected:
 		private:
 			cond_vec_t::iterator find(const Conductable&);
 
 			cond_vec_t pins_;
 			V_t v_;
-			bool init_;
 	};
 }
 

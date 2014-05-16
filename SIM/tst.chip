@@ -1,5 +1,13 @@
-#o 2 3 4 5 6 7 8 9 10
-#!
- HI 1
- 1 0 0 0 1 0 0 1    1 0 0 1 0 0 0 0    0 1 0 1 0 1 alu 2 3 4 5 6 7 8 9 10
+#o c o:8
+ $HI 1
+ 1 $c1 clk
+ 1 o[0] $XOR n[0]
+ 0 o[1] $XOR n[1]
+ 1 o[2] $XOR n[2]
+ 0 o[3] $XOR n[3]
+ 1 o[4] $XOR n[4]
+ 0 o[5] $XOR n[5]
+ 0 o[6] $XOR n[6]
+ 1 o[7] $XOR n[7] 
+ n:8 clk clk $reg8bit o:8
 

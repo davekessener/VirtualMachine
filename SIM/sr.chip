@@ -1,0 +1,7 @@
+#!
+#i s r
+#o q nq
+#p q
+ s nq $NOR  q
+ r  q $NOR nq
+

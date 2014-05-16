@@ -6,13 +6,7 @@
 
 namespace sim
 {
-	class OptimizedChip : public Chip
-	{
-		public:
-			OptimizedChip( ) { enableOptimization(); }
-	};
-
-	class OneOutChip : public virtual OptimizedChip
+	class OneOutChip : public virtual Chip
 	{
 		public:
 		using Chip::Connector_ptr;
@@ -21,7 +15,7 @@ namespace sim
 			virtual Connector_ptr getOutput(int);
 	};
 
-	class ManyInChip : public virtual OptimizedChip
+	class ManyInChip : public virtual Chip
 	{
 		public:
 		using Chip::Connector_ptr;
@@ -82,14 +76,6 @@ namespace sim
 		public:
 			ChipXOr( ) { setName("XOR"); }
 			void tick( );
-	};
-
-	class ChipNAnd : public OneOutChip, public ManyInChip
-	{
-		public:
-			ChipNAnd( ) { setName("NAND"); }
-			void tick( );
-
 	};
 }
 

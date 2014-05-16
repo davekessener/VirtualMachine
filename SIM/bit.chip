@@ -1,0 +1,6 @@
+#!
+#i data load clock
+#o out
+ out data load $mux1bit n0
+ n0 clock $r out
+

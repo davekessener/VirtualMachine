@@ -1,0 +1,14 @@
+#!
+#i j k c
+#o q nq
+#p n0 n1 m1 ic nq
+ j nq c $NAND n0
+ k  q c $NAND n1
+ c $NOT ic
+ n0 m1 $NAND m0
+ n1 m0 $NAND m1
+ m0 ic $NAND p0
+ m1 ic $NAND p1
+ p0 nq $NAND  q
+ p1  q $NAND nq
+

@@ -3,7 +3,6 @@
 
 #include <sstream>
 #include <vector>
-#include <string>
 #include "Sim.h"
 #include "Chip.h"
 
@@ -22,7 +21,7 @@ namespace sim
 			std::string name_;
 			struct Scanner;
 			std::vector<Scanner *> components_;
-			std::vector<std::string> ins_, outs_, pre_;
+			std::vector<int> ins_, outs_;
 			bool isOptimized_;
 	};
 }

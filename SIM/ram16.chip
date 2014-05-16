@@ -1,0 +1,10 @@
+#!
+#i in:8 a addr:3 load clock
+#o out:8
+ a $NOT t
+ t load $AND l[0]
+ a load $AND l[1]
+ in:8 addr:3 l[0] clock $ram8 n:8
+ in:8 addr:3 l[1] clock $ram8 m:8
+ n:8 m:8 addr[0] $mux8bit out:8
+

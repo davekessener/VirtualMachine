@@ -1,0 +1,8 @@
+#!
+#i d c
+#o o
+ d $NOT nd
+  d c $AND n0
+ nd c $AND n1
+ n0 n1 $sr q o
+

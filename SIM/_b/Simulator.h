@@ -14,7 +14,7 @@ namespace sim
 		public:
 			Simulator(const std::string&);
 			~Simulator( );
-			void run(int = 1);
+			void run( );
 		private:
 			Template::Template_ptr template_;
 	};
