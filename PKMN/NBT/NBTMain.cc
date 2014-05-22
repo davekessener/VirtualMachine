@@ -6,24 +6,24 @@ namespace nbt
 {
 // # ===========================================================================
 
-	void NBTBase::write(std::ostream& os)
+	void NBTBase::write(std::ostream& os) const
 	{
 		write(nbt_std_writer(os));
 	}
 
-	void NBTBase::write(gzip::ogzstream& os)
+	void NBTBase::write(gzip::ogzstream& os) const
 	{
 		write(nbt_gzip_writer(os));
 	}
 
-	void NBTBase::write(const nbtostream& os)
+	void NBTBase::write(const nbtostream& os) const
 	{
 		os.write<BYTE>(getID());
-		os.write<WORD>(strlen(reinterpret_cast<char *>(name)));
+		os.write<WORD>(strlen(reinterpret_cast<const char *>(name)));
 
 		if(*name)
 		{
-			os.write(name, strlen(reinterpret_cast<char *>(name)));
+			os.write(name, strlen(reinterpret_cast<const char *>(name)));
 		}
 
 		_write(os);
@@ -59,7 +59,7 @@ namespace nbt
 // # ---------------------------------------------------------------------------
 
 	template<BYTE ID, typename T>
-	void NBTSimple<ID, T>::_write(const nbtostream& os)
+	void NBTSimple<ID, T>::_write(const nbtostream& os) const
 	{
 		os.write<T>(value);
 	}
@@ -80,7 +80,7 @@ namespace nbt
 // # ---------------------------------------------------------------------------
 
 	template<BYTE ID, typename T1, typename T2>
-	void NBTArray<ID, T1, T2>::_write(const nbtostream& os)
+	void NBTArray<ID, T1, T2>::_write(const nbtostream& os) const
 	{
 		os.write<T1>(static_cast<T1>(vec_t::size()));
 
@@ -122,14 +122,14 @@ namespace nbt
 // # ---------------------------------------------------------------------------
 
 	template<BYTE ID>
-	void NBTList<ID>::_write(const nbtostream& os)
+	void NBTList<ID>::_write(const nbtostream& os) const
 	{
 		os.write<BYTE>(tagIds ? tagIds : 1);
 		os.write<DWORD>(static_cast<DWORD>(vec_t::size()));
 
-		for(auto i = vec_t::begin() ; i != vec_t::end() ; ++i)
+		for(auto i = vec_t::cbegin() ; i != vec_t::cend() ; ++i)
 		{
-			NBT_ptr_t nbt = *i;
+			const NBT_ptr_t nbt = *i;
 
 			assert(tagIds == nbt->getID());
 
@@ -174,9 +174,9 @@ namespace nbt
 // # ---------------------------------------------------------------------------
 
 	template<BYTE ID>
-	void NBTTagCompound<ID>::_write(const nbtostream& os)
+	void NBTTagCompound<ID>::_write(const nbtostream& os) const
 	{
-		for(auto i = map_t::begin() ; i != map_t::end() ; ++i)
+		for(auto i = map_t::cbegin() ; i != map_t::cend() ; ++i)
 		{
 			i->second->write(os);
 		}

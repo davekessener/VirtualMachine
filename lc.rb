@@ -1,6 +1,8 @@
 #!/usr/bin/ruby
 
 class PRGM
+	@@longest = ['', -1]
+
 	def self.directory_hash(path, space = '')
 		j = 0
 		entries = []
@@ -19,6 +21,7 @@ class PRGM
 					entry.end_with?('.hpp') or
 					entry.end_with?('.s') or
 					entry.end_with?('.asm') or
+					entry.end_with?('.sh') or
 					entry.end_with?('.rb')
 				entries << [full_path, entry]
 			end
@@ -30,14 +33,23 @@ class PRGM
 				i += 1
 			end
 			puts "#{space}    #{entry}: #{i} lines"
+
+			if @@longest[1] < i
+				@@longest = [full_path, i]
+			end
 	
 			j += i
 		end
 
 		return j
 	end
+
+	def self.longest
+		return @@longest
+	end
 end
 
 c = PRGM.directory_hash(".")
 puts "#{c} lines total"
+puts "'#{PRGM.longest[0]}' is the longest fil with #{PRGM.longest[1]} lines of code."
 

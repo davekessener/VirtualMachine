@@ -28,17 +28,17 @@ namespace nbt
 			{
 				free(name);
 			}
-			void write(std::ostream&);
-			void write(gzip::ogzstream&);
-  			void write(const nbtostream&);
+			void write(std::ostream&) const;
+			void write(gzip::ogzstream&) const;
+  			void write(const nbtostream&) const;
 			void read(std::istream&);
 			void read(gzip::igzstream&);
 			void read(const nbtistream&);
 			void setName(const std::string&);
 			std::string getName(void) { return std::string(reinterpret_cast<const char *>(name)); }
-			virtual BYTE getID( ) = 0;
+			virtual BYTE getID( ) const = 0;
 		protected:
-			virtual void _write(const nbtostream&) = 0;
+			virtual void _write(const nbtostream&) const = 0;
 			virtual void _read(const nbtistream&) = 0;
 			BYTE *name;
 
@@ -51,7 +51,7 @@ namespace nbt
 	class _NBTBase : public NBTBase
 	{
 		public:
-			BYTE getID(void)
+			BYTE getID(void) const
 			{
 				return id;
 			}
@@ -74,7 +74,7 @@ namespace nbt
 			T get(void) { return value; }
 			void set(T t) { value = t; }
 		protected:
-			void _write(const nbtostream&);
+			void _write(const nbtostream&) const;
 			void _read(const nbtistream&);
 		private:
 			void init(const std::string& , T);
@@ -103,7 +103,7 @@ namespace nbt
 			NBTArray(std::initializer_list<T2> v) { init("", v); }
 			std::vector<T2> get() { return std::vector<T2>(vec_t::begin(), vec_t::end()); }
 		protected:
-			void _write(const nbtostream&);
+			void _write(const nbtostream&) const;
 			void _read(const nbtistream&);
 		private:
 			template<typename T>
@@ -178,7 +178,7 @@ namespace nbt
 				{ assert(!tagIds||tagIds==tag->getID()); vec_t::push_back(std::dynamic_pointer_cast<NBTBase>(tag)); if(!tagIds) tagIds = tag->getID(); }
 			void addTag(NBT_ptr_t tag) { assert(!tagIds||tagIds==tag->getID()); vec_t::push_back(tag); if(!tagIds) tagIds = tag->getID(); }
 		protected:
-			void _write(const nbtostream&);
+			void _write(const nbtostream&) const;
 			void _read(const nbtistream&);
 		private:
 			template<typename T>
@@ -306,7 +306,7 @@ namespace nbt
 			ptr_t getCompoundTag(const std::string& s) { return getTag<TAG_Compound>(s); }
 			std::vector<DWORD> getIntArray(const std::string& s) { return std::dynamic_pointer_cast<TAG_Int_Array>(map_t::operator[](s))->get(); }
 		protected:
-			void _write(const nbtostream&);
+			void _write(const nbtostream&) const;
 			void _read(const nbtistream&);
 		private:
 			void init(const std::string&);

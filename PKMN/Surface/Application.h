@@ -44,6 +44,7 @@ namespace surface
 	Application<T>::Application(int x, int y, int w, int h) : T(init(x, y, w, h)), running(false)
 	{
 		cmds["quit"] = std::bind(&Application<T>::quit, this);
+		cmds["exit"] = std::bind(&Application<T>::quit, this);
 
 		T::registerCommands([this](const std::string& s, cmd_t cmd) { cmds[s] = cmd; });
 	}

@@ -18,6 +18,9 @@ namespace editor
 			static const std::string MAP_BLUR;
 			static const std::string TS_BUTTON_GRID;
 			static const std::string MAP_BUTTON_BLUR;
+			static const std::string MAP_BUTTON_LAYERSELECT[4];
+			static const std::string MAP_BUTTON_UNDO;
+			static const std::string MAP_BUTTON_REDO;
 			static const std::string NBT_MAP_NAME;
 			static const std::string NBT_MAP_ID;
 			static const std::string NBT_MAP_WIDTH;

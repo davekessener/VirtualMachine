@@ -21,10 +21,11 @@ namespace surface
 	
 		public:
 			Button(Image *, int, int, onAction_fn, const std::string&, const std::string& = "");
-			~Button( );
-			void mouseDown(button_t, int, int);
-			void mouseDrag(button_t, int, int);
-			void mouseUp(button_t, int, int);
+			virtual ~Button( );
+			virtual void mouseDown(button_t, int, int);
+			virtual void mouseDrag(button_t, int, int);
+			virtual void mouseUp(button_t, int, int);
+			virtual void changeState(button_state);
 	
 			enum
 			{
@@ -35,7 +36,6 @@ namespace surface
 			};
 		protected:
 			void draw(Image *);
-			void changeState(button_state);
 			button_state getState( ) { return state; }
 		private:
 			button_state state;

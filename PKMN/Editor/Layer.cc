@@ -81,5 +81,53 @@ namespace editor
 	{
 		*_dirty = true;
 	}
+
+	void Layer::undo(const Undo& u)
+	{
+		for(const std::tuple<int, int, int, int> &d : u)
+		{
+			set(std::get<0>(d), std::get<1>(d), std::get<2>(d));
+		}
+	}
+
+	void Layer::redo(const Undo& u)
+	{
+		for(const std::tuple<int, int, int, int> &d : u)
+		{
+			set(std::get<0>(d), std::get<1>(d), std::get<3>(d));
+		}
+	}
+
+	auto_ptr<Layer::FreezeFrame> Layer::freeze(void) const
+	{
+		std::pair<std::pair<int, int>, std::vector<unsigned int>> d;
+		d.first = std::make_pair(_layer.width(), _layer.height());
+		d.second = _layer.flatten();
+
+		return auto_ptr<FreezeFrame>(new FreezeFrame(d));
+	}
+
+// # ===========================================================================
+
+	Layer::Undo Layer::FreezeFrame::create(auto_ptr<FreezeFrame> p)
+	{
+		assert(backup_.first == p->backup_.first);
+		int X = backup_.first.first, Y = backup_.first.second;
+
+		Undo undo;
+		for(int y = 0 ; y < Y ; ++y)
+		{
+			for(int x = 0 ; x < X ; ++x)
+			{
+				int pos = x * Y + y;
+				if(backup_.second.at(pos) != p->backup_.second.at(pos))
+				{
+					undo.add(x, y, p->backup_.second.at(pos), backup_.second.at(pos));
+				}
+			}
+		}
+
+		return undo;
+	}
 }
 

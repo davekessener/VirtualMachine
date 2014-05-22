@@ -4,6 +4,7 @@
 #include <Surface/Image.h>
 #include <Surface/SubImage.h>
 #include "MapData.h"
+#include "auto_ptr.h"
 
 namespace editor
 {
@@ -11,6 +12,8 @@ namespace editor
 	{
 		class _first_indirection;
 		class _second_indirection;
+		public: class Undo;
+		public: class FreezeFrame;
 
 		public:
 			Layer(map::Layer);
@@ -21,6 +24,9 @@ namespace editor
 			int get(int, int);
 			_first_indirection operator[](int);
 			Image *image( );
+			auto_ptr<FreezeFrame> freeze( ) const;
+			void undo(const Undo&);
+			void redo(const Undo&);
 		private:
 			std::shared_ptr<bool> _dirty;
 			map::Layer _layer;
@@ -40,6 +46,7 @@ namespace editor
 				Layer *_l;
 				int _x, _y;
 		};
+
 		class _first_indirection
 		{
 			public:
@@ -49,6 +56,35 @@ namespace editor
 				Layer *_l;
 				int _x;
 		};
+
+		public:
+			class Undo
+			{
+				typedef std::vector<std::tuple<int, int, int, int>> vec_t;
+				public:
+					void add(int x, int y, int u, int r) { data_.push_back(std::tuple<int, int, int, int>(x, y, u, r)); }
+					bool empty( ) const { return data_.empty(); }
+					vec_t::const_iterator begin( ) const { return data_.begin(); }
+					vec_t::const_iterator end( ) const { return data_.end(); }
+				private:
+					 vec_t data_;
+			};
+
+			class FreezeFrame
+			{
+				typedef std::pair<std::pair<int, int>, std::vector<unsigned int>> backup_t;
+
+				public:
+					Undo create(auto_ptr<FreezeFrame>);
+				private:
+					FreezeFrame( );
+					FreezeFrame(const backup_t& b) : backup_(b) { }
+					FreezeFrame& operator=(const FreezeFrame&);
+
+					backup_t backup_;
+
+					friend class Layer;
+			};
 	};
 }
 

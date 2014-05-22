@@ -33,6 +33,7 @@ namespace editor
 	{
 		if(b == ::Button::LEFT)
 		{
+			frame_ = _layers.at(_cur).freeze();
 			mouseDrag(b, x, y);
 		}
 		else if(b == ::Button::RIGHT)
@@ -47,6 +48,8 @@ namespace editor
 		}
 		else if(b == ::Button::MIDDLE)
 		{
+			frame_ = _layers.at(_cur).freeze();
+
 			x -= X(); y -= Y();
 			x /= TILE_SIZE; y /= TILE_SIZE;
 
@@ -109,6 +112,20 @@ namespace editor
 		}
 	}
 
+	void Map::mouseUp(button_t b, int x, int y)
+	{
+		if(static_cast<bool>(frame_))
+		{
+			Layer::Undo u = _layers.at(_cur).freeze()->create(frame_);
+
+			if(!u.empty())
+			{
+				while(!redos_.empty()) redos_.pop();
+				undos_.push(std::make_pair(_cur, u));
+			}
+		}
+	}
+
 	void Map::selectLayer(int i)
 	{
 		if(i >= 0 && i < _layers.size())
@@ -120,6 +137,28 @@ namespace editor
 			LOG("ERR: Invalid layer %d selected.", i);
 		}
 	}
+
+	void Map::undo(void)
+	{
+		if(undos_.empty()) return;
+
+		_layers.at(undos_.top().first).undo(undos_.top().second);
+		redos_.push(undos_.top());
+
+		undos_.pop();
+	}
+
+	void Map::redo(void)
+	{
+		if(redos_.empty()) return;
+
+		_layers.at(redos_.top().first).redo(redos_.top().second);
+		undos_.push(redos_.top());
+
+		redos_.pop();
+	}
+
+// ---------------------------------------------------------------------------
 	
 	void Map::draw(Image *dI, int dx, int dy)
 	{

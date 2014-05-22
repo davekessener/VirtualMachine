@@ -16,23 +16,53 @@ namespace editor
 	Editor::Editor(Image *i, int x, int y, int w, int h)
 		: surface::Surface(i = new SubImage(i, x, y, w, h)), _project(NULL), _map(NULL)
 	{
+		int dx = 0;
+
 		registerSurface(_tileset = new surface::Scrolling<Tileset>
 			(i, 2 * W() / 3, TILE_SIZE, W() - 2 * W() / 3, H() - TILE_SIZE));
+
 		registerSurface(_tsGrid = new surface::ButtonToggle
 			(i, W() - TILE_SIZE, 0, [this](surface::Button::button_state s)
 				{
 					Settings::setBool(Settings::TS_GRID, s == surface::Button::PRESSED);
 				}, Settings::TS_BUTTON_GRID));
 		registerSurface(_mapGrid = new surface::ButtonToggle
-			(i, 0, 0, [this](surface::Button::button_state s)
+			(i, TILE_SIZE * dx++, 0, [this](surface::Button::button_state s)
 				{
 					Settings::setBool(Settings::MAP_GRID, s == surface::Button::PRESSED);
 				}, Settings::TS_BUTTON_GRID));
 		registerSurface(_mapBlur = new surface::ButtonToggle
-			(i, TILE_SIZE, 0, [this](surface::Button::button_state s)
+			(i, TILE_SIZE * dx++, 0, [this](surface::Button::button_state s)
 				{
 					Settings::setBool(Settings::MAP_BLUR, s == surface::Button::PRESSED);
 				}, Settings::MAP_BUTTON_BLUR));
+
+		surface::RadioButtonGroup lsGroup;
+		for(int j = 0 ; j < 4 ; ++j)
+		{
+			registerSurface(layers_[j] = new surface::ButtonRadio
+				(i, TILE_SIZE * dx++, 0, [this, j](surface::Button::button_state s)
+					{
+						if(_map) _map->getContent().selectLayer(j);
+					}, Settings::MAP_BUTTON_LAYERSELECT[j]));
+
+			lsGroup.add(layers_[j]);
+
+			if(!j) layers_[j]->changeState(surface::Button::PRESSED);
+		}
+		lsGroup.join();
+
+		registerSurface(_undo_btn = new surface::Button
+			(i, TILE_SIZE * dx++, 0, [this](surface::Button::button_state s)
+				{
+					if(_map) _map->getContent().undo();
+				}, Settings::MAP_BUTTON_UNDO));
+		registerSurface(_redo_btn = new surface::Button
+			(i, TILE_SIZE * dx++, 0, [this](surface::Button::button_state s)
+				{
+					if(_map) _map->getContent().redo();
+				}, Settings::MAP_BUTTON_REDO));
+
 		_image = i;
 	}
 	
@@ -67,6 +97,9 @@ namespace editor
 				openMap(static_cast<Project::map_id>(id));
 			});
 		reg("setlayer", [this](params_t _p) { int l; std::operator>>(std::istringstream(_p.at(1)), l); _map->getContent().selectLayer(l); });
+		reg("undo", [this](params_t p_) { if(_map) _map->getContent().undo(); });
+		reg("redo", [this](params_t p_) { if(_map) _map->getContent().redo(); });
+		reg("save", [this](params_t p_) { if(_project) _project->save(); });
 	}
 	
 	int Editor::run(int argc, char *argv[])

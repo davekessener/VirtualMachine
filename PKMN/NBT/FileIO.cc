@@ -64,5 +64,12 @@ namespace nbt
 			out.close();
 		}
 	}
+
+	std::ostream& operator<<(std::ostream& os, const NBTBase& nbt)
+	{
+		nbt.write(os);
+
+		return os;
+	}
 }
 

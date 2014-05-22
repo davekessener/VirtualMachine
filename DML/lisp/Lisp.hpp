@@ -5,8 +5,6 @@
 
 namespace lisp
 {
-	typedef decltype(nullptr) NIL;
-
 	template<typename T, typename TT>
 	struct Cons
 	{

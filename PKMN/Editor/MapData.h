@@ -48,8 +48,8 @@ namespace editor
 				LAYERS = 4
 			};
 		protected:
-			virtual void writeToNBT(nbt::TAG_Compound::ptr_t);
-			virtual void readFromNBT(nbt::TAG_Compound::ptr_t);
+			void writeToNBT(nbt::TAG_Compound::ptr_t);
+			void readFromNBT(nbt::TAG_Compound::ptr_t);
 		public:
 			const std::string name;
 			const long ID;

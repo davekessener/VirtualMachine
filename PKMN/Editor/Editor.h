@@ -4,6 +4,7 @@
 #include <Surface/Window.h>
 #include <Surface/Application.h>
 #include <Surface/ButtonToggle.h>
+#include <Surface/ButtonRadio.h>
 #include <Selector.h>
 #include "Tileset.h"
 #include "Map.h"
@@ -23,7 +24,9 @@ namespace editor
 			void openMap(Project::map_id);
 			surface::Scrolling<Tileset> *_tileset;
 			surface::Scrolling<Map> *_map;
+			surface::Button *_undo_btn, *_redo_btn;
 			surface::ButtonToggle *_tsGrid, *_mapGrid, *_mapBlur;
+			surface::ButtonRadio *layers_[4];
 			Project *_project;
 			Image *_image;
 	};
