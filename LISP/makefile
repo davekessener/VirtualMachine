@@ -1,14 +1,12 @@
 CC=g++-4.7
-SDLCFLAGS=$(shell sdl2-config --cflags)
-SDLLIBS=$(shell sdl2-config --libs)
-CFLAGS=-std=c++0x -O0 -Wall -Wl,--no-as-needed -ggdb -DDEBUG $(SDLCFLAGS)
-LIBS=$(SDLLIBS) -lSDL2_image -lSDL2_ttf -lpthread -lz
+CFLAGS=-std=c++0x -O0 -Wall -Wl,--no-as-needed -ggdb -DDEBUG
+LIBS=-lreadline -lpthread -lz
 SRC=$(wildcard *.cc)
 OBJ=$(SRC:.cc=.o)
 HEADERS=$(wildcard *.h)
 TEMPLATES=$(wildcard *.hpp)
-SUBS=NBT.a GZ.a Surface.a Editor.a Misc.a Overworld.a
-TARGET=pokemon
+SUBS=
+TARGET=lisp
 
 %.o: %.cc $(HEADERS) $(TEMPLATES)
 	$(CC) -c $(CFLAGS) -I. $< -o $@
@@ -26,7 +24,7 @@ $(TARGET): logs $(SUBS) $(OBJ)
 .PHONY: logs clean
 
 logs:
-	-mv resource/*.log resource/logs/
+	-mv *.log logs/
 	-rm -f *.a
 
 clean: logs $(SUBS:.a=.clean)
