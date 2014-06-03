@@ -2,7 +2,7 @@
 #define LISP_BIGNUM_H
 
 #include "common.h"
-#include "auto_ptr.hpp"
+#include "impl_ptr.hpp"
 
 namespace lisp
 {
@@ -14,7 +14,7 @@ namespace lisp
 			~BigNum( );
 		private:
 			struct BNImpl;
-			const auto_ptr<BNImpl> impl_;
+			const impl_ptr<BNImpl> impl_;
 	};
 }
 

@@ -11,15 +11,25 @@ namespace lisp
 		private:
 	};
 
-	BigNum::BigNum(void) : impl_(new BNImpl)
-	{
-	}
-
-	BigNum::BigNum(const BigNum& n) : impl_(new BNImpl(*n.impl_))
+	BigNum::BigNum(void)
 	{
 	}
 
 	BigNum::~BigNum(void)
+	{
+	}
+
+// # ===========================================================================
+
+	BigNum::BNImpl::BNImpl(void)
+	{
+	}
+
+	BigNum::BNImpl::BNImpl(const BNImpl& i)
+	{
+	}
+
+	BigNum::BNImpl::~BNImpl(void)
 	{
 	}
 }
