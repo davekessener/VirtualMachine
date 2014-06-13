@@ -25,7 +25,7 @@ namespace vm
 			public:
 				Instruction(const std::string&, std::initializer_list<Arguments>);
 				virtual ~Instruction( );
-				virtual bool operator()(CPU&) const = 0;
+				virtual void operator()(CPU&) const = 0;
 				const std::string name( ) const;
 				int argCount( ) const;
 				std::ostream& print(std::ostream&) const;

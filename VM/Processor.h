@@ -15,6 +15,7 @@ namespace vm
 			public:
 			protected:
 				void registerOpcodes(commands_t&);
+				void attachPeripherials( );
 			private:
 		};
 	}

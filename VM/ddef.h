@@ -19,6 +19,12 @@ namespace vm
 
 	typedef WORD OFFSET;
 	typedef WORD ADDRESS;
+
+	static const ADDRESS VIDEO_MEMORY = 0xc000;
+	static const ADDRESS INT_TABLE = 0x0100;
+
+	static const int INT_CLOCK = 0;
+	static const int INT_KEYBOARD = 1;
 }
 
 #endif
