@@ -3,6 +3,16 @@
 
 namespace vm { namespace cpu {
 
+namespace
+{
+	inline int fromUnsignedWordToSignedInt(WORD a)
+	{
+		return    (a & (1 << ((sizeof(WORD) << 3) - 1))) 
+				? (~static_cast<int>(static_cast<WORD>(-1)) | a) 
+				: a;
+	}
+}
+
 #define MXT_CMDO(id) void OP_##id::operator()(CPU& cpu) const
 
 MXT_CMDO(hlt)
@@ -132,6 +142,13 @@ MXT_CMDO(jmp_c)
 	cpu[0] = cpu.next();
 }
 
+MXT_CMDO(jr_c)
+{
+	WORD a = cpu.next();
+
+	cpu[0] += fromUnsignedWordToSignedInt(a);
+}
+
 MXT_CMDO(jz_xc)
 {
 	WORD r = cpu.next();
@@ -143,11 +160,29 @@ MXT_CMDO(jz_xc)
 	}
 }
 
+MXT_CMDO(jrz_xc)
+{
+	WORD r = cpu.next();
+	WORD a = cpu.next();
+
+	if(!cpu[r])
+	{
+		cpu[0] += fromUnsignedWordToSignedInt(a);
+	}
+}
+
 MXT_CMDO(call_c)
 {
 	WORD a = cpu.next();
 	cpu.push(cpu[0]);
 	cpu[0] = a;
+}
+
+MXT_CMDO(cllr_c)
+{
+	WORD a = cpu.next();
+	cpu.push(cpu[0]);
+	cpu[0] += fromUnsignedWordToSignedInt(a);
 }
 
 MXT_CMDO(cllz_xc)
@@ -159,6 +194,18 @@ MXT_CMDO(cllz_xc)
 	{
 		cpu.push(cpu[0]);
 		cpu[0] = a;
+	}
+}
+
+MXT_CMDO(clrz_xc)
+{
+	WORD r = cpu.next();
+	WORD a = cpu.next();
+
+	if(!cpu[r])
+	{
+		cpu.push(cpu[0]);
+		cpu[0] += fromUnsignedWordToSignedInt(a);
 	}
 }
 

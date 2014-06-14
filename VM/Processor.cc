@@ -38,6 +38,10 @@ void Processor::registerOpcodes(commands_t& commands)
 	MXT_OP(out_cx);
 	MXT_OP(ei);
 	MXT_OP(di);
+	MXT_OP(jr_c);
+	MXT_OP(jrz_xc);
+	MXT_OP(cllr_c);
+	MXT_OP(clrz_xc);
 #undef MXT_OP
 }
 

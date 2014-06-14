@@ -36,9 +36,13 @@ void operator()(CPU&) const;\
 		MXT_CMD(xor_xy,  "xor",  Arguments::REGISTER, Arguments::REGISTER);
 		MXT_CMD(not_x,   "not",  Arguments::REGISTER);
 		MXT_CMD(jmp_c,   "jmp",  Arguments::CONSTANT);
+		MXT_CMD(jr_c,    "jr",   Arguments::CONSTANT);
 		MXT_CMD(jz_xc,   "jz",   Arguments::REGISTER, Arguments::CONSTANT);
+		MXT_CMD(jrz_xc,  "jrz",  Arguments::REGISTER, Arguments::CONSTANT);
 		MXT_CMD(call_c,  "call", Arguments::CONSTANT);
+		MXT_CMD(cllr_c,  "cllr", Arguments::CONSTANT);
 		MXT_CMD(cllz_xc, "cllz", Arguments::REGISTER, Arguments::CONSTANT);
+		MXT_CMD(clrz_xc, "clrz", Arguments::REGISTER, Arguments::CONSTANT);
 		MXT_CMD(ret,     "ret");
 		MXT_CMD(push_x,  "push", Arguments::REGISTER);
 		MXT_CMD(pop_x,   "pop",  Arguments::REGISTER);
