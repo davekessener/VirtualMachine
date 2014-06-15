@@ -13,12 +13,12 @@ class Logger
 {
 	public:
 		static Logger& instance( );
-		static void log(const char *, ...);
-		static void log(const std::string&);
-		static void logFrom(const char *, int, const char *, ...);
-		void logMsg(const char *, ...);
-		void logMsg(const char *, va_list);
-		void logMsgFrom(const char *, int, const char *, va_list);
+		static const std::string log(const char *, ...);
+		static const std::string log(const std::string&);
+		static const std::string logFrom(const char *, int, const char *, ...);
+		const std::string logMsg(const char *, ...);
+		const std::string logMsg(const char *, va_list);
+		const std::string logMsgFrom(const char *, int, const char *, va_list);
 	private:
 		static std::string getTime( );
 		Logger( );

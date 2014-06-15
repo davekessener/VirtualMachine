@@ -1,22 +1,20 @@
 #ifndef VM_ASM_ASSEMBLER_H
 #define VM_ASM_ASSEMBLER_H
 
-#include "adef.h"
 #include <iosfwd>
 #include <string>
+#include "adef.h"
 
 namespace vm
 {
 	namespace assembler
 	{
-		class Reader;
-
 		class Assembler
 		{
 			public:
-				Assembler( );
+				Assembler(std::istream&);
 				~Assembler( ) throw();
-				void assemble(Reader&);
+				void assemble(const std::string&);
 				void out(std::ostream&);
 			private:
 				struct Impl;

@@ -12,17 +12,19 @@ int main(int argc, char *argv[])
 
 	std::vector<std::string> args(argv, argv + argc);
 
+	std::ifstream ins("ins.txt");
 	std::ifstream in("test.s");
 
 	assert(in.is_open());
+	assert(ins.is_open());
 
-	Reader r(in);
+	Assembler a(ins);
 
-	Assembler a;
-
-	a.assemble(r);
+	a.assemble(in);
 
 	in.close();
+
+	a.out(std::cout);
 
 	return 0;
 }

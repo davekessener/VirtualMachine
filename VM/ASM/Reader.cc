@@ -1,33 +1,39 @@
+#include <fstream>
+#include <deque>
 #include "Reader.h"
+#include "stringtools.h"
+#include "Logger.h"
+#include "ASMException.h"
 
 namespace vm { namespace assembler {
+
+namespace
+{
+	Line make_line(const std::string&, const std::string&, int);
+}
 
 class Reader::Impl
 {
 	public:
-		Impl(std::istream&);
+		Impl(const std::string&);
 		~Impl( ) throw();
-		const std::string getline( );
-		void ungetline(const std::string&);
+		const Line getline( );
+		void ungetline(const Line&);
 		bool empty( );
 		int getCurrentLineNumber( ) const;
 	private:
 		const std::string doReadLine( );
 		void fillBuffer( );
 	private:
-		std::istream &in_;
+		std::ifstream &in_;
+		const std::string fn_;
 		int lc_;
-		std::deque<std::string> buf_;
+		std::deque<Line> buf_;
 };
-
-namespace
-{
-	void trim(std::string&);
-}
 
 // # ===========================================================================
 
-Reader::Reader(std::istream& in) : impl_(new Impl(in))
+Reader::Reader(const std::string& fn) : impl_(new Impl(fn))
 {
 }
 
@@ -36,12 +42,12 @@ Reader::~Reader(void) throw()
 	delete impl_;
 }
 
-const std::string Reader::getline(void)
+const Line Reader::getline(void)
 {
 	return impl_->getline();
 }
 
-void Reader::ungetline(const std::string& line)
+void Reader::ungetline(const Line& line)
 {
 	impl_->ungetline(line);
 }
@@ -58,30 +64,31 @@ int Reader::getCurrentLineNumber(void) const
 
 // # ===========================================================================
 
-Reader::Impl::Impl(std::istream& in) : in_(in), lc_(0)
+Reader::Impl::Impl(const std::string& fn) : in_(fn), fn_(fn), lc_(0)
 {
+	if(!in_.is_open()) MXT_LOGANDTHROW("ERR: Couldn't open file '%s'.", fn.c_str());
 }
 
 Reader::Impl::~Impl(void) throw()
 {
 }
 
-const std::string Reader::Impl::getline(void)
+const Line Reader::Impl::getline(void)
 {
 	fillBuffer();
 
-	std::string r;
+	Line r;
 	
 	if(!buf_.empty())
 	{
-		r = buf_.front();
+		r.swap(buf_.front());
 		buf_.pop_front();
 	}
 
 	return r;
 }
 
-void Reader::Impl::ungetline(const std::string& line)
+void Reader::Impl::ungetline(const Line& line)
 {
 	buf_.push_front(line);
 }
@@ -115,10 +122,10 @@ void Reader::Impl::fillBuffer(void)
 {
 	while(buf_.empty() && !in_.eof())
 	{
-		std::string l(doReadLine());
-		trim(l);
+		std::string line(doReadLine());
+		Line l(make_line(line, fn_, lc_));
 
-		if(!l.empty()) buf_.push_back(l);
+		if(static_cast<bool>(l)) buf_.push_back(l);
 	}
 }
 
@@ -126,32 +133,9 @@ void Reader::Impl::fillBuffer(void)
 
 namespace
 {
-	void trim(std::string& s)
+	Line make_line(const std::string& line, const std::string& fn, int lc)
 	{
-		std::string r, t;
-		bool beg = false;
-
-		for(auto i = s.cbegin() ; i != s.cend() ; ++i)
-		{
-			switch(*i)
-			{
-				case ' ':
-				case '\t':
-				case '\n':
-				case '\0':
-					if(beg)
-					{
-						t.push_back(' ');
-					}
-					break;
-				default:
-					r += t;
-					r.push_back(*i);
-					t.clear();
-					beg = true;
-					break;
-			}
-		}
+		Line l(fn, lc);
 	}
 }
 

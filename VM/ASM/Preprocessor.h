@@ -1,8 +1,9 @@
 #ifndef VM_ASM_PREPROCESSOR_H
 #define VM_ASM_PREPROCESSOR_H
 
-#include "adef.h"
 #include <string>
+#include "adef.h"
+#include "Line.h"
 
 namespace vm
 {
@@ -14,7 +15,7 @@ namespace vm
 				Preprocessor( );
 				~Preprocessor( ) throw();
 				void feed(const std::string&);
-				const std::string get( );
+				Line get( );
 				bool ready( ) const;
 				void clear( );
 			private:

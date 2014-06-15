@@ -1,9 +1,9 @@
 #ifndef VM_ASM_READER_H
 #define VM_ASM_READER_H
 
-#include <fstream>
-#include <deque>
+#include <string>
 #include "adef.h"
+#include "Line.h"
 
 namespace vm
 {
@@ -12,10 +12,10 @@ namespace vm
 		class Reader
 		{
 			public:
-				Reader(std::istream&);
+				Reader(const std::string&);
 				~Reader( ) throw();
-				const std::string getline( );
-				void ungetline(const std::string&);
+				const Line getline( );
+				void ungetline(const Line&);
 				bool empty( );
 				int getCurrentLineNumber( ) const;
 			private:
