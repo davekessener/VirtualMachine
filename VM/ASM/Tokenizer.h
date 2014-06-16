@@ -13,14 +13,21 @@ namespace vm
 		class Tokenizer
 		{
 			public:
-				Tokenizer(const std::string&);
+				Tokenizer( );
+				Tokenizer(Tokenizer&&);
+				Tokenizer(const Tokenizer&);
+				explicit Tokenizer(const std::string&);
 				~Tokenizer( ) throw();
-				Tokenizer& operator>>(std::string&);
+				Tokenizer& operator=(Tokenizer&&);
+				Tokenizer& operator=(const Tokenizer&);
 				Tokenizer& operator>>(Line&);
+				Line getline( );
+				const std::string& filename( ) const;
+				void swap(Tokenizer&) throw();
+				bool ready( ) const;
 			private:
-				const std::string str_;
-				const char *cp_;
-				int wc_;
+				struct Impl;
+				Impl *impl_;
 		};
 	}
 }

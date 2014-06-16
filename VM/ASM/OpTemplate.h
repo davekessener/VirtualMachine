@@ -10,6 +10,8 @@ namespace vm
 {
 	namespace assembler
 	{
+		struct Line;
+
 		class OpTemplate
 		{
 			public:
@@ -18,11 +20,13 @@ namespace vm
 				OpTemplate(const OpTemplate&);
 				~OpTemplate( ) throw();
 				OpTemplate& operator=(const OpTemplate&);
+				bool operator==(const OpTemplate&) const;
 				void swap(OpTemplate&) throw();
-				Opcode *match(const std::string&) const;
+				Opcode *match(const Line&) const;
 				int size( ) const;
 				WORD id( ) const;
 				Parameter operator[](size_t) const;
+				const std::string& name( ) const;
 				const std::string representation( ) const;
 			private:
 				struct Impl;

@@ -22,10 +22,13 @@ namespace vm
 				bool operator==(const Token&) const;
 				bool operator==(const std::string&) const;
 				std::string& str( );
+				const char *c_str( ) const;
+				const std::string& str( ) const;
 				const std::string filename( ) const;
 				int line( ) const;
 				int word( ) const;
 				inline explicit operator bool( ) const { return impl_ != NULL; }
+				char operator[](size_t) const;
 			private:
 				struct Impl;
 				Impl *impl_;

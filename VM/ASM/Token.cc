@@ -1,3 +1,4 @@
+#include <cassert>
 #include "Token.h"
 
 namespace vm { namespace assembler {
@@ -88,6 +89,18 @@ std::string& Token::str(void)
 	return impl_->cont_;
 }
 
+const char *Token::c_str(void) const
+{
+	assert(impl_);
+	return impl_->cont_.c_str();
+}
+
+const std::string& Token::str(void) const
+{
+	assert(impl_);
+	return impl_->cont_;
+}
+
 const std::string Token::filename(void) const
 {
 	assert(impl_);
@@ -104,6 +117,11 @@ int Token::word(void) const
 {
 	assert(impl_);
 	return impl_->wc_;
+}
+
+char Token::operator[](size_t idx) const
+{
+	return impl_->cont_.at(idx);
 }
 
 }}

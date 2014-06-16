@@ -12,7 +12,7 @@ class ASMException : public std::exception
 		virtual ~ASMException( ) throw( );
 		virtual const char *what( ) const throw( );
 	private:
-		std::string msg;
+		std::string msg_;
 };
 
 #endif

@@ -7,6 +7,8 @@
 #include "Opcode.h"
 #include "Logger.h"
 #include "ASMException.h"
+#include "Line.h"
+#include "stringtools.h"
 
 namespace vm { namespace assembler {
 
@@ -15,7 +17,7 @@ class Instructions::Impl
 	public:
 		Impl(std::istream&);
 		~Impl( ) throw();
-		Opcode *translate(const std::string&) const;
+		Opcode *translate(const Line&) const;
 	private:
 		void addOpcode(const std::string&);
 	private:
@@ -26,11 +28,23 @@ class Instructions::Impl
 
 Instructions::Impl::Impl(std::istream& is)
 {
-	Reader r(is);
+	int lc = 0;
+	std::string s;
 
-	while(!r.empty())
+	try
 	{
-		addOpcode(r.getline());
+		while(!is.eof())
+		{
+			std::getline(is, s);
+			trim(s);
+			if(!s.empty()) addOpcode(s);
+			s = "";
+			++lc;
+		}
+	}
+	catch(const char *msg)
+	{
+		MXT_LOGANDTHROW("%s [[%d: '%s']]", msg, lc, s.c_str());
 	}
 }
 
@@ -38,22 +52,16 @@ Instructions::Impl::~Impl(void) throw()
 {
 }
 
-Opcode *Instructions::Impl::translate(const std::string& line) const
+Opcode *Instructions::Impl::translate(const Line& line) const
 {
 	Opcode *r = NULL;
 
 	for(const OpTemplate &op : ops_)
 	{
-		Opcode *t = op.match(line);
-
-		if(r && t)
-			MXT_LOGANDTHROW("ERR: Duplicate signature: '%s' for '%s'!", 
-				line.c_str(), op.representation().c_str());
-
-		if(!r && t) r = t;
+		if((r = op.match(line))) break;
 	}
 
-	if(!r) MXT_LOGANDTHROW("Couldn't translate '%s'", line.c_str());
+	if(!r) MXT_LOGANDTHROW("Couldn't translate '%s'", line.str().c_str());
 
 	return r;
 }
@@ -109,7 +117,16 @@ void Instructions::Impl::addOpcode(const std::string& line)
 		if(!c) break;
 	}
 
-	ops_.push_back(OpTemplate(id, name, params));
+	OpTemplate op(id, name, params);
+
+	for(const OpTemplate &t : ops_)
+	{
+		if(t == op) throw "ERR: Duplicate opcode";
+	}
+
+	ops_.push_back(op);
+
+//	LOG("Added new opcode: 0x%04x(%s)", id, name.c_str());
 }
 
 // # ===========================================================================
@@ -123,7 +140,7 @@ Instructions::~Instructions(void) throw()
 	delete impl_;
 }
 
-Opcode *Instructions::translate(const std::string& line) const
+Opcode *Instructions::translate(const Line& line) const
 {
 	return impl_->translate(line);
 }

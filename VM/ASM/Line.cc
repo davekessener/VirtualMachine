@@ -1,4 +1,9 @@
+#include <sstream>
+#include <exception>
 #include "Line.h"
+#include "Logger.h"
+#include "ASMException.h"
+#include "stringtools.h"
 
 namespace vm { namespace assembler {
 
@@ -8,6 +13,7 @@ class Line::Impl
 		Impl(const std::string&, int);
 		~Impl( ) throw();
 		void append(const std::string&);
+		void append(const Token&);
 	private:
 		friend class Line;
 		const std::string fn_;
@@ -32,6 +38,12 @@ void Line::Impl::append(const std::string& word)
 	++wc_;
 }
 
+void Line::Impl::append(const Token& t)
+{
+	toks_.push_back(t);
+	wc_ = t.word() + t.str().size();
+}
+
 // # ---------------------------------------------------------------------------
 
 // # ===========================================================================
@@ -51,6 +63,30 @@ Line::Line(const Line& l) : impl_(l.impl_ ? new Impl(*l.impl_) : NULL)
 
 Line::Line(const std::string& fn, int lc) : impl_(new Impl(fn, lc))
 {
+}
+
+Line::Line(const std::string& cont, const std::string& fn, int lc) : impl_(new Impl(fn, lc))
+{
+	std::string c(cont);
+	int wc = 0;
+
+	try
+	{
+		while(!c.empty())
+		{
+			std::string t(token_extract(c, wc));
+
+			if(t.empty()) break;
+
+			impl_->append(Token(t, fn, lc, wc));
+
+			wc += t.size();
+		}
+	}
+	catch(const char *e)
+	{
+		MXT_LOGANDTHROW("%s [['%s':%d]]", e, fn.c_str(), lc);
+	}
 }
 
 Line::~Line(void) throw()
@@ -127,9 +163,29 @@ const std::string Line::str(void) const
 	return oss.str();
 }
 
+const std::string Line::filename(void) const
+{
+	return impl_->fn_;
+}
+
 int Line::line(void) const
 {
 	return impl_->lc_;
+}
+
+Token& Line::operator[](size_t idx)
+{
+	return impl_->toks_.at(idx);
+}
+
+const Token& Line::operator[](size_t idx) const
+{
+	return impl_->toks_.at(idx);
+}
+
+size_t Line::size(void) const
+{
+	return impl_->toks_.size();
 }
 
 }}

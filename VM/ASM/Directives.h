@@ -8,10 +8,11 @@ namespace vm
 	namespace assembler
 	{
 		struct Opcode;
+		struct Line;
 
 		namespace Directives
 		{
-			Opcode *process(const std::string&);
+			Opcode *process(const Line&);
 		}
 	}
 }

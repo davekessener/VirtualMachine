@@ -10,6 +10,7 @@
 #include "Directives.h"
 #include "Marker.h"
 #include "SymTable.h"
+#include "Tokenizer.h"
 #include "Logger.h"
 #include "ASMException.h"
 #include "stringtools.h"
@@ -36,8 +37,8 @@ class Assembler::Impl
 	private:
 		int pos_;
 		Instructions ins_;
-		Preprocessor pre_;
 		SymTable sym_;
+		Preprocessor pre_;
 		cont_vec buf_;
 		op_vec ops_;
 };
@@ -54,12 +55,18 @@ Assembler::Impl::~Impl(void) throw()
 
 void Assembler::Impl::assemble(const std::string& line)
 {
-	pre_.feed(line);
+	LOG("Assembling file '%s' [...]", line.c_str());
+
+	pre_.feed(Tokenizer(line));
 
 	while(pre_.ready())
 	{
 		process(pre_.get());
 	}
+
+	finalize();
+
+	LOG("[DONE]");
 }
 
 void Assembler::Impl::clear(void)
@@ -74,6 +81,8 @@ void Assembler::Impl::clear(void)
 void Assembler::Impl::finalize(void)
 {
 	buf_.clear();
+
+	sym_.insert("$$", pos_);
 	
 	for(op_t p : ops_)
 	{
@@ -89,16 +98,18 @@ void Assembler::Impl::process(const Line& line)
 {
 	op_t t;
 
+	LOG("Processing line '%s'", line.str().c_str());
+
 	switch(line[0][0])
 	{
 		case '.':
-			LOG("Directive detected! ['%s']", line.str());
+			LOG("Directive detected! ['%s']", line.str().c_str());
 			t.reset(Directives::process(line));
 			break;
 		case ':':
-			if(line.count() > 1) MXT_LOGANDTHROW_T(line[1], "ERR: Illegal: Trailing tokens.");
-			LOG("Label '%s' detected.", line[0].str());
-			t.reset(new Marker(line[0]));
+			if(line.size() > 1) MXT_LOGANDTHROW_T(line[1], "ERR: Illegal: Trailing tokens.");
+			LOG("Label '%s' detected.", line[0].str().c_str());
+			t.reset(new Marker(line[0].str()));
 			sym_.insert(line[0].str(), pos_);
 			break;
 		default:
@@ -110,6 +121,7 @@ void Assembler::Impl::process(const Line& line)
 	{
 		ops_.push_back(t);
 		pos_ += t->size();
+		LOG("Line '%s' translated.", line.str().c_str());
 	}
 	else
 	{
@@ -150,7 +162,8 @@ void Assembler::out(std::ostream& os)
 
 	for(const WORD v : *impl_)
 	{
-		os << v;
+		os.write(reinterpret_cast<const char *>(&v), sizeof(v));
+		LOG("!OUT! '%04x'", v);
 	}
 }
 

@@ -1,10 +1,13 @@
 #include <iostream>
 #include <sstream>
 #include <iomanip>
+#include <cassert>
 #include "OpTemplate.h"
 #include "Instruction.h"
 #include "Evaluator.h"
+#include "ASMException.h"
 #include "Logger.h"
+#include "Line.h"
 #include "stringtools.h"
 
 namespace vm { namespace assembler {
@@ -16,12 +19,14 @@ class OpTemplate::Impl
 	public:
 		Impl(WORD, const std::string&, par_vec);
 		~Impl( ) throw();
-		Opcode *match(const OpTemplate *, const std::string& line) const;
-		inline int size( ) const { return params_.size(); }
+		inline bool operator==(const Impl& i) const { return name_ == i.name_ && params_ == i.params_; }
+		Opcode *match(const OpTemplate *, const Line& line) const;
+		inline int size( ) const { return 1 + params_.size(); }
 		inline WORD id( ) const { return id_; }
 		inline Parameter at(size_t idx) const { return params_.at(idx); }
 		const std::string toString( ) const;
 	private:
+		friend class OpTemplate;
 		WORD id_;
 		std::string name_;
 		par_vec params_;
@@ -38,52 +43,72 @@ OpTemplate::Impl::~Impl(void) throw()
 {
 }
 
-Opcode *OpTemplate::Impl::match(const OpTemplate *that, const std::string& line) const
+Opcode *OpTemplate::Impl::match(const OpTemplate *that, const Line& line) const
 {
-	std::istringstream iss(line);
-	std::string name;
-	std::vector<std::string> args;
+	assert(line.size());
 
-	LOG("Trying to match '%s' to %s(%d)", line.c_str(), name_.c_str(), params_.size());
+//	LOG("Trying to match '%s' to %s(0x%04x)", line.str().c_str(), name_.c_str(), id_);
 
-	iss >> name;
-	if(name != name_)
+	if(name_ != line[0].str())
 	{
-		LOG("> Wrong name '%s'", name.c_str());
+//		LOG("> Wrong name '%s'", line[0].c_str());
 		return NULL;
 	}
 
-	auto i = params_.cbegin();
+	std::vector<std::string> args;
+	std::ostringstream oss;
+	auto p = params_.begin();
 
-	while(iss)
+	for(size_t i = 1 ; i < line.size() ; ++i)
 	{
-		std::string s;
-		std::getline(iss, s, ',');
-		trim(s);
-		if(!s.empty())
+		if(i == line.size() - 1)
 		{
-			if(i == params_.end())
+			oss << line[i].str();
+		}
+
+		if(line[i].str() == "," || i == line.size() - 1)
+		{
+			std::string a(oss.str());
+
+			if(a.empty() || (line[i].str() == "," && i == line.size() - 1))
+				MXT_LOGANDTHROW_T(line[i], "ERR: Malformed/empty argument #%lu in '%s'",
+					args.size() + 1, line.str().c_str());
+
+			if(p == params_.end())
 			{
-				LOG("> Too many parameters (%lu+)", args.size() + 1);
+//				LOG("> Too many parameters (%lu+ of %lu)", args.size() + 1, params_.size());
 				return NULL;
 			}
 
-			if(Evaluator::deduceParameter(s) != *i)
+			Parameter pp = Evaluator::deduceParameter(a);
+			if(pp != *p)
 			{
-				LOG("> Wrong parameter type (%c instead %c)", Evaluator::deduceParameter(s), *i);
+//				LOG("> Wrong parameter type (%c instead %c)", pp, *p);
 				return NULL;
 			}
 
-			++i;
-			args.push_back(s);
+			++p;
+
+			oss.str(std::string());
+			oss.clear();
+
+			args.push_back(a);
+
+//			LOG("> Argument: '%s'(%c) matches", a.c_str(), pp);
+		}
+		else
+		{
+			oss << line[i].str();
 		}
 	}
 
 	if(args.size() != params_.size())
 	{
-		LOG("> Not enough parameter (%lu)", args.size());
+//		LOG("> Wrong argument count. (%lu instead of %lu)", args.size(), params_.size());
 		return NULL;
 	}
+
+	LOG("> MATCH! With %s(0x%04x)", name_.c_str(), id_);
 
 	return new Instruction(*that, args);
 }
@@ -135,6 +160,11 @@ OpTemplate& OpTemplate::operator=(const OpTemplate& ot)
 	return *this;
 }
 
+bool OpTemplate::operator==(const OpTemplate& op) const
+{
+	return (!impl_ && !op.impl_) || (impl_ && op.impl_ && *impl_ == *op.impl_);
+}
+
 void OpTemplate::swap(OpTemplate& ot) throw()
 {
 	Impl *i = impl_;
@@ -142,7 +172,7 @@ void OpTemplate::swap(OpTemplate& ot) throw()
 	ot.impl_ = i;
 }
 
-Opcode *OpTemplate::match(const std::string& line) const
+Opcode *OpTemplate::match(const Line& line) const
 {
 	return impl_ ? impl_->match(this, line) : NULL;
 }
@@ -160,6 +190,11 @@ WORD OpTemplate::id(void) const
 Parameter OpTemplate::operator[](size_t idx) const
 {
 	return impl_->at(idx);
+}
+
+const std::string& OpTemplate::name(void) const
+{
+	return impl_->name_;
 }
 
 const std::string OpTemplate::representation(void) const

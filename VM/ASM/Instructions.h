@@ -10,13 +10,14 @@ namespace vm
 	namespace assembler
 	{
 		struct Opcode;
+		struct Line;
 
 		class Instructions
 		{
 			public:
 				Instructions(std::istream&);
 				~Instructions( ) throw();
-				Opcode *translate(const std::string&) const;
+				Opcode *translate(const Line&) const;
 			private:
 				struct Impl;
 				Impl *impl_;

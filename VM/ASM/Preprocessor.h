@@ -9,15 +9,19 @@ namespace vm
 {
 	namespace assembler
 	{
+		struct Tokenizer;
+		struct SymTable;
+
 		class Preprocessor
 		{
 			public:
 				Preprocessor( );
 				~Preprocessor( ) throw();
-				void feed(const std::string&);
+				void feed(const Tokenizer&);
 				Line get( );
 				bool ready( ) const;
 				void clear( );
+				void swap(Preprocessor&) throw();
 			private:
 				struct Impl;
 				Impl *impl_;

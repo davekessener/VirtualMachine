@@ -3,6 +3,7 @@
 #include "SymTable.h"
 #include "Evaluator.h"
 #include "OpTemplate.h"
+#include "Logger.h"
 
 namespace vm { namespace assembler {
 
@@ -42,6 +43,8 @@ void Instruction::Impl::evaluate(op_proxy& proxy, SymTable& sym, int pos) const
 {
 	pos += size();
 	proxy << op_.id();
+
+//	LOG("### Size of 0x%04x(%s) is %d", op_.id(), op_.name().c_str(), size());
 
 	for(size_t i = 0 ; i < args_.size() ; ++i)
 	{

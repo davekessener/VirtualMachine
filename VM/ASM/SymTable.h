@@ -14,6 +14,8 @@ namespace vm
 				SymTable( );
 				~SymTable( ) throw();
 				void insert(const std::string&, int);
+				bool knows(const std::string&) const;
+				WORD get(const std::string&) const;
 				void clear( );
 			private:
 				struct Impl;

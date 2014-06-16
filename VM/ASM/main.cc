@@ -4,6 +4,7 @@
 #include <cassert>
 #include "Assembler.h"
 #include "Reader.h"
+#include "Logger.h"
 
 int main(int argc, char *argv[])
 {
@@ -13,18 +14,20 @@ int main(int argc, char *argv[])
 	std::vector<std::string> args(argv, argv + argc);
 
 	std::ifstream ins("ins.txt");
-	std::ifstream in("test.s");
 
-	assert(in.is_open());
 	assert(ins.is_open());
 
 	Assembler a(ins);
 
-	a.assemble(in);
+	a.assemble("test.s");
 
-	in.close();
+	ins.close();
 
-	a.out(std::cout);
+	std::ofstream out("tst.bin", std::ios::out | std::ios::binary);
+	a.out(out);
+	out.close();
+
+	LOG("THE END");
 
 	return 0;
 }

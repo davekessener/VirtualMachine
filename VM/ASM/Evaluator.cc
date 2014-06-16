@@ -1,8 +1,11 @@
 #include <sstream>
+#include <cassert>
 #include "Evaluator.h"
+#include "Line.h"
 #include "Logger.h"
 #include "ASMException.h"
 #include "SymTable.h"
+#include "ConstEval.h"
 
 namespace vm { namespace assembler { namespace Evaluator {
 
@@ -39,8 +42,6 @@ Parameter deduceParameter(const std::string& e)
 			MXT_LOGANDTHROW("ERR(%d): Malformed parameter @'%c'(%d) '%s'", i, c, static_cast<int>(c), e.c_str());
 		};
 
-	LOG("Deducing parameter type of '%s'", e.c_str());
-
 	std::istringstream iss(e);
 	char c = '\0';
 
@@ -65,6 +66,8 @@ Parameter deduceParameter(const std::string& e)
 			}
 
 			if(n) error(3, c);
+
+//			LOG("Parameter '%s' has type %c", e.c_str(), Parameter::REGISTER);
 
 			return Parameter::REGISTER;
 		}
@@ -93,23 +96,35 @@ Parameter deduceParameter(const std::string& e)
 
 			if(n) error(4, c);
 
+//			LOG("Parameter '%s' has type %c", e.c_str(), Parameter::MEMORY);
+
 			return Parameter::MEMORY;
 		}
 		break;
 		default:
 		{
-			LOG("> First letter was '%c'", c);
+//			LOG("Parameter '%s' has type %c", e.c_str(), Parameter::CONSTANT);
+
 			return Parameter::CONSTANT;
 		}
 		break;
 	}
+
+	assert(!"Should never be here!");
 }
 
 namespace
 {
-	WORD eval_const(const std::string& expr, SymTable& sym, int pos)
+	WORD eval_const(const std::string& l, SymTable& s, int p)
 	{
-		return 0;
+		try
+		{
+			return consteval(l, s, p);
+		}
+		catch(const std::string& msg)
+		{
+			MXT_LOGANDTHROW("%s [in '%s']", msg.c_str(), l.c_str());
+		}
 	}
 
 	WORD eval_reg(const std::string& expr)

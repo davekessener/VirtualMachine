@@ -22,6 +22,7 @@ namespace vm
 				Line(Line&&);
 				Line(const Line&);
 				Line(const std::string&, int);
+				Line(const std::string&, const std::string&, int);
 				~Line( ) throw();
 				Line& operator=(Line&&);
 				Line& operator=(const Line&);
@@ -34,7 +35,12 @@ namespace vm
 				const_iterator cbegin( ) const;
 				const_iterator cend( ) const;
 				const std::string str( ) const;
+				const std::string filename( ) const;
 				int line( ) const;
+				Token& operator[](size_t);
+				const Token& operator[](size_t) const;
+				size_t size( ) const;
+				inline bool empty( ) const { return !size(); }
 			private:
 				struct Impl;
 				Impl *impl_;

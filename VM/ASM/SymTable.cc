@@ -1,4 +1,5 @@
 #include <map>
+#include <algorithm>
 #include "SymTable.h"
 
 namespace vm { namespace assembler {
@@ -8,23 +9,12 @@ class SymTable::Impl
 	typedef std::map<std::string, WORD> lbl_map;
 
 	public:
-		Impl( );
-		~Impl( ) throw();
-		inline void insert(const std::string& lbl, int p) { lbls_[lbl] = p; }
-		inline void clear( ) { lbls_.clear(); }
 	private:
+		friend class SymTable;
 		lbl_map lbls_;
 };
 
 // # ===========================================================================
-
-SymTable::Impl::Impl(void)
-{
-}
-
-SymTable::Impl::~Impl(void) throw()
-{
-}
 
 // # ---------------------------------------------------------------------------
 
@@ -41,12 +31,24 @@ SymTable::~SymTable(void) throw()
 
 void SymTable::insert(const std::string& lbl, int pos)
 {
-	impl_->insert(lbl, pos);
+	impl_->lbls_[lbl] = static_cast<WORD>(pos);
+}
+
+bool SymTable::knows(const std::string& lbl) const
+{
+	return std::find_if(impl_->lbls_.cbegin(), impl_->lbls_.cend(), 
+			[lbl](const std::pair<std::string, WORD>& p) { return p.first == lbl; }) 
+		!= impl_->lbls_.cend();
+}
+
+WORD SymTable::get(const std::string& lbl) const
+{
+	return impl_->lbls_.at(lbl);
 }
 
 void SymTable::clear(void)
 {
-	impl_->clear();
+	impl_->lbls_.clear();
 }
 
 }}
