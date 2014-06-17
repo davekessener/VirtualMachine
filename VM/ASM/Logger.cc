@@ -76,11 +76,12 @@ const std::string Logger::logMsg(const char *s, va_list l)
 	sprintf(buf, "[%s] ", getTime().c_str());
 	oss << std::string(buf);
 	vsprintf(buf, s, l);
-	oss << std::string(buf) << "\n";
+	oss << std::string(buf);
 
 	std::string r(oss.str());
 
 	fwrite(r.c_str(), sizeof(char), r.size(), _f);
+	putc('\n', _f);
 	fflush(_f);
 
 //	fprintf(_f, "[%s] ", getTime().c_str());
@@ -109,11 +110,12 @@ const std::string Logger::logMsgFrom(const char *f, int i, const char *s, va_lis
 	sprintf(buf, "[%s:%d] ", f, i);
 	oss << std::string(buf);
 	vsprintf(buf, s, l);
-	oss << std::string(buf) << "\n";
+	oss << std::string(buf);
 
 	std::string r(oss.str());
 
 	fwrite(r.c_str(), sizeof(char), r.size(), _f);
+	putc('\n', _f);
 	fflush(_f);
 
 //	fprintf(_f, "[%s] ", getTime().c_str());

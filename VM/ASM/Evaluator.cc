@@ -186,7 +186,7 @@ namespace
 		WORD r;
 		ss >> r;
 
-		LOG("> Read register '%d'!", r);
+//		LOG("> Read register '%d'!", r);
 
 		return r;
 	}

@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <cstdarg>
 #include <cstdlib>
+#include <cassert>
 #include "stringtools.h"
 
 #define MXT_BUFSIZE 4096
@@ -49,6 +50,34 @@ std::string string_format(const char *s, ...)
 	return std::string(buf);
 }
 
+int getBase(char c)
+{
+	if(c >= '1' && c <= '7')
+		return 8;
+	else switch(c)
+	{
+		case 'b':
+		case 'B':
+			return 2;
+		case 'o':
+		case 'O':
+			return 8;
+		case 'd':
+		case 'D':
+			return 10;
+		case 'h':
+		case 'x':
+		case 'X':
+			return 16;
+		default:
+			throw std::string("ERR: Malformed number!");
+	}
+
+	assert(!"Should never be here!");
+
+	return 10;
+}
+
 inline bool isWS(char c) { return c == ' ' || c == '\t'; }
 inline bool isIn(char c, const char *s) { while(*s) if(*s++ == c) return true; return false; }
 inline bool isNO(char c, int base = 10) 
@@ -89,7 +118,7 @@ const std::string token_extract(std::string& in_s, int& offset)
 				}
 				else if(*s == '\'')
 				{
-					throw "ERR: malformed(empty) sigle quote";
+					throw std::string("ERR: malformed(empty) sigle quote");
 				}
 				else if(*s == '\\')
 				{
@@ -104,7 +133,7 @@ const std::string token_extract(std::string& in_s, int& offset)
 			{
 				if(*s != '\'')
 				{
-					throw "ERR: malformed(too long) single quote";
+					throw std::string("ERR: malformed(too long) single quote");
 				}
 				else
 				{
@@ -139,31 +168,7 @@ const std::string token_extract(std::string& in_s, int& offset)
 		{
 			if(!base)
 			{
-				if(*s >= '1' && *s <= '7')
-					base = 8;
-				else switch(*s)
-				{
-					case 'b':
-					case 'B':
-						base = 2;
-						break;
-					case 'o':
-					case 'O':
-						base = 8;
-						break;
-					case 'd':
-					case 'D':
-						base = 10;
-						break;
-					case 'h':
-					case 'x':
-					case 'X':
-						base = 16;
-						break;
-					default:
-						throw "ERR: Malformed number!";
-				}
-
+				base = getBase(*s);
 			}
 			else if(!isNO(*s, base))
 			{
@@ -213,11 +218,11 @@ const std::string token_extract(std::string& in_s, int& offset)
 
 	if(quote && !*s)
 	{
-		throw "ERR: malformed(premature) string";
+		throw std::string("ERR: malformed(premature) string");
 	}
 	else if(sq && !*s)
 	{
-		throw "ERR: malformed(premature) single quote";
+		throw std::string("ERR: malformed(premature) single quote");
 	}
 
 	std::string r(beg, s);

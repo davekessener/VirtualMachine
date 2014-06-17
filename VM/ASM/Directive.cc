@@ -1,29 +1,34 @@
 #include <iostream>
 #include "Directive.h"
 #include "SymTable.h"
+#include "Evaluator.h"
 
 namespace vm { namespace assembler {
 
-Directive::Directive(void)
+DirectiveDB::DirectiveDB(const std::string& line) : expr_(line)
 {
 }
 
-Directive::~Directive(void) throw()
+DirectiveDB::~DirectiveDB(void) throw()
 {
 }
 
-void Directive::out(std::ostream& os)
+void DirectiveDB::out(std::ostream& os)
 {
 }
 
-int Directive::size(void) const
+int DirectiveDB::size(void) const
 {
-	return 0;
+	return 1;
 }
 
-const op_proxy Directive::evaluate(SymTable& sym, int pos) const
+const op_proxy DirectiveDB::evaluate(SymTable& sym, int pos) const
 {
-	return op_proxy();
+	op_proxy pr;
+
+	pr << Evaluator::eval(Parameter::CONSTANT, expr_, sym, pos);
+
+	return pr;
 }
 
 }}

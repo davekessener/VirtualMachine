@@ -42,9 +42,9 @@ Instructions::Impl::Impl(std::istream& is)
 			++lc;
 		}
 	}
-	catch(const char *msg)
+	catch(const std::string& msg)
 	{
-		MXT_LOGANDTHROW("%s [[%d: '%s']]", msg, lc, s.c_str());
+		MXT_LOGANDTHROW("%s [[%d: '%s']]", msg.c_str(), lc, s.c_str());
 	}
 }
 
@@ -121,7 +121,7 @@ void Instructions::Impl::addOpcode(const std::string& line)
 
 	for(const OpTemplate &t : ops_)
 	{
-		if(t == op) throw "ERR: Duplicate opcode";
+		if(t == op) throw std::string("ERR: Duplicate opcode");
 	}
 
 	ops_.push_back(op);

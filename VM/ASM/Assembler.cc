@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <map>
 #include <memory>
 #include <cassert>
 #include "Assembler.h"
@@ -82,7 +83,7 @@ void Assembler::Impl::finalize(void)
 {
 	buf_.clear();
 
-	sym_.insert("$$", pos_);
+	sym_["$$"] = pos_;
 	
 	for(op_t p : ops_)
 	{
@@ -110,7 +111,7 @@ void Assembler::Impl::process(const Line& line)
 			if(line.size() > 1) MXT_LOGANDTHROW_T(line[1], "ERR: Illegal: Trailing tokens.");
 			LOG("Label '%s' detected.", line[0].str().c_str());
 			t.reset(new Marker(line[0].str()));
-			sym_.insert(line[0].str(), pos_);
+			sym_[line[0].str()] = pos_;
 			break;
 		default:
 			t.reset(ins_.translate(line));

@@ -28,6 +28,7 @@ namespace vm
 				Line& operator=(const Line&);
 				void swap(Line&) throw();
 				Line& operator+=(const std::string&);
+				Line& operator+=(const Token&);
 				Line& insert(const std::vector<std::string>&);
 				inline explicit operator bool( ) const { return impl_ != NULL; }
 				iterator begin( );

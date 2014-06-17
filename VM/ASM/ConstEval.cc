@@ -10,6 +10,11 @@
 
 namespace vm { namespace assembler { namespace Evaluator {
 
+namespace
+{
+	WORD readNo(const std::string&);
+}
+
 class Extractor
 {
 	public:
@@ -319,22 +324,59 @@ WORD O7(void)
 		}
 		else
 		{
-			std::istringstream iss(s);
-			
-			int i = -1;
-			iss >> i;
-
-			if(i < 0) 
-				throw string_format("ERR: Malformed('%s' is not a constant!) const-expr", 
-					s.c_str());
-
-			r = static_cast<WORD>(i);
+			r = readNo(s);
 		}
 	}
 
 	//LOG("> Leaving O7 width '%s'", to_eval->top().c_str());
 
 	return r;
+}
+
+namespace
+{
+	WORD readNo(const std::string& str)
+	{
+		auto error = [&str](const char *i)
+			{
+				throw string_format("ERR(%s): Malformed"
+					"('%s' is not a constant!) const-expr", 
+					i, str.c_str());
+			};
+
+		const char *s = str.c_str();
+		int base = 0;
+		WORD r = 0;
+
+		if(*s < '0' || *s > '9') error("invalid");
+
+		if(*s == '0')
+		{
+			if(!*++s) return 0;
+			base = getBase(*s++);
+		}
+		else
+		{
+			base = 10;
+		}
+
+		if(!*s) error("premature");
+
+		while(*s)
+		{
+			WORD v = *s++;
+			if(v >= '0' && v <= '9') v -= '0';
+			else if(v >= 'a' && v <= 'z') v -= 'a' - 10;
+			else if(v >= 'A' && v <= 'Z') v -= 'A' - 10;
+			else error("invalid");
+
+			if(v >= base) error("overflow");
+
+			r = r * base + v;
+		}
+
+		return r;
+	}
 }
 
 }}}

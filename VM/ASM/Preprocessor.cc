@@ -17,13 +17,22 @@
 
 namespace vm { namespace assembler {
 
+namespace
+{
+	std::vector<Line> insertQuoteDB(const Token&);
+	Line insertDB(const std::vector<Token>&);
+	std::string dbChar(const char *&);
+	inline std::string dbChar(const char *&& s) { return dbChar(s); }
+}
+
 class Preprocessor::Impl
 {
 	private:
 		void fillBuffer( );
 	private:
 		void process(const Line&);
-		std::vector<std::string> substitute(const Token&);
+		std::vector<Token> substitute(const Token&);
+		Line substitute(const Line&);
 	private:
 		friend class Preprocessor;
 		std::deque<Line> buffer_;
@@ -41,15 +50,22 @@ void Preprocessor::Impl::fillBuffer(void)
 	{
 		while(!toks_.empty() && !toks_.top().ready()) toks_.pop();
 		if(toks_.empty()) break;
-		process(toks_.top().getline());
+		process(substitute(toks_.top().getline()));
 	}
 }
 
 // # ---------------------------------------------------------------------------
 
-inline void operator<<(std::vector<std::string>& v1, const std::vector<std::string>& v2)
+template<typename T, typename TT, template<typename, typename> class C1, template<typename, typename> class C2>
+inline void operator<<(C1<T, TT>& v1, const C2<T, TT>& v2)
 {
-	v1.insert(v1.end(), v2.begin(), v2.end());
+	v1.insert(v1.end(), v2.cbegin(), v2.cend());
+}
+
+template<template<typename, typename> class C, typename T, typename TT>
+inline void operator<<(C<T, TT>& c, const T& t)
+{
+	c.push_back(t);
 }
 
 template<typename T>
@@ -57,6 +73,8 @@ inline bool contains(T& c, const typename T::value_type& v)
 {
 	return std::find(c.begin(), c.end(), v) != c.end();
 }
+
+// # ---------------------------------------------------------------------------
 
 void Preprocessor::Impl::process(const Line& line)
 {
@@ -110,88 +128,47 @@ void Preprocessor::Impl::process(const Line& line)
 		else if(cmd == MXT_PD_DB)
 		{
 			if(line.size() < 2) MXT_LOGANDTHROW_T(line[0], "ERR: Expected parameters.");
+			std::vector<Token> tmp(line.cbegin() + 1, line.cend());
+			tmp.push_back(Token(",", "", 0, 0));
 
-			std::vector<Token> vec;
-			std::ostringstream osslog;
+			std::vector<Line> dblines;
 
-			osslog << MXT_PD_DB << " ";
-
-			for(auto i = line.cbegin() ; ++i != line.cend() ;)
+			for(auto i = tmp.begin(), j = i ; i != tmp.end() ; ++i)
 			{
-				try
+				if(i->str() == ",")
 				{
-					if(i->str() == ",")
+					try
 					{
-						if(vec.empty()) MXT_LOGANDTHROW_T(*i, "ERR: Malformed(empty) argument for '.db'");
+						std::vector<Token> toks(j, i);
 
-						Line l(line.filename(), line.line());
-						std::vector<std::string> v;
-
-						l += MXT_PD_DB;
-
-						for(const Token& t : vec)
+						if(toks.size() == 1 && toks.front()[0] == '"')
 						{
-							v << substitute(t);
-						}
-
-						if(v.size() == 1 && v.front().front() == '"')
-						{
-							const char *tmp = v.front().c_str();
-
-							while(*tmp)
-							{
-								Line tl(l);
-								std::ostringstream oss;
-
-								oss << static_cast<WORD>(convert_character(tmp));
-
-								tl += oss.str();
-
-								osslog << oss.str() << ", ";
-
-								buffer_.push_back(tl);
-							}
-						}
-						else if(v.size() == 1 && v.front().front() == '\'')
-						{
-							const char *tmp = v.front().c_str();
-							std::ostringstream oss;
-							oss << static_cast<WORD>(convert_character(tmp));
-							l += oss.str();
-							osslog << oss.str() << ", ";
-							buffer_.push_back(l);
+							std::vector<Line> _(insertQuoteDB(toks.front()));
+							dblines.insert(dblines.end(), _.begin(), _.end());
+//							dblines << insertQuoteDB(toks.front());
 						}
 						else
 						{
-							for(const std::string& s : v)
-							{
-								if(s.front() == '"' || s.front() == '\'')
-									MXT_LOGANDTHROW_T(*i, "ERR: Malformed(defective quote?) argument for '.db'");
-								l += s;
-								osslog << s;
-							}
-
-							osslog << ", ";
-
-							buffer_.push_back(l);
+							dblines.push_back(insertDB(toks));
+//							dblines << insertDB(toks);
 						}
-
-						vec.clear();
+ 
+ 						j = i + 1;
 					}
-					else
+					catch(const std::string& msg)
 					{
-						vec.push_back(*i);
+						MXT_LOGANDTHROW_T(*i, "%s", msg.c_str());
 					}
-				}
-				catch(const std::string& msg)
-				{
-					MXT_LOGANDTHROW_T(*i, "%s", msg.c_str());
 				}
 			}
 
-			std::string log(osslog.str());
-			log = log.substr(0, log.size() - 2);
-			LOG("[PP] '%s' -> '%s'", line.str().c_str(), log.c_str());
+			for(const Line& l : dblines)
+			{
+				LOG("Line '%s' added.", l.str().c_str());
+			}
+
+			buffer_.insert(buffer_.begin(), dblines.begin(), dblines.end());
+//			buffer_ << dblines;
 		}
 		else
 		{
@@ -200,23 +177,13 @@ void Preprocessor::Impl::process(const Line& line)
 	}
 	else
 	{
-		Line l(line.filename(), line.line());
-		std::vector<std::string> vec;
-		for(auto i = line.cbegin() ; i != line.cend() ; ++i)
-		{
-			vec << substitute(*i);
-		}
-		for(const std::string& s : vec)
-		{
-			l += s;
-		}
-		buffer_.push_back(l);
+		buffer_.push_back(line);
 	}
 }
 
-std::vector<std::string> Preprocessor::Impl::substitute(const Token& t)
+std::vector<Token> Preprocessor::Impl::substitute(const Token& t)
 {
-	std::vector<std::string> r;
+	std::vector<Token> r;
 
 	if(sym_.count(t.str()))
 	{
@@ -224,15 +191,44 @@ std::vector<std::string> Preprocessor::Impl::substitute(const Token& t)
 		{
 			if(t == tt) MXT_LOGANDTHROW_T(t, "ERR: Recursive '.equ': '%s'", t.str().c_str());
 
-			r << substitute(tt);
+			r << substitute(Token(tt.str(), t.filename(), t.line(), t.word()));
+		}
+	}
+	else if(t.str()[0] == '\'')
+	{
+		try
+		{
+			r.push_back(Token(dbChar(t.str().c_str() + 1), t.filename(), t.line(), t.word()));
+		}
+		catch(const std::string& msg)
+		{
+			MXT_LOGANDTHROW_T(t, "%s", msg.c_str());
 		}
 	}
 	else
 	{
-		r.push_back(t.str());
+		r.push_back(t);
 	}
 
 	return r;
+}
+
+Line Preprocessor::Impl::substitute(const Line& line)
+{
+	Line l(line.filename(), line.line());
+	std::vector<Token> v;
+
+	for(auto i = line.cbegin() ; i != line.cend() ; ++i)
+	{
+		v << substitute(*i);
+	}
+
+	for(const Token& t : v)
+	{
+		l += t;
+	}
+
+	return l;
 }
 
 // # ===========================================================================
@@ -283,6 +279,148 @@ void Preprocessor::swap(Preprocessor& p) throw()
 	impl_ = p.impl_;
 	p.impl_ = i;
 }
+
+// # ===========================================================================
+
+namespace
+{
+	std::string dbChar(const char *& s)
+	{
+		std::ostringstream oss;
+
+		oss << static_cast<WORD>(convert_character(s));
+
+		return oss.str();
+	}
+	
+	std::vector<Line> insertQuoteDB(const Token& t)
+	{
+		Line line(t.filename(), t.line());
+		std::string st(t.str().substr(1, t.str().size() - 2));
+		const char *s = st.c_str();
+	
+		std::vector<Line> v;
+		line += MXT_PD_DB;
+	
+		while(*s)
+		{
+			Line l(line);
+			l += dbChar(s);
+			v.push_back(l);
+		}
+	
+		return v;
+	}
+	
+	Line insertDB(const std::vector<Token>& toks)
+	{
+		Line l(toks.front().filename(), toks.front().line());
+		l += MXT_PD_DB;
+	
+		for(const Token& t : toks)
+		{
+			if(t.str().front() == '"')
+			{
+				MXT_LOGANDTHROW_T(t, "ERR: Malformed(defective quote?) argument for '.db'");
+			}
+			else
+			{
+				l += t;
+			}
+		}
+	
+		return l;
+	}
+}
+
+// # ===========================================================================
+
+//void dodb(const Line& line)
+//{
+//	if(line.size() < 2) MXT_LOGANDTHROW_T(line[0], "ERR: Expected parameters.");
+//
+//	std::vector<Token> vec;
+//	std::ostringstream osslog;
+//
+//	osslog << MXT_PD_DB << " ";
+//
+//	for(auto i = line.cbegin() ; ++i != line.cend() ;)
+//	{
+//		try
+//		{
+//			if(i->str() == ",")
+//			{
+//				if(vec.empty()) MXT_LOGANDTHROW_T(*i, "ERR: Malformed(empty) argument for '.db'");
+//
+//				Line l(line.filename(), line.line());
+//				std::vector<std::string> v;
+//
+//				l += MXT_PD_DB;
+//
+//				for(const Token& t : vec)
+//				{
+//					v << substitute(t);
+//				}
+//
+//				if(v.size() == 1 && v.front().front() == '"')
+//				{
+//					const char *tmp = v.front().c_str();
+//
+//					while(*tmp)
+//					{
+//						Line tl(l);
+//						std::ostringstream oss;
+//
+//						oss << static_cast<WORD>(convert_character(tmp));
+//
+//						tl += oss.str();
+//
+//						osslog << oss.str() << ", ";
+//
+//						buffer_.push_back(tl);
+//					}
+//				}
+//				else if(v.size() == 1 && v.front().front() == '\'')
+//				{
+//					const char *tmp = v.front().c_str();
+//					std::ostringstream oss;
+//					oss << static_cast<WORD>(convert_character(tmp));
+//					l += oss.str();
+//					osslog << oss.str() << ", ";
+//					buffer_.push_back(l);
+//				}
+//				else
+//				{
+//					for(const std::string& s : v)
+//					{
+//						if(s.front() == '"' || s.front() == '\'')
+//							MXT_LOGANDTHROW_T(*i, "ERR: Malformed(defective quote?) argument for '.db'");
+//						l += s;
+//						osslog << s;
+//					}
+//
+//					osslog << ", ";
+//
+//					buffer_.push_back(l);
+//				}
+//
+//				vec.clear();
+//			}
+//			else
+//			{
+//				vec.push_back(*i);
+//			}
+//		}
+//		catch(const std::string& msg)
+//		{
+//			MXT_LOGANDTHROW_T(*i, "%s", msg.c_str());
+//		}
+//	}
+//
+//	std::string log(osslog.str());
+//	log = log.substr(0, log.size() - 2);
+//	LOG("[PP] '%s' -> '%s'", line.str().c_str(), log.c_str());
+//}
 
 }}
 

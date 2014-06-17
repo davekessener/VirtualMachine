@@ -83,9 +83,9 @@ Line::Line(const std::string& cont, const std::string& fn, int lc) : impl_(new I
 			wc += t.size();
 		}
 	}
-	catch(const char *e)
+	catch(const std::string& e)
 	{
-		MXT_LOGANDTHROW("%s [['%s':%d]]", e, fn.c_str(), lc);
+		MXT_LOGANDTHROW("%s [['%s':%d]]", e.c_str(), fn.c_str(), lc);
 	}
 }
 
@@ -117,6 +117,12 @@ void Line::swap(Line& l) throw()
 Line& Line::operator+=(const std::string& line)
 {
 	impl_->append(line);
+	return *this;
+}
+
+Line& Line::operator+=(const Token& t)
+{
+	impl_->append(t);
 	return *this;
 }
 
