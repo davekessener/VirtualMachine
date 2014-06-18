@@ -45,7 +45,8 @@ namespace vm
 				WORD pop( );
 				WORD& operator[](size_t);
 				WORD next( );
-				const WORD *RAM( ) const { return ram_; }
+				inline WORD *RAM( ) { return ram_; }
+				inline const WORD *RAM( ) const { return ram_; }
 				std::ostream& print(std::ostream&) const;
 				const std::string printOpcodes( ) const;
 				const std::string printRAM(ADDRESS, size_t) const;

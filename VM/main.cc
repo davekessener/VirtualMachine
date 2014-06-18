@@ -24,6 +24,8 @@ class BR
 		int l_;
 };
 
+void print_opcodes(const std::string&);
+
 int main(int argc, char *argv[])
 {
 	using namespace vm;
@@ -31,6 +33,12 @@ int main(int argc, char *argv[])
 	using namespace sdl;
 
 	std::vector<std::string> args(argv, argv + argc);
+
+	if(args.size() > 2 && args[1] == "--print-opcodes")
+	{
+		print_opcodes(args[2]);
+		return 0;
+	}
 
 	assert(args.size() > 1);
 
@@ -53,15 +61,20 @@ int main(int argc, char *argv[])
 	oss << p << std::endl << p.printRAM(0, 0x120) << std::endl;
 	Logger::log(oss.str());
 
-	std::ofstream manual("ins.txt");
+	return 0;
+}
+
+void print_opcodes(const std::string& fn)
+{
+	std::ofstream manual(fn.c_str());
 
 	if(manual.is_open())
 	{
+		vm::cpu::Processor p;
+		p.init();
 		manual << p.printOpcodes() << std::endl;
 		manual.close();
 	}
-
-	return 0;
 }
 
 BR::BR(const std::string& fn)
