@@ -21,12 +21,16 @@ void operator()(CPU&) const;\
 
 // # ===========================================================================
 		MXT_CMD(hlt,     "hlt");
+		MXT_CMD(wait,    "wait");
+		MXT_CMD(log_x,	 "log",  Arguments::REGISTER);
+		MXT_CMD(log_m,	 "log",  Arguments::MEMORY);
 // # ---------------------------------------------------------------------------
 		MXT_CMD(ld_xc,   "ld",   Arguments::REGISTER, Arguments::CONSTANT);
 		MXT_CMD(ld_xy,   "ld",   Arguments::REGISTER, Arguments::REGISTER);
 		MXT_CMD(ld_xm,   "ld",   Arguments::REGISTER, Arguments::MEMORY);
 		MXT_CMD(ld_mc,   "ld",   Arguments::MEMORY,   Arguments::CONSTANT);
 		MXT_CMD(ld_mx,   "ld",   Arguments::MEMORY,   Arguments::REGISTER);
+		MXT_CMD(ld_mm,   "ld",   Arguments::MEMORY,   Arguments::MEMORY);
 // # ---------------------------------------------------------------------------
 		MXT_CMD(inc_x,   "inc",  Arguments::REGISTER);
 		MXT_CMD(dec_x,   "dec",  Arguments::REGISTER);

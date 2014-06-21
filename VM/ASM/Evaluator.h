@@ -2,6 +2,7 @@
 #define VM_ASM_EVALUATOR_H
 
 #include <string>
+#include <vector>
 #include "adef.h"
 
 namespace vm
@@ -12,7 +13,8 @@ namespace vm
 
 		namespace Evaluator
 		{
-			WORD eval(Parameter, const std::string&, SymTable&, int);
+			typedef std::vector<WORD> eval_t;
+			eval_t eval(Parameter, const std::string&, const SymTable&, int);
 			Parameter deduceParameter(const std::string&);
 		}
 	}

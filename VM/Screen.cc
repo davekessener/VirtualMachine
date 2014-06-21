@@ -94,7 +94,7 @@ Key Screen::keyPoll(void)
 {
 	assert(keyPressed());
 	Key k(buffer_.front());
-	buffer_.pop_front();
+	buffer_.pop_back();
 	return k;
 }
 

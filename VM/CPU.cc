@@ -8,12 +8,14 @@
 #include "Periphery.h"
 #include "Logger.h"
 
+#define MXT_FRAMERATE 60
+
 namespace vm { namespace cpu {
 
 using periphery::Periphery;
 
-CPU::CPU(void) : PC(regs_[0]), SP(regs_[REG_COUNT - 1]), 
-	isHalted_(false), interrupt_(Interrupt::DISABLED)
+CPU::CPU(void) : PC(regs_[REG_COUNT - 1]), SP(regs_[REG_COUNT - 2]), 
+	isHalted_(false), isSuspended_(false), interrupt_(Interrupt::DISABLED)
 {
 }
 
@@ -34,6 +36,12 @@ void CPU::execute(void)
 	for(auto i : peripheries_)
 	{
 		i->step();
+	}
+
+	if(isSuspended_)
+	{
+		t_.keepRate(MXT_FRAMERATE);
+		return;
 	}
 
 	Logger::log(printNextInstruction());
@@ -212,6 +220,7 @@ void CPU::interrupt(int id)
 		push(PC);
 		PC = ram_[INT_TABLE + id];
 		interrupt_ = Interrupt::RUNNING;
+		isSuspended_ = false;
 	}
 }
 
@@ -256,12 +265,17 @@ const std::string CPU::printNextInstruction(void) const
 		oss << std::string(buf);
 		
 		const WORD *ram = ram_ + PC + 1;
-		for(int j = i->argCount() ; j > 0 ;)
+		for(int j = 0 ; j < i->argCount() ; ++j)
 		{
+			if(j) oss << ",";
 			sprintf(buf, " 0x%04x", *ram++);
 			oss << std::string(buf);
 
-			if(--j) oss << ",";
+			if((*i)[j] == Arguments::MEMORY)
+			{
+				sprintf(buf, "+0x%04x", *ram++);
+				oss << std::string(buf);
+			}
 		}
 	}
 

@@ -6,6 +6,8 @@
 
 #define MXT_BUFSIZE 4096
 
+namespace stringtools {
+
 void trim(std::string& s)
 {
 	std::string r, t;
@@ -77,15 +79,6 @@ int getBase(char c)
 
 	return 10;
 }
-
-inline bool isWS(char c) { return c == ' ' || c == '\t'; }
-inline bool isIn(char c, const char *s) { while(*s) if(*s++ == c) return true; return false; }
-inline bool isNO(char c, int base = 10) 
-{
-	const char *d = "fedcba9876543210";
-	return isIn((c >= 'A' && c <= 'F') ? (c - 'A' + 'a') : c, d + 16 - base);
-}
-inline bool isID(char c) { return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || isNO(c) || isIn(c, "_:"); }
 
 const std::string token_extract(std::string& in_s, int& offset)
 {
@@ -244,6 +237,8 @@ int convert_character(const char *& s)
 		switch(*++s)
 		{
 			case '0':  r = '\0'; break;
+			case 'b':  r = '\b'; break;
+			case 'r':  r = '\r'; break;
 			case '\'': r = '\''; break;
 			case '"':  r = '\"'; break;
 			case 'n':  r = '\n'; break;
@@ -257,5 +252,7 @@ int convert_character(const char *& s)
 	++s;
 
 	return r;
+}
+
 }
 

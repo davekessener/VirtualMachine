@@ -36,7 +36,7 @@ Instructions::Impl::Impl(std::istream& is)
 		while(!is.eof())
 		{
 			std::getline(is, s);
-			trim(s);
+			stringtools::trim(s);
 			if(!s.empty()) addOpcode(s);
 			s = "";
 			++lc;

@@ -74,9 +74,9 @@ Line::Line(const std::string& cont, const std::string& fn, int lc) : impl_(new I
 	{
 		while(!c.empty())
 		{
-			std::string t(token_extract(c, wc));
+			std::string t(stringtools::token_extract(c, wc));
 
-			if(t.empty()) break;
+			if(t.empty() || t[0] == ';') break;
 
 			impl_->append(Token(t, fn, lc, wc));
 
@@ -144,6 +144,16 @@ Line::iterator Line::begin(void)
 Line::iterator Line::end(void)
 {
 	return impl_->toks_.end();
+}
+
+Line::const_iterator Line::begin(void) const
+{
+	return impl_->toks_.cbegin();
+}
+
+Line::const_iterator Line::end(void) const
+{
+	return impl_->toks_.cend();
 }
 
 Line::const_iterator Line::cbegin(void) const

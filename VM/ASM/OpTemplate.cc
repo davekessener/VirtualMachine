@@ -21,7 +21,6 @@ class OpTemplate::Impl
 		~Impl( ) throw();
 		inline bool operator==(const Impl& i) const { return name_ == i.name_ && params_ == i.params_; }
 		Opcode *match(const OpTemplate *, const Line& line) const;
-		inline int size( ) const { return 1 + params_.size(); }
 		inline WORD id( ) const { return id_; }
 		inline Parameter at(size_t idx) const { return params_.at(idx); }
 		const std::string toString( ) const;
@@ -179,7 +178,25 @@ Opcode *OpTemplate::match(const Line& line) const
 
 int OpTemplate::size(void) const
 {
-	return impl_->size();
+	int s = 1;
+
+	for(const Parameter& p : impl_->params_)
+	{
+		switch(p)
+		{
+			case Parameter::CONSTANT:
+			case Parameter::REGISTER:
+				++s;
+				break;
+			case Parameter::MEMORY:
+				s += 2;
+				break;
+			default:
+				MXT_LOGANDTHROW("ERR: ??? Unknown parameter '%c'", p);
+		}
+	}
+
+	return s;
 }
 
 WORD OpTemplate::id(void) const

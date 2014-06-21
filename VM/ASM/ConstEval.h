@@ -12,7 +12,7 @@ namespace vm
 
 		namespace Evaluator
 		{
-			WORD consteval(const std::string&, SymTable&, int);
+			WORD consteval(const std::string&, const SymTable&, int);
 		}
 	}
 }

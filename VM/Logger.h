@@ -7,7 +7,11 @@
 #include <mutex>
 #endif
 
+#ifndef NODEBUG
 #define LOG(...) ::Logger::logFrom(__FILE__, __LINE__, __VA_ARGS__)
+#else
+#define LOG(...)
+#endif
 
 class Logger
 {

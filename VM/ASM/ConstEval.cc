@@ -46,7 +46,7 @@ class Extractor
 typedef std::shared_ptr<Extractor> ex_t;
 
 ex_t to_eval;
-SymTable *symtbl;
+const SymTable *symtbl;
 int offset;
 
 // eExpr(O0) := O1 *( '&&,||' O1 )
@@ -67,7 +67,7 @@ WORD O5( );
 WORD O6( );
 WORD O7( );
 
-WORD consteval(const std::string& line, SymTable& tbl, int pos)
+WORD consteval(const std::string& line, const SymTable& tbl, int pos)
 {
 	to_eval.reset(new Extractor(line));
 	symtbl = &tbl;
@@ -339,7 +339,7 @@ namespace
 	{
 		auto error = [&str](const char *i)
 			{
-				throw string_format("ERR(%s): Malformed"
+				throw stringtools::string_format("ERR(%s): Malformed"
 					"('%s' is not a constant!) const-expr", 
 					i, str.c_str());
 			};
@@ -353,7 +353,7 @@ namespace
 		if(*s == '0')
 		{
 			if(!*++s) return 0;
-			base = getBase(*s++);
+			base = stringtools::getBase(*s++);
 		}
 		else
 		{

@@ -11,12 +11,12 @@ namespace vm { namespace assembler { namespace Evaluator {
 
 namespace
 {
-	WORD eval_const(const std::string&, SymTable&, int);
-	WORD eval_reg(const std::string&);
-	WORD eval_mem(const std::string&);
+	eval_t eval_const(const std::string&, const SymTable&, int);
+	eval_t eval_reg(const std::string&);
+	eval_t eval_mem(const std::string&, const SymTable&, int);
 }
 
-WORD eval(Parameter p, const std::string& v, SymTable& sym, int pos)
+eval_t eval(Parameter p, const std::string& v, const SymTable& sym, int pos)
 {
 	if(p!=deduceParameter(v)) MXT_LOGANDTHROW("ERR: Detected parameter type mismatch for '%s'"
 		"(supposedly %d)", v.c_str(), static_cast<int>(p));
@@ -28,7 +28,7 @@ WORD eval(Parameter p, const std::string& v, SymTable& sym, int pos)
 		case Parameter::REGISTER:
 			return eval_reg(v);
 		case Parameter::MEMORY:
-			return eval_mem(v);
+			return eval_mem(v, sym, pos);
 		default:
 			MXT_LOGANDTHROW("ERR: unknown paramter type '%d' for argument '%s'", p, v.c_str());
 			break;
@@ -37,9 +37,9 @@ WORD eval(Parameter p, const std::string& v, SymTable& sym, int pos)
 
 Parameter deduceParameter(const std::string& e)
 {
-	auto error = [&e](int i, char c)
+	auto error = [&e](const char *s, char c)
 		{
-			MXT_LOGANDTHROW("ERR(%d): Malformed parameter @'%c'(%d) '%s'", i, c, static_cast<int>(c), e.c_str());
+			MXT_LOGANDTHROW("ERR(%s): Malformed parameter @'%c'(%d) '%s'", s, c, static_cast<int>(c), e.c_str());
 		};
 
 	std::istringstream iss(e);
@@ -61,11 +61,11 @@ Parameter deduceParameter(const std::string& e)
 				c = '\0';
 				iss >> c;
 				if(!c) break;
-				if(c < '0' || c > '9') error(0, c);
+				if(c < '0' || c > '9') error("malformed register: unexpected char", c);
 				n = false;
 			}
 
-			if(n) error(3, c);
+			if(n) error("malformed register: missing reg. number", c);
 
 //			LOG("Parameter '%s' has type %c", e.c_str(), Parameter::REGISTER);
 
@@ -75,7 +75,7 @@ Parameter deduceParameter(const std::string& e)
 		case '[':
 		{
 			c = '\0'; iss >> c;
-			if(c != 'r') error(1, c);
+			if(c != 'r') error("malformed memory: 'r' missing", c);
 
 			bool n = true;
 
@@ -87,14 +87,16 @@ Parameter deduceParameter(const std::string& e)
 				{
 					c = '\0';
 					iss >> c;
+					n = false;
 					if(!c) break;
+					else error("malformed memory: trailing characters", c);
 				}
 				if(!c) break;
-				if(c < '0' || c > '9') error(2, c);
-				n = false;
+//				if(c < '0' || c > '9') error(2, c);
+//				n = false;
 			}
 
-			if(n) error(4, c);
+			if(n) error("malformed memory: not properly terminated", c);
 
 //			LOG("Parameter '%s' has type %c", e.c_str(), Parameter::MEMORY);
 
@@ -115,11 +117,11 @@ Parameter deduceParameter(const std::string& e)
 
 namespace
 {
-	WORD eval_const(const std::string& l, SymTable& s, int p)
+	eval_t eval_const(const std::string& l, const SymTable& s, int p)
 	{
 		try
 		{
-			return consteval(l, s, p);
+			return eval_t(1, consteval(l, s, p));
 		}
 		catch(const std::string& msg)
 		{
@@ -127,7 +129,7 @@ namespace
 		}
 	}
 
-	WORD eval_reg(const std::string& expr)
+	eval_t eval_reg(const std::string& expr)
 	{
 		auto error = [&expr]
 			{
@@ -147,10 +149,10 @@ namespace
 		WORD r;
 		iss >> r;
 
-		return r;
+		return eval_t(1, r);
 	}
 
-	WORD eval_mem(const std::string& expr)
+	eval_t eval_mem(const std::string& expr, const SymTable& sym, int pos)
 	{
 		auto error = [&expr](int i, char c)
 			{
@@ -159,6 +161,7 @@ namespace
 			};
 
 		std::istringstream iss(expr);
+		int offset = 1;
 		char c = '\0';
 
 		iss >> c; if(c != '[') error(0, c);
@@ -169,12 +172,26 @@ namespace
 		{
 			c = '\0';
 			iss >> c;
-			if(c == ']')
+			switch(c)
 			{
-				c = '\0';
-				iss >> c;
-				if(c) error(4, c);
-				break;
+				case '-':
+					offset = -1;
+				case '+':
+				{
+					std::string t;
+					std::getline(iss, t);
+					if(t.back() != ']') error(5, t.back());
+					t.pop_back();
+					offset *= consteval(t, sym, pos);
+					c = '\0';
+					break;
+				}
+				case ']':
+					offset = 0;
+					c = '\0';
+					iss >> c;
+					if(c) error(4, c);
+					break;
 			}
 			if(!c) break;
 			if(c < '0' || c > '9') error(2, c);
@@ -188,7 +205,11 @@ namespace
 
 //		LOG("> Read register '%d'!", r);
 
-		return r;
+		eval_t ret;
+		ret.push_back(r);
+		ret.push_back(static_cast<WORD>(offset));
+
+		return ret;
 	}
 }
 

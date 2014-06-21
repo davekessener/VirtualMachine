@@ -1,8 +1,8 @@
+#include <cassert>
 #include "VGA.h"
 #include "Logger.h"
 #include "CPU.h"
 #include "Screen.h"
-#include <cassert>
 
 #define MXT_P 4
 
@@ -136,7 +136,7 @@ void BasicVGA::refresh(bool force)
 				color_rgba_t fgc((invert && cursor_.show) ? palette_[fc].invert() : palette_[fc]);
 				color_rgba_t bgc((invert && cursor_.show) ? palette_[bc].invert() : palette_[bc]);
 
-				if(bc != 0 || invert)
+				if(bc != 0 || invert || *n != *b)
 				{
 					tex_.fillRect(bgc, x * CHAR_SIZE, y * (CHAR_SIZE + MXT_P), CHAR_SIZE, CHAR_SIZE + MXT_P);
 				}

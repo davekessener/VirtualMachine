@@ -29,10 +29,15 @@ namespace vm
 				void swap(Line&) throw();
 				Line& operator+=(const std::string&);
 				Line& operator+=(const Token&);
+				inline Line& operator+=(const char *s) { return *this += std::string(s); }
+				template<typename C>
+					Line& operator+=(const C& c) { for(const Token& t : c) *this += t; return *this; }
 				Line& insert(const std::vector<std::string>&);
 				inline explicit operator bool( ) const { return impl_ != NULL; }
 				iterator begin( );
 				iterator end( );
+				const_iterator begin( ) const;
+				const_iterator end( ) const;
 				const_iterator cbegin( ) const;
 				const_iterator cend( ) const;
 				const std::string str( ) const;

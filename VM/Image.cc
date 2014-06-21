@@ -1,7 +1,7 @@
-#include "Image.h"
-#include "SDLException.h"
 #include <cstdint>
 #include <SDL_image.h>
+#include "Image.h"
+#include "SDLException.h"
 
 #define MXT_CHAR_S 8
 

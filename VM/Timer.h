@@ -9,7 +9,7 @@ class Timer
 		Timer( );
 		~Timer( );
 		void reset( );
-		int elapsed( );
+		int elapsed(bool = false);
 		int getDelta( );
 		void keepRate(int);
 		void sleep(int);

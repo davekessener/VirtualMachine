@@ -13,12 +13,16 @@ void Processor::registerOpcodes(commands_t& commands)
 #define MXT_OP(id) commands.push_back(std::shared_ptr<Instruction>(new OP_##id))
 // # ===========================================================================
 	MXT_OP(hlt);
+	MXT_OP(wait);
+	MXT_OP(log_x);
+	MXT_OP(log_m);
 // # ---------------------------------------------------------------------------
 	MXT_OP(ld_xc);
 	MXT_OP(ld_xy);
 	MXT_OP(ld_xm);
 	MXT_OP(ld_mc);
 	MXT_OP(ld_mx);
+	MXT_OP(ld_mm);
 // # ---------------------------------------------------------------------------
 	MXT_OP(inc_x);
 	MXT_OP(dec_x);

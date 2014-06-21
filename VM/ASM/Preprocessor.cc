@@ -2,9 +2,11 @@
 #include <deque>
 #include <stack>
 #include <map>
+#include <memory>
 #include <algorithm>
 #include <cassert>
 #include "Preprocessor.h"
+#include "Macro.h"
 #include "Tokenizer.h"
 #include "Logger.h"
 #include "ASMException.h"
@@ -14,6 +16,9 @@
 #define MXT_PD_INC ".inc"
 #define MXT_PD_EQU ".equ"
 #define MXT_PD_DB  ".db"
+#define MXT_PD_MACRO ".macro"
+#define MXT_PD_ENDMACRO ".endmacro"
+#define MXT_PD_ORG ".org"
 
 namespace vm { namespace assembler {
 
@@ -23,23 +28,38 @@ namespace
 	Line insertDB(const std::vector<Token>&);
 	std::string dbChar(const char *&);
 	inline std::string dbChar(const char *&& s) { return dbChar(s); }
+	bool isID(const std::string&);
 }
 
 class Preprocessor::Impl
 {
+	typedef std::deque<Line> line_buf;
+	typedef std::stack<Tokenizer> tok_buf;
+	typedef std::vector<std::string> inc_buf;
+	typedef std::map<std::string, std::vector<Token>> equ_table;
+	typedef std::shared_ptr<Macro> macro_ptr;
+	typedef std::vector<macro_ptr> macro_buf;
+
 	private:
 		void fillBuffer( );
 	private:
 		void process(const Line&);
 		std::vector<Token> substitute(const Token&);
-		Line substitute(const Line&);
+		std::vector<Line> macroExpand(const Line&);
+		std::vector<Line> substitute(const Line&);
+		void handleINC(const Line&);
+		void handleEQU(const Line&);
+		void handleDB(const Line&);
+		void handleMACRO(const Line&);
 	private:
 		friend class Preprocessor;
-		std::deque<Line> buffer_;
-		std::stack<Tokenizer> toks_;
-		std::vector<std::string> incs_;
+		line_buf buffer_;
+		tok_buf toks_;
+		inc_buf incs_;
 		Line recent_;
-		std::map<std::string, std::vector<Token>> sym_;
+		equ_table sym_;
+		macro_buf macros_;
+		macro_ptr curMacro_;
 };
 
 // # ===========================================================================
@@ -50,7 +70,11 @@ void Preprocessor::Impl::fillBuffer(void)
 	{
 		while(!toks_.empty() && !toks_.top().ready()) toks_.pop();
 		if(toks_.empty()) break;
-		process(substitute(toks_.top().getline()));
+		std::vector<Line> ls(substitute(toks_.top().getline()));
+		for(const Line& l : ls)
+		{
+			process(l);
+		}
 	}
 }
 
@@ -82,6 +106,12 @@ void Preprocessor::Impl::process(const Line& line)
 
 	LOG("[PP] Processing line '%s' [...]", line.str().c_str());
 
+	if(static_cast<bool>(curMacro_))
+	{
+		handleMACRO(line);
+		return;
+	}
+
 	if(line[0][0] == '.')
 	{
 		std::string cmd(line[0].str());
@@ -91,84 +121,23 @@ void Preprocessor::Impl::process(const Line& line)
 
 		if(cmd == MXT_PD_INC)
 		{
-			if(line.size() != 2) 
-				MXT_LOGANDTHROW_T(line[0], "ERR: Expected 1 argument only. (Did you forget the \"\"s?");
-			std::string fn(line[1].str());
-			if(fn.front() != '"' || fn.back() != '"')
-				MXT_LOGANDTHROW_T(line[1], "ERR: Expected a string as argument.");
-			fn = fn.substr(1, fn.size() - 1);
-			if(contains(incs_, fn))
-			{
-				LOG("[PP] Cyclic dependency with file '%s'", fn.c_str());
-			}
-			else
-			{
-				incs_.push_back(fn);
-				toks_.push(Tokenizer(fn));
-				LOG("[PP] Included file '%s'", fn.c_str());
-			}
+			handleINC(line);
 		}
 		else if(cmd == MXT_PD_EQU)
 		{
-			if(line.size() < 3) MXT_LOGANDTHROW_T(line[0], "ERR: Not enough arguments for pp-directive '.equ'");
-			
-			std::string id(line[1].str());
-			std::vector<Token> v(line.cbegin() + 2, line.cend());
-			
-			std::string sv;
-			std::for_each(v.begin(), v.end(), [&sv](const Token& t) { sv += t.str(); });
-
-			if(sym_.count(id))
-					MXT_LOGANDTHROW_T(line[1], "ERR: Redefining '.equ' '%s'.", id.c_str());
-			
-			sym_[id] = v;
-			
-			LOG("[PP] Mapped '%s' -> '%s'", id.c_str(), sv.c_str());
+			handleEQU(line);
 		}
 		else if(cmd == MXT_PD_DB)
 		{
-			if(line.size() < 2) MXT_LOGANDTHROW_T(line[0], "ERR: Expected parameters.");
-			std::vector<Token> tmp(line.cbegin() + 1, line.cend());
-			tmp.push_back(Token(",", "", 0, 0));
-
-			std::vector<Line> dblines;
-
-			for(auto i = tmp.begin(), j = i ; i != tmp.end() ; ++i)
-			{
-				if(i->str() == ",")
-				{
-					try
-					{
-						std::vector<Token> toks(j, i);
-
-						if(toks.size() == 1 && toks.front()[0] == '"')
-						{
-							std::vector<Line> _(insertQuoteDB(toks.front()));
-							dblines.insert(dblines.end(), _.begin(), _.end());
-//							dblines << insertQuoteDB(toks.front());
-						}
-						else
-						{
-							dblines.push_back(insertDB(toks));
-//							dblines << insertDB(toks);
-						}
- 
- 						j = i + 1;
-					}
-					catch(const std::string& msg)
-					{
-						MXT_LOGANDTHROW_T(*i, "%s", msg.c_str());
-					}
-				}
-			}
-
-			for(const Line& l : dblines)
-			{
-				LOG("Line '%s' added.", l.str().c_str());
-			}
-
-			buffer_.insert(buffer_.begin(), dblines.begin(), dblines.end());
-//			buffer_ << dblines;
+			handleDB(line);
+		}
+		else if(cmd == MXT_PD_MACRO)
+		{
+			handleMACRO(line);
+		}
+		else if(cmd == MXT_PD_ORG)
+		{
+			buffer_.push_back(line);
 		}
 		else
 		{
@@ -178,6 +147,127 @@ void Preprocessor::Impl::process(const Line& line)
 	else
 	{
 		buffer_.push_back(line);
+	}
+}
+
+void Preprocessor::Impl::handleINC(const Line& line)
+{
+	if(line.size() != 2) 
+		MXT_LOGANDTHROW_T(line[0], "ERR: Expected 1 argument only. (Did you forget the \"\"s?");
+	std::string fn(line[1].str());
+	if(fn.front() != '"' || fn.back() != '"')
+		MXT_LOGANDTHROW_T(line[1], "ERR: Expected a string as argument.");
+	fn = fn.substr(1, fn.size() - 2);
+	if(contains(incs_, fn))
+	{
+		LOG("[PP] Cyclic dependency with file '%s'", fn.c_str());
+	}
+	else
+	{
+		incs_.push_back(fn);
+		toks_.push(Tokenizer(fn));
+		LOG("[PP] Included file '%s'", fn.c_str());
+	}
+}
+
+void Preprocessor::Impl::handleEQU(const Line& line)
+{
+	if(line.size() < 3) MXT_LOGANDTHROW_T(line[0], "ERR: Not enough arguments for pp-directive '.equ'");
+	
+	std::string id(line[1].str());
+	std::vector<Token> v(line.cbegin() + 2, line.cend());
+	
+	std::string sv;
+	std::for_each(v.begin(), v.end(), [&sv](const Token& t) { sv += t.str(); });
+
+	if(sym_.count(id))
+			MXT_LOGANDTHROW_T(line[1], "ERR: Redefining '.equ' '%s'.", id.c_str());
+	
+	sym_[id] = v;
+	
+	LOG("[PP] Mapped '%s' -> '%s'", id.c_str(), sv.c_str());
+}
+
+void Preprocessor::Impl::handleDB(const Line& line)
+{
+	if(line.size() < 2) MXT_LOGANDTHROW_T(line[0], "ERR: Expected parameters.");
+	std::vector<Token> tmp(line.cbegin() + 1, line.cend());
+	tmp.push_back(Token(",", "", 0, 0));
+
+	std::vector<Line> dblines;
+
+	for(auto i = tmp.begin(), j = i ; i != tmp.end() ; ++i)
+	{
+		if(i->str() == ",")
+		{
+			try
+			{
+				std::vector<Token> toks(j, i);
+
+				if(toks.size() == 1 && toks.front()[0] == '"')
+				{
+					std::vector<Line> _(insertQuoteDB(toks.front()));
+					dblines.insert(dblines.end(), _.begin(), _.end());
+//					dblines << insertQuoteDB(toks.front());
+				}
+				else
+				{
+					dblines.push_back(insertDB(toks));
+//					dblines << insertDB(toks);
+				}
+ 
+ 				j = i + 1;
+			}
+			catch(const std::string& msg)
+			{
+				MXT_LOGANDTHROW_T(*i, "%s", msg.c_str());
+			}
+		}
+	}
+
+	for(const Line& l : dblines)
+	{
+		LOG("Line '%s' added.", l.str().c_str());
+	}
+
+	buffer_.insert(buffer_.begin(), dblines.begin(), dblines.end());
+//	buffer_ << dblines;
+}
+
+void Preprocessor::Impl::handleMACRO(const Line& line)
+{
+	if(static_cast<bool>(curMacro_))
+	{
+		if(line[0] == MXT_PD_MACRO) MXT_LOGANDTHROW_T(line[0], "ERR: Already inside a macro.");
+		else if(line[0] == MXT_PD_INC) MXT_LOGANDTHROW_T(line[0], "ERR: Cannot include within a macro.");
+		else if(line[0] == MXT_PD_EQU) MXT_LOGANDTHROW_T(line[0], "ERR: Cannot define '.equ's within an macro.");
+		else if(line[0] == MXT_PD_ENDMACRO)
+		{
+			for(macro_ptr p : macros_)
+			{
+				if(*p == *curMacro_) MXT_LOGANDTHROW_T(line[0], "ERR: Duplicate macro signature '%s'", curMacro_->signature().c_str());
+			}
+			macros_.push_back(curMacro_);
+			curMacro_.reset();
+		}
+		else
+		{
+			curMacro_->addLine(line);
+		}
+	}
+	else
+	{
+		if(line.size() < 2) MXT_LOGANDTHROW_T(line[0], "ERR: Expected macro-name");
+
+		std::string mname(line[1].str());
+		std::vector<Token> args;
+
+		for(auto i = line.cbegin() + 2 ; i != line.cend() ; ++i)
+		{
+			if(isID(i->str())) args.push_back(*i);
+		}
+
+		curMacro_.reset(new Macro(mname, args));
 	}
 }
 
@@ -213,22 +303,48 @@ std::vector<Token> Preprocessor::Impl::substitute(const Token& t)
 	return r;
 }
 
-Line Preprocessor::Impl::substitute(const Line& line)
+std::vector<Line> Preprocessor::Impl::substitute(const Line& line)
 {
-	Line l(line.filename(), line.line());
-	std::vector<Token> v;
+	std::vector<Line> ls;
+	std::vector<Line> lo;
 
-	for(auto i = line.cbegin() ; i != line.cend() ; ++i)
+	ls << macroExpand(line);
+
+	for(const Line& ll : ls)
 	{
-		v << substitute(*i);
+		Line l(line.filename(), line.line());
+		std::vector<Token> v;
+
+		for(const Token& t : ll)
+		{
+			v << substitute(t);
+		}
+
+		for(const Token& t : v)
+		{
+			l += t;
+		}
+
+		lo.push_back(l);
 	}
 
-	for(const Token& t : v)
+	return lo;
+}
+
+std::vector<Line> Preprocessor::Impl::macroExpand(const Line& line)
+{
+	std::vector<Line> out;
+
+	for(macro_ptr p : macros_)
 	{
-		l += t;
+		if(p->match(line))
+		{
+			p->expand(line, out);
+			return out;
+		}
 	}
 
-	return l;
+	return std::vector<Line>(1, line);
 }
 
 // # ===========================================================================
@@ -288,7 +404,7 @@ namespace
 	{
 		std::ostringstream oss;
 
-		oss << static_cast<WORD>(convert_character(s));
+		oss << static_cast<WORD>(stringtools::convert_character(s));
 
 		return oss.str();
 	}
@@ -330,6 +446,16 @@ namespace
 		}
 	
 		return l;
+	}
+
+	bool isID(const std::string& s)
+	{
+		for(char c : s)
+		{
+			if(!stringtools::isID(c)) return false;
+		}
+
+		return true;
 	}
 }
 

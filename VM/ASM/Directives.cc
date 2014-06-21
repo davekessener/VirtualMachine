@@ -4,11 +4,14 @@
 #include "Opcode.h"
 #include "Line.h"
 #include "Token.h"
+#include "Evaluator.h"
+#include "SymTable.h"
 #include "Logger.h"
 #include "ASMException.h"
 #include "stringtools.h"
 
 #define MXT_PD_DB ".db"
+#define MXT_PD_ORG ".org"
 
 namespace vm { namespace assembler { 
 
@@ -27,6 +30,10 @@ namespace Directives
 		if(id == MXT_PD_DB)
 		{
 			return new DirectiveDB(join(v));
+		}
+		else if(id == MXT_PD_ORG)
+		{
+			return new DirectiveORG(Evaluator::eval(Parameter::CONSTANT, join(v), SymTable(), 0).at(0));
 		}
 		else
 		{

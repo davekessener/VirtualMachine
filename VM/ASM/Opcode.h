@@ -18,6 +18,7 @@ namespace vm
 
 			public:
 				inline op_proxy& operator<<(WORD v) { buf_.push_back(v); return *this; }
+				inline op_proxy& operator<<(const std::vector<WORD>& v) { buf_.insert(buf_.end(), v.cbegin(), v.cend()); return *this; }
 				inline buf_vec& insert(buf_vec& v) const { v.insert(v.end(), buf_.begin(), buf_.end()); return v;}
 			private:
 				buf_vec buf_;

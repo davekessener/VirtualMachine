@@ -1,7 +1,8 @@
 CC=g++-4.7
+MACROS=
 SDLCFLAGS=$(shell sdl2-config --cflags)
 SDLLIBS=$(shell sdl2-config --libs)
-CFLAGS=-Wall -std=c++0x -O0 -Wl,--no-as-needed -ggdb -DDEBUG $(SDLCFLAGS)
+CFLAGS=-Wall -std=c++0x -O0 $(MACROS) -Wl,--no-as-needed -ggdb $(SDLCFLAGS)
 LIBS=$(SDLLIBS) -lSDL2_image -lSDL2_ttf -lpthread -lz
 SRC=$(wildcard *.cc)
 OBJ=$(SRC:.cc=.o)

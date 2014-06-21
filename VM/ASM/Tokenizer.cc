@@ -42,6 +42,7 @@ class Tokenizer::Impl
 
 TImpl::TImpl(const std::string& fn) : in_(fn), fn_(fn), lc_(0)
 {
+	if(!in_.is_open()) MXT_LOGANDTHROW("ERR: Couldn't open file '%s'!", fn.c_str());
 }
 
 TImpl::~TImpl(void) throw()

@@ -13,5 +13,23 @@
 		- ursaring
 		- exploud
 		- nidoking
+- knb
+	- kuroko
+		- umbreon
+		- noctowl
+		- altaria
+		- houndoom
+		- mightyena
+		- sneasel
+	- aomine
+		- vaporeon
+		- milotic
+		- gyarados
+		- kingdra
+	- akashi
+		- espeon
+		- alakazam
+		- metagross
+		- 
 - attract works dependant on egg-group (+ type, size/weight, etc.)
 

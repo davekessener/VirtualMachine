@@ -9,6 +9,7 @@
 #include "Preprocessor.h"
 #include "Logger.h"
 #include "Directives.h"
+#include "Directive.h"
 #include "Marker.h"
 #include "SymTable.h"
 #include "Tokenizer.h"
@@ -36,7 +37,7 @@ class Assembler::Impl
 	private:
 		void finalize( );
 	private:
-		int pos_;
+		int pos_, offset_;
 		Instructions ins_;
 		SymTable sym_;
 		Preprocessor pre_;
@@ -48,6 +49,7 @@ class Assembler::Impl
 
 Assembler::Impl::Impl(std::istream& is) : ins_(is)
 {
+	clear();
 }
 
 Assembler::Impl::~Impl(void) throw()
@@ -73,6 +75,7 @@ void Assembler::Impl::assemble(const std::string& line)
 void Assembler::Impl::clear(void)
 {
 	pos_ = 0;
+	offset_ = 0;
 	pre_.clear();
 	sym_.clear();
 	buf_.clear();
@@ -83,11 +86,17 @@ void Assembler::Impl::finalize(void)
 {
 	buf_.clear();
 
-	sym_["$$"] = pos_;
-	
+//	sym_["$$"] = pos_;
+	sym_.insert("$$", pos_);
+
 	for(op_t p : ops_)
 	{
 		buf_ << p->evaluate(sym_, buf_.size());
+	}
+
+	for(const typename std::map<std::string, WORD>::value_type& p : sym_)
+	{
+		LOG("Final lbl mapping: '%s':@0x%04x", p.first.c_str(), p.second);
 	}
 
 	ops_.clear();
@@ -106,12 +115,14 @@ void Assembler::Impl::process(const Line& line)
 		case '.':
 			LOG("Directive detected! ['%s']", line.str().c_str());
 			t.reset(Directives::process(line));
+			if(line[0].str() == ".org") offset_ = std::dynamic_pointer_cast<DirectiveORG>(t)->getOffset() - pos_;
 			break;
 		case ':':
 			if(line.size() > 1) MXT_LOGANDTHROW_T(line[1], "ERR: Illegal: Trailing tokens.");
 			LOG("Label '%s' detected.", line[0].str().c_str());
 			t.reset(new Marker(line[0].str()));
-			sym_[line[0].str()] = pos_;
+//			sym_[line[0].str()] = pos_;
+			sym_.insert(line[0].str(), pos_ + offset_);
 			break;
 		default:
 			t.reset(ins_.translate(line));

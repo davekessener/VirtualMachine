@@ -17,13 +17,15 @@ void Timer::reset(void)
 	_t = std::chrono::steady_clock::now();
 }
 
-int Timer::elapsed(void)
+int Timer::elapsed(bool micro)
 {
-	std::chrono::duration<long long, std::ratio<1, 1000>> span = 
-		std::chrono::duration_cast<std::chrono::duration<long long, std::ratio<1, 1000>>>
+	typedef std::ratio<1, 1000000> ratio;
+	typedef std::chrono::duration<long long, ratio> duration;
+	duration span = std::chrono::duration_cast<duration>
 			(std::chrono::steady_clock::now() - _t);
 
-	return span.count();
+	auto c = span.count();
+	return micro ? c : (c / 1000);
 }
 
 int Timer::getDelta(void)

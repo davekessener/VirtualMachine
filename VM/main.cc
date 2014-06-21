@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
 	}
 
 	std::ostringstream oss;
-	oss << p << std::endl << p.printRAM(0, 0x120) << std::endl;
+	oss << p << std::endl << p.printRAM(0, 0x120) << std::endl << p.printRAM(0xc000, 120*46) << std::endl;
 	Logger::log(oss.str());
 
 	return 0;

@@ -1,10 +1,11 @@
 #ifndef VM_CPU_H
 #define VM_CPU_H
 
-#include "ddef.h"
 #include <memory>
 #include <vector>
 #include <iostream>
+#include "ddef.h"
+#include "Timer.h"
 
 namespace vm
 {
@@ -52,6 +53,7 @@ namespace vm
 				const std::string printRAM(ADDRESS, size_t) const;
 				bool isRunning( ) const { return !isHalted_; }
 				void halt( ) { isHalted_ = true; }
+				void suspend( ) { isSuspended_ = true; }
 				void in(size_t, WORD);
 				WORD out(size_t);
 				void interrupt(int);
@@ -69,8 +71,9 @@ namespace vm
 				WORD &PC, &SP;
 				commands_t commands_;
 				peripheries_t peripheries_;
-				bool isHalted_;
+				bool isHalted_, isSuspended_;
 				Interrupt interrupt_;
+				Timer t_;
 
 			private:
 				CPU(const CPU&);

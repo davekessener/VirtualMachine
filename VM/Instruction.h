@@ -28,6 +28,7 @@ namespace vm
 				virtual void operator()(CPU&) const = 0;
 				const std::string name( ) const;
 				int argCount( ) const;
+				const Arguments operator[](size_t i) const { return args_[i]; }
 				std::ostream& print(std::ostream&) const;
 			private:
 				std::string name_;
