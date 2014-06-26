@@ -53,6 +53,83 @@ MXT_CMDO(log_m)
 
 // # ---------------------------------------------------------------------------
 
+namespace
+{
+	inline void memcpy(WORD *ram, WORD a1, WORD a2, WORD c)
+	{
+		WORD *d = ram + a1;
+		const WORD *s = ram + a2;
+//		log("### copying 0x%04x(%u) words from 0x%04x to 0x%04x", c, c, a2, a1);
+		while(c--) *d++ = *s++;
+	}
+}
+
+MXT_CMDO(mcpy_xyz)
+{
+	WORD r1 = cpu.next();
+	WORD r2 = cpu.next();
+	WORD r = cpu.next();
+	memcpy(cpu.RAM(), cpu[r1], cpu[r2], cpu[r]);
+}
+
+MXT_CMDO(mcpy_xyc)
+{
+	WORD r1 = cpu.next();
+	WORD r2 = cpu.next();
+	WORD d = cpu.next();
+	memcpy(cpu.RAM(), cpu[r1], cpu[r2], d);
+}
+
+MXT_CMDO(mcpy_xcy)
+{
+	WORD r1 = cpu.next();
+	WORD a2 = cpu.next();
+	WORD r = cpu.next();
+	memcpy(cpu.RAM(), cpu[r1], a2, cpu[r]);
+}
+
+MXT_CMDO(mcpy_cxy)
+{
+	WORD a1 = cpu.next();
+	WORD r2 = cpu.next();
+	WORD r = cpu.next();
+	memcpy(cpu.RAM(), a1, cpu[r2], cpu[r]);
+}
+
+MXT_CMDO(mcpy_xcc)
+{
+	WORD r1 = cpu.next();
+	WORD a2 = cpu.next();
+	WORD d = cpu.next();
+	memcpy(cpu.RAM(), cpu[r1], a2, d);
+}
+
+MXT_CMDO(mcpy_cxc)
+{
+	WORD a1 = cpu.next();
+	WORD r2 = cpu.next();
+	WORD d = cpu.next();
+	memcpy(cpu.RAM(), a1, cpu[r2], d);
+}
+
+MXT_CMDO(mcpy_ccx)
+{
+	WORD a1 = cpu.next();
+	WORD a2 = cpu.next();
+	WORD r = cpu.next();
+	memcpy(cpu.RAM(), a1, a2, cpu[r]);
+}
+
+MXT_CMDO(mcpy_ccc)
+{
+	WORD a1 = cpu.next();
+	WORD a2 = cpu.next();
+	WORD d = cpu.next();
+	memcpy(cpu.RAM(), a1, a2, d);
+}
+
+// # ---------------------------------------------------------------------------
+
 MXT_CMDO(ld_xc)
 {
 	WORD r = cpu.next();

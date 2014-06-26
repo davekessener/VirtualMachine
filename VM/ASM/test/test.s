@@ -1,16 +1,8 @@
 .inc "base.inc"
 
 :main
-  ld r0,:cont
-  ld r1,:src
-  ld r2,$$-:src
- :loop
-  jz r2,:cont
-  dec r2
-  ld [r0],[r1]
-  inc r0
-  inc r1
-  jmp :loop
+  mcpy :cont,:src,$$-:src
+  jmp :cont
 
 :src
 .org 0x300

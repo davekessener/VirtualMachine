@@ -6,22 +6,23 @@
 	ld IX,SP
 	push HL
 	push DE
+	ld A,[IX+2]
 	ld HL,[IX+3]
 	ld DE,[IX+4]
-  :__memmove_loop
-  	jz [IX+2],:__memmove_end
-	dec [IX+2]
-	log [IX+2]
-	ld [DE],[HL]
-	inc DE
-	inc HL
-	jmp :__memmove_loop
-  :__memmove_end
-  	ld A,DE
+	mcpy DE,HL,A
+	add A,DE
 	pop DE
 	pop HL
 	pop IX
 	ret
+;  :__memmove_loop
+;  	jz [IX+2],:__memmove_end
+;	dec [IX+2]
+;	ld [DE],[HL]
+;	inc DE
+;	inc HL
+;	jmp :__memmove_loop
+;  :__memmove_end
 
 ; void *memset(uint8_t *dst, uint8_t val, size_t count)
 :memset

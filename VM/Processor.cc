@@ -17,6 +17,15 @@ void Processor::registerOpcodes(commands_t& commands)
 	MXT_OP(log_x);
 	MXT_OP(log_m);
 // # ---------------------------------------------------------------------------
+	MXT_OP(mcpy_xyz);
+	MXT_OP(mcpy_xyc);
+	MXT_OP(mcpy_xcy);
+	MXT_OP(mcpy_cxy);
+	MXT_OP(mcpy_xcc);
+	MXT_OP(mcpy_cxc);
+	MXT_OP(mcpy_ccx);
+	MXT_OP(mcpy_ccc);
+// # ---------------------------------------------------------------------------
 	MXT_OP(ld_xc);
 	MXT_OP(ld_xy);
 	MXT_OP(ld_xm);

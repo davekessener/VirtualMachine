@@ -8,6 +8,7 @@ Key::Key(std::uint32_t v) : v_(v), c_(0xff), s_(SpecialKey::NOT)
 	if(v_ < 256)
 	{
 		c_ = static_cast<char>(v_);
+		if(c_ == '\r') c_ = '\n';
 	}
 	else switch(v_)
 	{

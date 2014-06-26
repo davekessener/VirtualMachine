@@ -25,6 +25,15 @@ void operator()(CPU&) const;\
 		MXT_CMD(log_x,	 "log",  Arguments::REGISTER);
 		MXT_CMD(log_m,	 "log",  Arguments::MEMORY);
 // # ---------------------------------------------------------------------------
+		MXT_CMD(mcpy_xyz,	 "mcpy", Arguments::REGISTER, Arguments::REGISTER, Arguments::REGISTER);
+		MXT_CMD(mcpy_xyc,	 "mcpy", Arguments::REGISTER, Arguments::REGISTER, Arguments::CONSTANT);
+		MXT_CMD(mcpy_xcy,	 "mcpy", Arguments::REGISTER, Arguments::CONSTANT, Arguments::REGISTER);
+		MXT_CMD(mcpy_cxy,	 "mcpy", Arguments::CONSTANT, Arguments::REGISTER, Arguments::REGISTER);
+		MXT_CMD(mcpy_xcc,	 "mcpy", Arguments::REGISTER, Arguments::CONSTANT, Arguments::CONSTANT);
+		MXT_CMD(mcpy_cxc,	 "mcpy", Arguments::CONSTANT, Arguments::REGISTER, Arguments::CONSTANT);
+		MXT_CMD(mcpy_ccx,	 "mcpy", Arguments::CONSTANT, Arguments::CONSTANT, Arguments::REGISTER);
+		MXT_CMD(mcpy_ccc,	 "mcpy", Arguments::CONSTANT, Arguments::CONSTANT, Arguments::CONSTANT);
+// # ---------------------------------------------------------------------------
 		MXT_CMD(ld_xc,   "ld",   Arguments::REGISTER, Arguments::CONSTANT);
 		MXT_CMD(ld_xy,   "ld",   Arguments::REGISTER, Arguments::REGISTER);
 		MXT_CMD(ld_xm,   "ld",   Arguments::REGISTER, Arguments::MEMORY);

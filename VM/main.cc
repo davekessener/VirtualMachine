@@ -11,6 +11,7 @@
 #include "Image.h"
 #include "SDLException.h"
 #include "Logger.h"
+#include "Timer.h"
 
 class BR
 {
@@ -45,6 +46,7 @@ int main(int argc, char *argv[])
 	Screen &s = Screen::instance();
 	Processor p;
 	BR boot(args[1]);
+	Timer t;
 
 	p.init();
 	p.reset();
@@ -52,13 +54,20 @@ int main(int argc, char *argv[])
 
 	while(p.isRunning())
 	{
-		p.execute();
+		t.reset();
+		while(t.elapsed() < 16)
+		{
+			p.execute();
+		}
 		s.update();
 		s.refresh();
 	}
 
 	std::ostringstream oss;
-	oss << p << std::endl << p.printRAM(0, 0x120) << std::endl << p.printRAM(0xc000, 120*46) << std::endl;
+	oss << p << std::endl 
+		<< p.printRAM(0, 0x120) << std::endl 
+		<< p.printRAM(0x300, 0x300) << std::endl 
+		<< p.printRAM(0xc000, 120*46) << std::endl;
 	Logger::log(oss.str());
 
 	return 0;

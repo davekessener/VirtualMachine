@@ -1,23 +1,11 @@
 #include <iostream>
 #include <fstream>
 #include <cassert>
+#include <cstdio>
 
 int main(void)
 {
-	std::ifstream in("test.s");
-
-	assert(in.is_open());
-
-	while(!in.eof())
-	{
-		std::string s;
-		std::getline(in, s);
-		std::cout << s << '\n';
-	}
-
-	in.close();
-
-	std::cout << std::flush;
+	printf("0x%04x\n0x%04x\n", '\n', '\r');
 
 	return 0;
 }
