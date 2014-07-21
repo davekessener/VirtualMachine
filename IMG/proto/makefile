@@ -1,21 +1,19 @@
-CC=g++
-CFLAGS=-std=c++0x -ggdb -DDEBUG
-LIBS=-lSDL
+CC=g++-4.7
+CFLAGS=-std=c++0x -O0 -Wall -ggdb -DDEBUG
 SRC=$(wildcard *.cc)
 OBJ=$(SRC:.cc=.o)
-TEMPLATES=$(wildcard *.cpp)
-TARGET=prototype
+TEMPLATES=$(wildcard *.hpp)
+TARGET=imgex
 
 %.o: %.cc $(TEMPLATES)
 	$(CC) -c $(CFLAGS) $< -o $@
 
 all: $(OBJ)
-	$(CC) $(OBJ) -o $(TARGET) $(LIBS)
+	$(CC) $(OBJ) -o $(TARGET)
 
-test:
-	cd test
-	make
+test: test.c
+	$(CC) $(CFLAGS) test.c -o test
 
 clean:
-	-rm $(OBJ) $(TARGET)
+	rm -f *.o $(TARGET)
 

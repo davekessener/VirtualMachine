@@ -13,11 +13,12 @@ namespace lisp
 	class BigUInt
 	{
 		typedef unsigned long long block_t;
+		static const size_t N = sizeof(block_t) << 3;
 
 		public:
-			BigUInt( );
+			explicit BigUInt(const std::string&);
 			BigUInt(const BigUInt&);
-			BigUInt(block_t);
+			BigUInt(block_t = block_t());
 			~BigUInt( );
 			void swap(BigUInt&) throw();
 			void swap(BigUInt&&) throw();
@@ -45,6 +46,9 @@ namespace lisp
 			void resize(size_t);
 			void resize( );
 			inline size_t length( ) const { return blocks_.size(); }
+			inline block_t& at(size_t i) { if(i >= length()) blocks_.resize(i + 1); return blocks_.at(i); }
+			inline block_t at(size_t i) const { return blocks_.at(i); }
+			block_t getShiftedBlock(size_t, size_t) const;
 		private:
 			std::vector<block_t> blocks_;
 	};

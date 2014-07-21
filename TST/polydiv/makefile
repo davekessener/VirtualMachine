@@ -1,19 +1,17 @@
 CC=g++-4.7
 CFLAGS=-std=c++0x -O0 -Wall -ggdb -DDEBUG
 SRC=$(wildcard *.cc)
+HEAD=$(wildcard *.h)
 OBJ=$(SRC:.cc=.o)
 TEMPLATES=$(wildcard *.hpp)
-TARGET=imgex
+TARGET=poly
 
-%.o: %.cc $(TEMPLATES)
+%.o: %.cc $(HEAD) $(TEMPLATES)
 	$(CC) -c $(CFLAGS) $< -o $@
 
 all: $(OBJ)
 	$(CC) $(OBJ) -o $(TARGET)
 
-test: test.c
-	$(CC) $(CFLAGS) test.c -o test
-
 clean:
-	rm -f *.o $(TARGET)
+	-rm $(OBJ) $(TARGET)
 

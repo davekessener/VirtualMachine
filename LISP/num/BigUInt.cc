@@ -3,8 +3,13 @@
 
 namespace lisp
 {
-	BigUInt::BigUInt(void) : blocks_{0}
+	BigUInt::BigUInt(const std::string& str) : blocks_{0}
 	{
+		for(const char& c : str)
+		{
+			mul(block_t(10));
+			add(block_t(c - '0'));
+		}
 	}
 
 	BigUInt::BigUInt(const BigUInt& b) : blocks_(b.blocks_)
@@ -31,6 +36,16 @@ namespace lisp
 
 	void BigUInt::add(const BigUInt& n)
 	{
+		if(length() == 1 && n.length() == 1)
+		{
+			block_t b = at(0) + n.at(0);
+			if(b >= at(0))
+			{
+				at(0) = b;
+				return;
+			}
+		}
+
 		BigUInt r;
 		int l = std::max(length(), n.length());
 
@@ -40,36 +55,36 @@ namespace lisp
 		const BigUInt *ps = length() < n.length() ? this : &n;
 
 		int i = 0;
-		bool cin = false, cout = false;
+		bool cIn = false, cOut = false;
 
 		for(int ml = std::min(length(), n.length()) ; i < ml ; ++i)
 		{
-			block_t t = pl->blocks_.at(i) + ps->blocks_.at(i);
+			block_t t = pl->at(i) + ps->at(i);
 
-			cout = t < pl->blocks_.at(i);
+			cOut = t < pl->at(i);
 
-			if(cin)
+			if(cIn)
 			{
-				if(!++t) cout = true;
+				if(!++t) cOut = true;
 			}
 
-			cin = cout;
-			r.blocks_.at(i) = t;
+			cIn = cOut;
+			r.at(i) = t;
 		}
 
 		for(; i < l ; ++i)
 		{
-			r.blocks_.at(i) = pl->blocks_.at(i);
-			if(cin)
+			r.at(i) = pl->at(i);
+			if(cIn)
 			{
-				cin = !++r.blocks_.at(i);
+				cIn = !++r.at(i);
 			}
 		}
 
-		if(cin)
+		if(cIn)
 		{
-			r.blocks_.resize(l + 1);
-			r.blocks_.at(l) = 1;
+			r.resize(l + 1);
+			r.at(l) = 1;
 		}
 
 		swap(r);
@@ -81,40 +96,44 @@ namespace lisp
 		{
 			BigUInt().swap(*this);
 		}
+		else if(length() == 1 && n.length() == 1)
+		{
+			at(0) -= n.at(0);
+		}
 		else
 		{
 			int i = 0;
 			int l = n.length();
-			bool cin = false, cout = false;
+			bool cIn = false, cOut = false;
 			BigUInt r;
 
 			r.resize(l);
 
 			for(; i < l ; ++i)
 			{
-				block_t b = blocks_.at(i) - n.blocks_.at(i);
+				block_t b = at(i) - n.at(i);
 
-				cout = n.blocks_.at(i) > blocks_.at(i);
+				cOut = n.at(i) > at(i);
 				
-				if(cin)
+				if(cIn)
 				{
-					if(!b--) cout = true;
+					if(!b--) cOut = true;
 				}
 
-				cin = cout;
-				r.blocks_.at(i) = b;
+				cIn = cOut;
+				r.at(i) = b;
 			}
 
 			for(l = length() ; i < l ; ++i)
 			{
-				r.blocks_.at(i) = blocks_.at(i);
-				if(cin)
+				r.at(i) = at(i);
+				if(cIn)
 				{
-					cin = !r.blocks_.at(i)--;
+					cIn = !r.at(i)--;
 				}
 			}
 
-			assert(!cin);
+			assert(!cIn);
 
 			r.resize();
 
@@ -122,39 +141,138 @@ namespace lisp
 		}
 	}
 
+	BigUInt::block_t BigUInt::getShiftedBlock(size_t x, size_t y) const
+	{
+		block_t p1((!x || !y) ? 0 : (at(x - 1) >> (N - y)));
+		block_t p2(x == blocks_.size() ? 0 : (at(x) << y));
+		return p1 | p2;
+	}
+
 	void BigUInt::mul(const BigUInt& n)
 	{
-		BigUInt r;
-
-		if(!zero())
+		if(zero() || n.zero()) { swap(BigUInt()); return; }
+		if(length() == 1 && n.length() == 1)
 		{
-			r = n;
-			--*this;
-			while(!zero())
+			block_t b = at(0) * n.at(0);
+			if(b >= at(0) && b >= n.at(0))
 			{
-				r.add(n);
-				--*this;
+				at(0) = b;
+				return;
 			}
 		}
+
+		BigUInt r;
+
+		r.resize(blocks_.size() + n.blocks_.size());
+
+		for(size_t i = 0 ; i < blocks_.size() ; ++i)
+		{
+			for(size_t j = 0 ; j < N ; ++j)
+			{
+				if(!(at(i) & (block_t(1) << j))) continue;
+
+				bool cIn = false, cOut = false;
+				size_t k2 = i;
+				for(size_t k1 = 0 ; k1 <= n.blocks_.size() ; ++k1, ++k2)
+				{
+					block_t t(r.at(k2) + n.getShiftedBlock(k1, j));
+					cOut = t < r.at(k2);
+					if(cIn)
+					{
+						if(!++t) cOut = true;
+					}
+					r.at(k2) = t;
+					cIn = cOut;
+				}
+
+				while(cIn)
+				{
+					cIn = !++r.at(k2++);
+				}
+			}
+		}
+
+		while(!r.blocks_.back()) r.blocks_.pop_back();
 
 		swap(r);
 	}
 
 	BigUInt BigUInt::div(const BigUInt& n)
 	{
-		BigUInt c;
+		if(n.zero()) throw std::string("Divide by zero error");
 
-		assert(!n.zero());
+		if(zero()) return BigUInt(0);
 
-		while(ge(n))
+		if(lt(n))
 		{
-			++c;
-			sub(n);
+			BigUInt t;
+			swap(t);
+			return t;
 		}
 
-		swap(c);
+		if(length() == 1)
+		{ 
+			BigUInt t(at(0) % n.at(0));
+			at(0) /= n.at(0);
+			return t;
+		}
 
-		return c;
+		
+	size_t i, j, k;
+	unsigned int i2;
+	block_t temp;
+	bool borrowIn, borrowOut;
+
+	size_t origLen = len;
+
+	allocateAndCopy(len + 1);
+	len++;
+	blk[origLen] = 0;
+
+	Blk *subtractBuf = new Blk[len];
+
+	q.len = origLen - b.len + 1;
+	q.allocate(q.len);
+
+	for (i = 0; i < q.len; i++)
+		q.blk[i] = 0;
+
+	i = q.len;
+	while (i > 0) {
+		i--;
+		q.blk[i] = 0;
+		i2 = N;
+		while (i2 > 0) {
+			i2--;
+			for (j = 0, k = i, borrowIn = false; j <= b.len; j++, k++) {
+				temp = blk[k] - getShiftedBlock(b, j, i2);
+				borrowOut = (temp > blk[k]);
+				if (borrowIn) {
+					borrowOut |= (temp == 0);
+					temp--;
+				}
+				subtractBuf[k] = temp; 
+				borrowIn = borrowOut;
+			}
+			for (; k < origLen && borrowIn; k++) {
+				borrowIn = (blk[k] == 0);
+				subtractBuf[k] = blk[k] - 1;
+			}
+			if (!borrowIn) {
+				q.blk[i] |= (Blk(1) << i2);
+				while (k > i) {
+					k--;
+					blk[k] = subtractBuf[k];
+				}
+			} 
+		}
+	}
+	if (q.blk[q.len - 1] == 0)
+		q.len--;
+	zapLeadingZeros();
+	delete [] subtractBuf;
+
+		
 	}
 
 	void BigUInt::exp(const BigUInt& n)
@@ -175,7 +293,7 @@ namespace lisp
 
 	bool BigUInt::zero(void) const
 	{
-		return length() == 1 && blocks_.at(0) == 0;
+		return length() == 1 && at(0) == 0;
 	}
 
 	bool BigUInt::eq(const BigUInt& n) const
@@ -184,7 +302,7 @@ namespace lisp
 
 		for(int i = 0, l = length() ; i < l ; ++i)
 		{
-			if(blocks_.at(i) != n.blocks_.at(i)) return false;
+			if(at(i) != n.at(i)) return false;
 		}
 
 		return true;
@@ -196,9 +314,9 @@ namespace lisp
 
 		for(int i = length() - 1 ; i >= 0 ; --i)
 		{
-			if(blocks_.at(i) != n.blocks_.at(i))
+			if(at(i) != n.at(i))
 			{
-				return blocks_.at(i) > n.blocks_.at(i);
+				return at(i) > n.at(i);
 			}
 		}
 
@@ -234,7 +352,7 @@ namespace lisp
 	BigUInt::block_t BigUInt::value(void) const
 	{
 		assert(length()==1);
-		return blocks_.at(0);
+		return at(0);
 	}
 
 	const std::string BigUInt::toHex(void) const
@@ -247,9 +365,9 @@ namespace lisp
 		static const int c = sizeof(block_t) << 1;
 		static const char *d = "0123456789abcdef";
 
-		for(int i = length() - 1 ; i >= 0 ; --i)
+		for(size_t i = 0 ; i < length() ; ++i)
 		{
-			block_t b = blocks_.at(i);
+			block_t b = at(i);
 
 			for(int j = 0 ; j < c ; ++j)
 			{
@@ -265,6 +383,8 @@ namespace lisp
 					s.push(d[t]);
 				}
 			}
+
+			if(i < length() - 1) while(nc) { s.push('0'); nc--; }
 		}
 
 		auto_ptr<char> p(new char[s.size() + 1]);
