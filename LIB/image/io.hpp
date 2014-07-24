@@ -1,127 +1,136 @@
 #ifndef LIB_IMAGE_IO_H
 #define LIB_IMAGE_IO_H
 
-#include <iostream>
+#include <iosfwd>
 #include <iterator>
 #include <vector>
 #include <algorithm>
-#include <functional>
 #include <cstdint>
 #include "headers.h"
-#include "image.hpp"
 #include "aux.hpp"
 
 namespace lib
 {
 	namespace img
 	{
-		template<typename DIB, typename I>
-		class BMP
+		template<typename DIB, typename I, typename D>
+		struct BMP
 		{
-			typedef typename I::value_type Color_t;
-			typedef typename Color_t::value_type Data_t;
-			typedef typename I::const_iterator iiter;
+			typedef typename aux::deref_trait<I>::type color_type;
+			typedef D data_type;
 
-			public:
-				BMP(const DIB&, const I&);
-				void out(std::ostream&) const;
-			private:
-				bmp_header_t bmp_h_;
-				DIB dib_h_;
-				iiter i_;
-				unsigned int rowsize;
+			bmp_header_t bmp_h;
+			DIB dib_h;
+			I iter;
 		};
 
-		template<typename DIB, typename I>
-		BMP<DIB, I> create_bmp(const DIB& dib, const I& i)
+		struct dib_holder
 		{
-			return BMP<DIB, I>(dib, i);
+			std::uint32_t id;
+			std::vector<std::uint8_t> data;
+		};
+		typedef BMP<dib_holder, std::vector<std::uint8_t>::iterator, std::uint8_t> bmp_reader;
+
+		template<typename DIB>
+		void read_dib(bmp_reader&, std::istream&)
+		{
+			assert(!"Shouldn't be here!");
 		}
 
-		template<typename DIB, typename I>
-		inline std::ostream& operator<<(std::ostream& os, const BMP<DIB, I>& bmp)
+		template<>
+		void read_dib<dib_BITMAPINFOHEADER_t>(bmp_reader& bmp, std::istream& is)
 		{
-			bmp.out(os);
-			return os;
+			dib_BITMAPINFOHEADER_t dib;
+			dib.headersize = bmp.dib_h.id;
+			std::copy_n(bmp.dib_h.data.begin(), dib.headersize, 
+				reinterpret_cast<std::uint8_t *>(&dib) + sizeof(dib.headersize));
 		}
 
-		template<typename DIB, typename I>
-		BMP<DIB, I>::BMP(const DIB& dib, const I& i) : dib_h_(dib), i_(i.cbegin())
+		inline bmp_reader read_bmp(std::istream& is)
 		{
-			dib_h_.headersize = sizeof(dib_h_);
-			dib_h_.planes = 1;
-			dib_h_.bpp = sizeof(Color_t) * 8;
-			dib_h_.palettecount = 0;
-			dib_h_.importantcolors = 0;
+			bmp_reader bmp;
+			is >> aux::read_from(bmp.bmp_h);
+			is >> bmp.dib_h.id;
+			bmp.dib_h.data.resize(bmp.dib_h.id);
+			is >> aux::read_from(*bmp.dib_h.data.begin(), bmp.dib_h.id);
 
-			rowsize = ((dib_h_.bpp * dib_h_.width + 31) / 32) * 4;
-
-			bmp_h_.id = BMP_MAGIC;
-			bmp_h_.reserved = 0;
-			bmp_h_.offset = sizeof(bmp_h_) + sizeof(dib_h_);
-			bmp_h_.filesize = bmp_h_.offset + rowsize * dib_h_.height;
-		}
-
-		template<typename DIB, typename I>
-		void BMP<DIB, I>::out(std::ostream& os) const
-		{
-			unsigned int l = dib_h_.width * sizeof(Color_t);
-			std::vector<Color_t> buf(dib_h_.width);
-			std::vector<std::uint8_t> pad(rowsize - l);
-			iiter i(i_);
-
-			os << aux::write_to(bmp_h_);
-			os << aux::write_to(dib_h_);
-
-			for(int h = 0 ; h < dib_h_.height ; ++h)
+			switch(bmp.dib_h.id)
 			{
-				aux::transform_n(i, dib_h_.width, buf.begin(), [](const Color_t& c) { return static_cast<Data_t>(c); });
-				os << aux::write_to(buf[0], l);
-				os << aux::write_to(pad[0], pad.size());
+				case sizeof(dib_BITMAPINFOHEADER_t):
+					read_dib<dib_BITMAPINFOHEADER_t>(bmp, is);
+					break;
+				default:
+					throw std::string("ERR: unknown size!");
 			}
 		}
 
+		template<typename DIB, typename I, typename D>
+		BMP<DIB, I, D> populate_bmp(const DIB& dib, I i)
+		{
+			BMP<DIB, I, D> bmp;
 
-//		template<typename I>
-//		void writeBMP(std::ostream& os, dib_BITMAPINFOHEADER_t dib_h, const I& img)
-//		{
-//			typedef typename I::value_type C_t;
-//			typedef typename C_t::value_type R_t;
-//
-//			dib_h.headersize = sizeof(dib_h);
-//			dib_h.width = img.width();
-//			dib_h.height = img.height();
-//			dib_h.planes = 1;
-//			dib_h.bpp = sizeof(C_t) * 8;
-//			dib_h.compression = static_cast<std::uint32_t>(Compression::RGB);
-//			dib_h.size = 0;
-//			dib_h.resolution.dx = dib_h.resolution.dy = BMP_RES;
-//			dib_h.palettecount = 0;
-//			dib_h.importantcolors = 0;
-//
-//			std::uint32_t rowsize = ((dib_h.bpp * dib_h.width + 31) / 32) * 4;
-//
-//			bmp_header_t bmp_h;
-//			bmp_h.id = BMP_MAGIC;
-//			bmp_h.reserved = 0;
-//			bmp_h.offset = sizeof(bmp_h) + sizeof(dib_h);
-//			bmp_h.filesize = bmp_h.offset + rowsize * dib_h.height;
-//
-//			unsigned int l = dib_h.width * sizeof(C_t);
-//			std::vector<C_t> buf(dib_h.width);
-//			std::vector<std::uint8_t> pad(rowsize - l);
-//			typename I::const_iterator i(img.cbegin());
-//
-//			os.write(reinterpret_cast<const char *>(&bmp_h), sizeof(bmp_h));
-//			os.write(reinterpret_cast<const char *>(&dib_h), sizeof(dib_h));
-//
-//			for(int h = 0 ; h < dib_h.height ; ++h)
-//			{
-//				aux::transform_n(i, dib_h.width, buf.begin(), [](const C_t& c) { return static_cast<R_t>(c); });
-//				os.write(reinterpret_cast<const char *>(&buf[0]), l);
-//				os.write(reinterpret_cast<const char *>(&pad[0]), pad.size());
-//			}
-//		}
+			bmp.dib_h = dib;
+			bmp.dib_h.headersize = sizeof(DIB);
+			bmp.dib_h.planes = 1;
+			bmp.dib_h.bpp = sizeof(D) * 8;
+			bmp.dib_h.palettecount = 0;
+			bmp.dib_h.importantcolors = 0;
+
+			unsigned int rowsize = ((dib.bpp * dib.width + 31) / 32) * 4;
+
+			bmp.bmp_h.id = BMP_MAGIC;
+			bmp.bmp_h.reserved = 0;
+			bmp.bmp_h.offset = sizeof(bmp_header_t) + sizeof(DIB);
+			bmp.bmp_h.filesize = bmp.bmp_h.offset + rowsize * dib.height;
+
+			bmp.iter = i;
+
+			return bmp;
+		}
+
+		template<typename DIB, typename Image>
+		inline auto create_bmp(const DIB& dib, Image& i)
+			-> BMP<DIB, typename Image::iterator, typename Image::data_type>
+		{
+			return populate_bmp<DIB, typename Image::iterator, typename Image::data_type>(dib, i.begin());
+		}
+
+		template<typename DIB, typename Image>
+		inline auto create_bmp(const DIB& dib, const Image& i)
+			-> BMP<DIB, typename Image::const_iterator, typename Image::data_type>
+		{
+			return populate_bmp<DIB, typename Image::const_iterator, typename Image::data_type>(dib, i.cbegin());
+		}
+
+		template<typename DIB, typename I, typename D>
+		void write_bmp(const BMP<DIB, I, D>& bmp, std::ostream& os)
+		{
+			typedef typename BMP<DIB, I, D>::color_type C;
+
+			unsigned int l = bmp.dib_h.width * (bmp.dib_h.bpp / 8);
+			unsigned int rowsize = ((bmp.dib_h.bpp * bmp.dib_h.width + 31) / 32) * 4;
+
+			std::vector<D> buf(bmp.dib_h.width);
+			std::vector<std::uint8_t> pad(rowsize - l);
+			I i(bmp.iter);
+
+			os << aux::write_to(bmp.bmp_h);
+			os << aux::write_to(bmp.dib_h);
+
+			for(int h = 0 ; h < bmp.dib_h.height ; ++h)
+			{
+				aux::transform_n(i, bmp.dib_h.width, buf.begin(), [](const C& c) { return static_cast<D>(c); });
+				os << aux::write_to(*buf.begin(), l);
+				os << aux::write_to(*pad.begin(), pad.size());
+			}
+		}
+
+		template<typename DIB, typename I, typename D>
+		std::ostream& operator<<(std::ostream& os, const BMP<DIB, I, D>& bmp)
+		{
+			write_bmp(bmp, os);
+			return os;
+		}
 	}
 }
 

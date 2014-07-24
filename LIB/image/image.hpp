@@ -1,6 +1,7 @@
 #ifndef LIB_IMAGE_H
 #define LIB_IMAGE_H
 
+#include <vector>
 #include <algorithm>
 #include <cassert>
 #include "array_proxy.hpp"
@@ -12,12 +13,14 @@ namespace lib
 		template<typename Color>
 		class image
 		{
+			typedef std::vector<Color> ccon_t;
 			typedef proxies::proxy<image<Color>, Color> proxy;
 			typedef proxies::const_proxy<image<Color>, Color> const_proxy;
 			public:
-			typedef Color value_type;
-			typedef Color *iterator;
-			typedef const Color *const_iterator;
+			typedef Color color_type;
+			typedef typename Color::value_type data_type;
+			typedef typename ccon_t::iterator iterator;
+			typedef typename ccon_t::const_iterator const_iterator;
 
 			public:
 				image( );
@@ -28,7 +31,6 @@ namespace lib
 				image(image<Color>&&);
 				template<typename C>
 					image(const image<C>&);
-				virtual ~image( );
 				image<Color>& operator=(const image<Color>&);
 				image<Color>& operator=(image<Color>&&);
 				template<typename C>
@@ -37,6 +39,7 @@ namespace lib
 				const_proxy operator[](size_t) const;
 				void set(size_t, size_t, const Color&);
 				const Color& get(size_t, size_t) const;
+				void fill(const Color&);
 				Color& at(size_t, size_t);
 				Color *raw( );
 				const Color *raw( ) const;
@@ -44,32 +47,24 @@ namespace lib
 				void swap(image<Color>&) noexcept;
 				inline size_t width( ) const { return w_; }
 				inline size_t height( ) const { return h_; }
-				inline iterator begin( ) { return raw(); }
-				inline iterator end( ) { return raw() + w_ * h_; }
-				inline const_iterator begin( ) const { return raw(); }
-				inline const_iterator end( ) const { return raw() + w_ * h_; }
-				inline const_iterator cbegin( ) const { return raw(); }
-				inline const_iterator cend( ) const { return raw() + w_ * h_; }
-			protected:
-				virtual void i_set(size_t, size_t, const Color&);
-				virtual const Color& i_get(size_t, size_t) const;
-				virtual Color& i_at(size_t, size_t);
-				virtual Color *i_raw( );
-				virtual const Color *i_raw( ) const;
-				virtual bool i_valid( ) const;
-				virtual void i_swap(image<Color>&) noexcept;
+				inline iterator begin( ) { assert(valid()); return data_.begin(); }
+				inline iterator end( ) { assert(valid()); return data_.end(); }
+				inline const_iterator begin( ) const { assert(valid()); return data_.cbegin(); }
+				inline const_iterator end( ) const { assert(valid()); return data_.cend(); }
+				inline const_iterator cbegin( ) const { assert(valid()); return data_.cbegin(); }
+				inline const_iterator cend( ) const { assert(valid()); return data_.cend(); }
 			private:
-				Color *data_;
+				ccon_t data_;
 				size_t w_, h_;
 		};
 
 		template<typename C>
-		image<C>::image(void) : data_(nullptr), w_(0), h_(0)
+		image<C>::image(void) : data_(), w_(0), h_(0)
 		{
 		}
 
 		template<typename C>
-		image<C>::image(size_t w, size_t h) : data_(w * h ? new C[w * h] : nullptr), w_(w), h_(h)
+		image<C>::image(size_t w, size_t h) : data_(w * h), w_(w), h_(h)
 		{
 		}
 
@@ -77,7 +72,7 @@ namespace lib
 		template<typename I>
 		image<C>::image(I i, size_t w, size_t h) : image<C>(w, h)
 		{
-			std::copy(i, w_ * h_, data_);
+			std::copy_n(i, w_ * h_, data_);
 		}
 
 		template<typename C>
@@ -86,7 +81,7 @@ namespace lib
 		}
 
 		template<typename C>
-		image<C>::image(image<C>&& i) : data_(nullptr), w_(0), h_(0)
+		image<C>::image(image<C>&& i) : data_(), w_(0), h_(0)
 		{
 			swap(i);
 		}
@@ -95,12 +90,6 @@ namespace lib
 		template<typename C2>
 		image<C1>::image(const image<C2>& i) : image<C1>(i.data_, i.w_, i.h_)
 		{
-		}
-
-		template<typename C>
-		image<C>::~image(void)
-		{
-			delete[] data_;
 		}
 
 		template<typename C>
@@ -130,6 +119,7 @@ namespace lib
 		template<typename C>
 		typename image<C>::proxy image<C>::operator[](size_t i)
 		{
+			assert(i<w_);
 			assert(valid());
 			return proxy(*this, i);
 		}
@@ -137,102 +127,63 @@ namespace lib
 		template<typename C>
 		typename image<C>::const_proxy image<C>::operator[](size_t i) const
 		{
+			assert(i<w_);
 			assert(valid());
-			return const_proxy(data_ + i * w_);
+			return const_proxy(*this, i);
 		}
 
 		template<typename C>
 		void image<C>::set(size_t x, size_t y, const C& c)
 		{
-			assert(x<w_&&y<h_);
 			assert(valid());
-			i_set(x, y, c);
+			at(x, y) = c;
 		}
 
 		template<typename C>
 		const C& image<C>::get(size_t x, size_t y) const
 		{
-			assert(x<w_&&y<h_);
 			assert(valid());
-			return i_get(x, y);
+			return data_.at(y * w_ + x);
+		}
+
+		template<typename C>
+		void image<C>::fill(const C& c)
+		{
+			assert(valid());
+			std::fill(begin(), end(), c);
 		}
 
 		template<typename C>
 		C& image<C>::at(size_t x, size_t y)
 		{
-			assert(x<w_&&y<h_);
 			assert(valid());
-			return i_at(x, y);
+			return data_.at(y * w_ + x);
 		}
 
 		template<typename C>
 		C *image<C>::raw(void)
 		{
 			assert(valid());
-			return i_raw();;
+			return &*data_.begin();
 		}
 
 		template<typename C>
 		const C *image<C>::raw(void) const
 		{
 			assert(valid());
-			return i_raw();
+			return &*data_.cbegin();
 		}
 
 		template<typename C>
 		bool image<C>::valid(void) const
 		{
-			return i_valid();
+			return data_.size() == w_ * h_;
 		}
 
 		template<typename C>
 		void image<C>::swap(image<C>& i) noexcept
 		{
-			i_swap(i);
-		}
-
-		template<typename C>
-		void image<C>::i_set(size_t x, size_t y, const C& c)
-		{
-			data_[y * w_ + x] = c;
-		}
-
-		template<typename C>
-		const C& image<C>::i_get(size_t x, size_t y) const
-		{
-			return data_[y * w_ + x];
-		}
-
-		template<typename C>
-		C& image<C>::i_at(size_t x, size_t y)
-		{
-			return data_[y * w_ + x];
-		}
-
-		template<typename C>
-		C *image<C>::i_raw(void)
-		{
-			return data_;
-		}
-
-		template<typename C>
-		const C *image<C>::i_raw(void) const
-		{
-			return data_;
-		}
-
-		template<typename C>
-		bool image<C>::i_valid(void) const
-		{
-			return data_ != nullptr;
-		}
-
-		template<typename C>
-		void image<C>::i_swap(image<C>& i) noexcept
-		{
-			C *c = data_;
-			data_ = i.data_;
-			i.data_ = c;
+			std::swap(data_, i.data_);
 
 			size_t t = w_;
 			w_ = i.w_;
