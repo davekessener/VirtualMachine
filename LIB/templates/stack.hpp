@@ -14,7 +14,7 @@ namespace siu
 			template<typename I> void construct(I, const T&);
 			template<typename I> void destroy(I);
 			template<typename I> void destroy(I, I);
-
+		private:
 			T *_v;
 			size_t _i, _c;
 		private:
