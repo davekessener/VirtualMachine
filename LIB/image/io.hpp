@@ -4,6 +4,7 @@
 #include <iosfwd>
 #include <iterator>
 #include <vector>
+#include <memory>
 #include <algorithm>
 #include <cstdint>
 #include "headers.h"
@@ -27,9 +28,12 @@ namespace lib
 		struct dib_holder
 		{
 			std::uint32_t id;
+			int width, height;
+			unsigned int bpp;
 			std::vector<std::uint8_t> data;
+			std::shared_ptr<std::vector<std::uint8_t>> raw;
 		};
-		typedef BMP<dib_holder, std::vector<std::uint8_t>::iterator, std::uint8_t> bmp_reader;
+		typedef BMP<dib_holder, std::uint8_t *, std::uint8_t> bmp_reader;
 
 		template<typename DIB>
 		void read_dib(bmp_reader&, std::istream&)
@@ -40,10 +44,33 @@ namespace lib
 		template<>
 		void read_dib<dib_BITMAPINFOHEADER_t>(bmp_reader& bmp, std::istream& is)
 		{
+			typedef std::vector<std::uint8_t> buf_t;
+			typedef std::shared_ptr<buf_t> buf_ptr;
+
 			dib_BITMAPINFOHEADER_t dib;
 			dib.headersize = bmp.dib_h.id;
-			std::copy_n(bmp.dib_h.data.begin(), dib.headersize, 
-				reinterpret_cast<std::uint8_t *>(&dib) + sizeof(dib.headersize));
+			std::copy_n(bmp.dib_h.data.begin(), dib.headersize, reinterpret_cast<std::uint8_t *>(&dib) + sizeof(dib.headersize));
+			bmp.dib_h.width = dib.width;
+			bmp.dib_h.height = dib.height;
+			bmp.dib_h.bpp = dib.bpp;
+
+			assert(dib.width>0&&dib.height>0);
+			
+			unsigned int rowsize = ((dib.bpp * dib.width + 31) / 32) * 4;
+
+			buf_t buf(rowsize);
+			buf_ptr data(new buf_t);
+
+			for(int h = 0 ; h < dib.height ; ++h)
+			{
+				is >> aux::read_from(*buf.begin(), buf.size());
+				data->insert(data->end(), buf.begin(), buf.end());
+			}
+
+			assert(data->size()==static_cast<unsigned>(dib.bpp/8*dib.width*dib.height));
+
+			bmp.dib_h.raw = data;
+			bmp.iter = &*data->begin();
 		}
 
 		inline bmp_reader read_bmp(std::istream& is)
@@ -60,8 +87,10 @@ namespace lib
 					read_dib<dib_BITMAPINFOHEADER_t>(bmp, is);
 					break;
 				default:
-					throw std::string("ERR: unknown size!");
+					assert(!"ERR: unknown size!");
 			}
+
+			return bmp;
 		}
 
 		template<typename DIB, typename I, typename D>
