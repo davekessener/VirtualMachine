@@ -16,7 +16,7 @@ namespace lib
 				std::vector<DWORD> data;
 			};
 
-			image read_simple_bmp(const std::string&);
+			image read_simple_bmp(const std::string&, bool = true);
 
 			inline BYTE *raw(image& i) { return reinterpret_cast<BYTE *>(&*i.data.begin()); }
 		}

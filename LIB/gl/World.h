@@ -2,6 +2,7 @@
 #define WORLD_H
 
 #include "inc.h"
+#include "Frustum.h"
 
 class World
 {
@@ -16,7 +17,7 @@ class World
 		void swap(World&) noexcept;
 		void setBlock(int, int, int, BYTE);
 		BYTE getBlock(int, int, int) const;
-		void render(int, int, int) const;
+		void render(const Frustum&) const;
 	private:
 		struct Impl;
 		Impl *impl_;

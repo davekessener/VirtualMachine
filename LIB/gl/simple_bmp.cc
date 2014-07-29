@@ -31,7 +31,7 @@ struct bmp_header_t
 	std::uint32_t offset;
 } __attribute__((packed));
 
-image read_simple_bmp(const std::string& fn)
+image read_simple_bmp(const std::string& fn, bool flipY)
 {
 	std::ifstream in(fn.c_str());
 
@@ -58,6 +58,17 @@ image read_simple_bmp(const std::string& fn)
 		[](const DWORD& c) -> DWORD { return DWORD(A(O(3), O(0), O(1), O(2))); });
 #undef A
 #undef O
+	
+	if(flipY);
+	{
+		std::vector<DWORD> v(img.width);
+		for(int i = 0, w = dib.width, h = dib.height ; i < h / 2 ; ++i)
+		{
+			std::copy_n(img.data.cbegin() + i * w, w, v.begin());
+			std::copy_n(img.data.cbegin() + (h - i - 1) * w, w, img.data.begin() + i * w);
+			std::copy_n(v.cbegin(), w, img.data.begin() + (h - i - 1) * w);
+		}
+	}
 
 	return img;
 }

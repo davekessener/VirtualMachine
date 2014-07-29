@@ -4,7 +4,7 @@
 
 namespace gl
 {
-	void d_gluPerspective(GLdouble fovY, GLdouble aspect, GLdouble zNear, GLdouble zFar);
+	void d_gluPerspective(GLfloat fovY, GLfloat aspect, GLfloat zNear, GLfloat zFar);
 
 	DWORD create_texture(const BYTE *data, int w, int h)
 	{
@@ -32,7 +32,7 @@ namespace gl
     	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	}
 
-	void init3d(int w, int h)
+	void init3d(int w, int h, float fov, float znear, float zfar)
 	{
 		glShadeModel(GL_SMOOTH);
 		glClearColor(0.0, 0.0, 0.0, 0.0);
@@ -43,7 +43,7 @@ namespace gl
 		glViewport(0, 0, (GLsizei) w, (GLsizei) h);
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
-		d_gluPerspective(45.0, (GLfloat) w/(GLfloat) h, 0.1, 100.0);
+		d_gluPerspective(fov, (GLfloat) w/(GLfloat) h, znear, zfar);
 		glEnable(GL_BLEND);
 		glEnable(GL_TEXTURE_2D);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -119,6 +119,26 @@ namespace gl
     	glEnd();
 	}
 
+	void begin(void)
+	{
+		glBegin(GL_QUADS);
+	}
+
+	void end(void)
+	{
+		glEnd();
+	}
+
+	void addVertex(float x, float y, float z)
+	{
+		glVertex3f(x, y, z);
+	}
+
+	void addUV(float u, float v)
+	{
+		glTexCoord2f(u, v);
+	}
+
 	void update(void)
 	{
     	glFlush();
@@ -129,11 +149,11 @@ namespace gl
 		glDeleteTextures(1, &id);
 	}
 
-	void d_gluPerspective(GLdouble fovY, GLdouble aspect, GLdouble zNear, GLdouble zFar)
+	void d_gluPerspective(GLfloat fovY, GLfloat aspect, GLfloat zNear, GLfloat zFar)
 	{
-		static const GLdouble pi = 3.1415926535897932384626433832795;
-		GLdouble fH(tan(fovY * pi / 360.0) * zNear);
-		GLdouble fW(fH * aspect);
+		static const GLfloat pi = 3.1415926535897932384626433832795;
+		GLfloat fH(tan(fovY * pi / 360.0) * zNear);
+		GLfloat fW(fH * aspect);
 		glFrustum(-fW, fW, -fH, fH, zNear, zFar);
 	}
 }

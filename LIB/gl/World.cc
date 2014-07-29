@@ -2,48 +2,68 @@
 #include <vector>
 #include <cassert>
 #include "World.h"
-#include "gl.h"
+//#include "gl.h"
+#include "Tessellator.h"
+#include "Manager.h"
+#include "Block.h"
 
 struct World::Impl
 {
-	Impl(int w, int h, int l) : w_(w), h_(h), l_(l), r_(64), blocks_(w_ * h_ * l_) { }
+	Impl(int w, int h, int l) : w_(w), h_(h), l_(l), blocks_(w_ * h_ * l_) { }
 	inline BYTE& at(int x, int y, int z) { return blocks_.at(getPos(x, y, z)); }
 	inline BYTE at(int x, int y, int z) const { return blocks_.at(getPos(x, y, z)); }
 	inline int getPos(int x, int y, int z) const
 	{
-		assert(x>=0&&(size_t)x<w_);
-		assert(y>=0&&(size_t)y<h_);
-		assert(z>=0&&(size_t)z<l_);
+		assert(x>=0&&x<w_);
+		assert(y>=0&&y<h_);
+		assert(z>=0&&z<l_);
 		return x + (y + z * h_) * w_;
 	}
-	void render(size_t, size_t, size_t) const;
-	inline void render_z(float z) const
+	void render(int, int, int, const vec&, const Block&) const;
+	inline void render_z(float z, int id) const
 	{
-		gl::draw_face3d( 0.0, 0.0, 1.0, 1.0,
-						-0.5, -0.5, z,
-						   z,   -z, z,
-						 0.5,  0.5, z,
-						  -z,    z, z);
+		float u = (id % 2) * 8 / 16.0, v = (id / 2) * 8 / 16.0;
+		Tessellator &tess(Tessellator::instance());
+		tess.addVertexUV( z,  0.5, z, u,       v);
+		tess.addVertexUV(-z,  0.5, z, u + 0.5, v);
+		tess.addVertexUV(-z, -0.5, z, u + 0.5, v + 0.5);
+		tess.addVertexUV( z, -0.5, z, u,       v + 0.5);
+//		gl::draw_face3d( u, v, u + 0.5, v + 0.5,
+//						   z,  0.5, z,
+//						  -z,  0.5, z,
+//						  -z, -0.5, z,
+//						   z, -0.5, z);
 	}
-	inline void render_y(float y) const
+	inline void render_y(float y, int id) const
 	{
-		gl::draw_face3d( 0.0, 0.0, 1.0, 1.0,
-						-0.5, y, -0.5,
-						  -y, y,    y,
-						 0.5, y,  0.5,
-						   y, y,   -y);
+		float u = (id % 2) * 8 / 16.0, v = (id / 2) * 8 / 16.0;
+		Tessellator &tess(Tessellator::instance());
+		tess.addVertexUV(-0.5, y, -0.5, u,       v);
+		tess.addVertexUV(  -y, y,    y, u + 0.5, v);
+		tess.addVertexUV( 0.5, y,  0.5, u + 0.5, v + 0.5);
+		tess.addVertexUV(   y, y,   -y, u,       v + 0.5);
+//		gl::draw_face3d( u, v, u + 0.5, v + 0.5,
+//						-0.5, y, -0.5,
+//						  -y, y,    y,
+//						 0.5, y,  0.5,
+//						   y, y,   -y);
 	}
-	inline void render_x(float x) const
+	inline void render_x(float x, int id) const
 	{
-		gl::draw_face3d( 0.0, 0.0, 1.0, 1.0,
-						x, -0.5, -0.5, 
-						x,    x,   -x, 
-						x,  0.5,  0.5, 
-						x,   -x,    x);
+		float u = (id % 2) * 8 / 16.0, v = (id / 2) * 8 / 16.0;
+		Tessellator &tess(Tessellator::instance());
+		tess.addVertexUV(x,  0.5, -x, u,       v);
+		tess.addVertexUV(x,  0.5,  x, u + 0.5, v);
+		tess.addVertexUV(x, -0.5,  x, u + 0.5, v + 0.5);
+		tess.addVertexUV(x, -0.5, -x, u,       v + 0.5);
+//		gl::draw_face3d( u, v, u + 0.5, v + 0.5,
+//						x,  0.5, -x, 
+//						x,  0.5,  x,
+//						x, -0.5,  x, 
+//						x, -0.5, -x);
 	}
 
-	size_t w_, h_, l_;
-	int r_;
+	int w_, h_, l_;
 	std::vector<BYTE> blocks_;
 };
 
@@ -63,42 +83,55 @@ BYTE World::getBlock(int x, int y, int z) const
 	return impl_->at(x, y, z);
 }
 
-void World::render(int cx, int cy, int cz) const
+void World::render(const Frustum& frustum) const
 {
-	auto i = impl_->blocks_.cbegin();
-	BYTE oid(0);
+	int r = frustum.getMaxDist();
+	const vec &p(frustum.getPos());
+	int X(static_cast<int>(p.dx)), 
+		Y(static_cast<int>(p.dy)), 
+		Z(static_cast<int>(p.dz));
+#define min(a,b) (((a)<(b))?(a):(b))
+#define max(a,b) (((a)>(b))?(a):(b))
+	int xmin(max(0, X - r)), xmax(min(impl_->w_, X + r));
+	int ymin(max(0, Y - r)), ymax(min(impl_->h_, Y + r));
+	int zmin(max(0, Z - r)), zmax(min(impl_->l_, Z + r));
+#undef max
+#undef min
 
-	for(size_t z = 0 ; z < impl_->l_ ; ++z)
+	Tessellator &tess(Tessellator::instance());
+
+	tess.startDrawing();
+	for(int z = zmin ; z < zmax ; ++z)
 	{
-		for(size_t y = 0 ; y < impl_->h_ ; ++y)
+		for(int y = ymin ; y < ymax ; ++y)
 		{
-			for(size_t x = 0 ; x < impl_->w_ ; ++x)
+			for(int x = xmin ; x < xmax ; ++x)
 			{
-				if(static_cast<int>(x) - cx < impl_->r_ && static_cast<int>(y) - cy < impl_->r_ && static_cast<int>(z) - cz < impl_->r_)
+				if(BYTE id = impl_->at(x, y, z))
 				{
-					if(BYTE id = *i)
+					if(frustum.isInside(vec(x + 0.5, y + 0.5, z + 0.5), 0.87))
 					{
-						gl::push();
-							if(id != oid) gl::bind_texture(id);
-							gl::translate(x + 0.5, y + 0.5, z + 0.5);
-							impl_->render(x, y, z);
-						gl::pop();
+						tess.setOffset(x + 0.5, y + 0.5, z + 0.5);
+						impl_->render(x, y, z, vec(x, y, z) - p, Manager::instance().getBlock(id));
 					}
 				}
-				++i;
 			}
 		}
 	}
+	tess.draw();
 }
 
-void World::Impl::render(size_t x, size_t y, size_t z) const
+inline constexpr bool check(const vec& v1, const vec& v2) { return angle(v1, v2) >= 90; }
+//inline constexpr bool check(const vec& v1, const vec& v2) { return true; }
+
+void World::Impl::render(int x, int y, int z, const vec& v, const Block& b) const
 {
-	if(x == 0      || !at(x - 1, y, z)) render_x(-0.5);
-	if(x == w_ - 1 || !at(x + 1, y, z)) render_x( 0.5);
-	if(y == 0      || !at(x, y - 1, z)) render_y(-0.5);
-	if(y == h_ - 1 || !at(x, y + 1, z)) render_y( 0.5);
-	if(z == 0      || !at(x, y, z - 1)) render_z(-0.5);
-	if(z == l_ - 1 || !at(x, y, z + 1)) render_z( 0.5);
+	if(check(v, vec(-1, 0, 0)) && (x == 0      || !at(x - 1, y, z))) render_x(-0.5, b.getFace(Direction::LEFT));
+	if(check(v, vec( 1, 0, 0)) && (x == w_ - 1 || !at(x + 1, y, z))) render_x( 0.5, b.getFace(Direction::RIGHT));
+	if(check(v, vec(0, -1, 0)) && (y == 0      || !at(x, y - 1, z))) render_y(-0.5, b.getFace(Direction::BOTTOM));
+	if(check(v, vec(0,  1, 0)) && (y == h_ - 1 || !at(x, y + 1, z))) render_y( 0.5, b.getFace(Direction::TOP));
+	if(check(v, vec(0, 0, -1)) && (z == 0      || !at(x, y, z - 1))) render_z(-0.5, b.getFace(Direction::FRONT));
+	if(check(v, vec(0, 0,  1)) && (z == l_ - 1 || !at(x, y, z + 1))) render_z( 0.5, b.getFace(Direction::BACK));
 }
 
 // # ===========================================================================
