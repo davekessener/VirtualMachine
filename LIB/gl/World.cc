@@ -28,11 +28,6 @@ struct World::Impl
 		tess.addVertexUV(-z,  0.5, z, u + 0.5, v);
 		tess.addVertexUV(-z, -0.5, z, u + 0.5, v + 0.5);
 		tess.addVertexUV( z, -0.5, z, u,       v + 0.5);
-//		gl::draw_face3d( u, v, u + 0.5, v + 0.5,
-//						   z,  0.5, z,
-//						  -z,  0.5, z,
-//						  -z, -0.5, z,
-//						   z, -0.5, z);
 	}
 	inline void render_y(float y, int id) const
 	{
@@ -42,11 +37,6 @@ struct World::Impl
 		tess.addVertexUV(  -y, y,    y, u + 0.5, v);
 		tess.addVertexUV( 0.5, y,  0.5, u + 0.5, v + 0.5);
 		tess.addVertexUV(   y, y,   -y, u,       v + 0.5);
-//		gl::draw_face3d( u, v, u + 0.5, v + 0.5,
-//						-0.5, y, -0.5,
-//						  -y, y,    y,
-//						 0.5, y,  0.5,
-//						   y, y,   -y);
 	}
 	inline void render_x(float x, int id) const
 	{
@@ -56,11 +46,6 @@ struct World::Impl
 		tess.addVertexUV(x,  0.5,  x, u + 0.5, v);
 		tess.addVertexUV(x, -0.5,  x, u + 0.5, v + 0.5);
 		tess.addVertexUV(x, -0.5, -x, u,       v + 0.5);
-//		gl::draw_face3d( u, v, u + 0.5, v + 0.5,
-//						x,  0.5, -x, 
-//						x,  0.5,  x,
-//						x, -0.5,  x, 
-//						x, -0.5, -x);
 	}
 
 	int w_, h_, l_;

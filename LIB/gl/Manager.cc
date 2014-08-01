@@ -2,6 +2,8 @@
 #include <memory>
 #include <cassert>
 #include "Manager.h"
+#include "gl.h"
+#include "simple_bmp.h"
 #include "Block.h"
 #include "BlockGrass.h"
 
@@ -17,6 +19,7 @@ struct Manager::Impl
 {
 	Impl( );
 	std::array<std::shared_ptr<Block>, MXT_BLOCKCOUNT> blocks_;
+	std::vector<img_t> imgs_;
 };
 
 Manager::Impl::Impl(void)
@@ -24,6 +27,20 @@ Manager::Impl::Impl(void)
 	blocks_[0].reset(new BlockGrass(1));
 	blocks_[1].reset(new Block(2));
 	blocks_[2].reset(new Block(3));
+}
+
+Manager::img_t Manager::loadTexture(const std::string& fn)
+{
+	using lib::img::simple::image;
+	using lib::img::simple::read_simple_bmp;
+
+	image img(read_simple_bmp(fn));
+	DWORD id(gl::create_texture(raw(img), img.width, img.height));
+	img_t r{id, img.width, img.height};
+
+	impl_->imgs_.push_back(r);
+
+	return r;
 }
 
 const Block& Manager::getBlock(int id) const

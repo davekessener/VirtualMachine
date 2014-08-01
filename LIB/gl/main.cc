@@ -9,9 +9,7 @@
 #include "simple_bmp.h"
 #include "World.h"
 #include "Frustum.h"
-
-using lib::img::simple::image;
-using lib::img::simple::raw;
+#include "Manager.h"
 
 static const int SCREEN_WIDTH = 1240;
 static const int SCREEN_HEIGHT = 720;
@@ -25,12 +23,11 @@ void mmotion(unsigned int, unsigned int, int, int);
 
 void set_look(float, float);
 
-DWORD id_;
-image img_;
 std::set<sdl::Controls> keyPressed_;
-
+Manager::img_t img_;
 World world_;
 Frustum frust_;
+std::string imgName_;
 
 float x_, y_, z_;
 float vx_, vy_, vz_;
@@ -44,16 +41,14 @@ int main(int argc, char *argv[])
 {
 	std::vector<std::string> args(argv, argv + argc);
 
-	using namespace lib::img::simple;
-
-	img_ = image(read_simple_bmp(args.at(1)));
+	imgName_ = args.at(1);
 
 	fspeed_ = sspeed_ = vspeed_ = 0;
 
 	sdl::set_init(&do_init);
 	sdl::set_update(&do_update);
 	sdl::set_input(&do_input, &mmotion);
-	sdl::start("Testwindow", SCREEN_WIDTH, SCREEN_HEIGHT);
+	sdl::start("4D", SCREEN_WIDTH, SCREEN_HEIGHT);
 
 	return 0;
 }
@@ -103,7 +98,7 @@ void do_init(int w, int h)
 	z_ = 0;
 	set_look(0, -90);
 
-	id_ = gl::create_texture(raw(img_), img_.width, img_.height);
+	img_ = Manager::instance().loadTexture(imgName_);
 
 	populateWorld();
 }
@@ -114,7 +109,7 @@ void render(void)
 
 	gl::push();
 
-	gl::bind_texture(id_);
+	gl::bind_texture(img_.id);
 
 	gl::rotate(-yaw_, 1, 0, 0);
 	gl::rotate(pitch_, 0, 1, 0);
