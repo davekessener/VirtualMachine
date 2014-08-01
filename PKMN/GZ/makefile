@@ -1,5 +1,5 @@
-CC=g++
-CFLAGS=-std=c++0x
+CC=g++-4.7
+CFLAGS=-std=c++0x -Wall
 DEBUG=-ggdb -DDEBUG
 SRC=$(wildcard *.cc)
 OBJ=$(SRC:.cc=.o)

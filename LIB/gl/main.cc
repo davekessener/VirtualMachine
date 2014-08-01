@@ -101,6 +101,8 @@ void do_init(int w, int h)
 	img_ = Manager::instance().loadTexture(imgName_);
 
 	populateWorld();
+
+	sdl::trap_mouse();
 }
 
 void render(void)
