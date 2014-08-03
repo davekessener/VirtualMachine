@@ -22,7 +22,8 @@ namespace sdl
     	SDL_Init(SDL_INIT_EVERYTHING);
 
 		SDL_Window *win(
-			SDL_CreateWindow(wn, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, w, h, SDL_WINDOW_OPENGL));
+			SDL_CreateWindow(wn, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, w, h, 
+				SDL_WINDOW_OPENGL));
 		
 		SDL_GL_CreateContext(win);
 
@@ -112,26 +113,37 @@ namespace sdl
 	{
 		controls.clear();
 
-		controls[SDLK_w] = Controls::UP;
-		controls[SDLK_a] = Controls::LEFT;
-		controls[SDLK_d] = Controls::RIGHT;
-		controls[SDLK_s] = Controls::DOWN;
-		controls[SDLK_q] = Controls::ASCEND;
-		controls[SDLK_e] = Controls::DESCEND;
+		controls[SDLK_a] = Controls::A;
+		controls[SDLK_b] = Controls::B;
+		controls[SDLK_c] = Controls::C;
+		controls[SDLK_d] = Controls::D;
+		controls[SDLK_e] = Controls::E;
+		controls[SDLK_f] = Controls::F;
+		controls[SDLK_g] = Controls::G;
+		controls[SDLK_h] = Controls::H;
+		controls[SDLK_i] = Controls::I;
+		controls[SDLK_j] = Controls::J;
+		controls[SDLK_k] = Controls::K;
+		controls[SDLK_l] = Controls::L;
+		controls[SDLK_m] = Controls::M;
+		controls[SDLK_n] = Controls::N;
+		controls[SDLK_o] = Controls::O;
+		controls[SDLK_p] = Controls::P;
+		controls[SDLK_q] = Controls::Q;
+		controls[SDLK_r] = Controls::R;
+		controls[SDLK_s] = Controls::S;
+		controls[SDLK_t] = Controls::T;
+		controls[SDLK_u] = Controls::U;
+		controls[SDLK_v] = Controls::V;
+		controls[SDLK_w] = Controls::W;
+		controls[SDLK_x] = Controls::X;
+		controls[SDLK_y] = Controls::Y;
+		controls[SDLK_z] = Controls::Z;
 		controls[SDLK_ESCAPE] = Controls::ESCAPE;
 		controls[SDLK_SPACE] = Controls::SPACE;
 		controls[SDLK_LSHIFT] = Controls::SHIFT;
 		controls[SDLK_RSHIFT] = Controls::SHIFT;
 		controls[SDLK_RETURN] = Controls::RETURN;
-//		controls[SDLK_q] = Controls::Q;
-//		controls[SDLK_l] = Controls::A;
-//		controls[SDLK_p] = Controls::B;
-//		controls[SDLK_k] = Controls::X;
-//		controls[SDLK_o] = Controls::Y;
-//		controls[SDLK_c] = Controls::L;
-//		controls[SDLK_m] = Controls::R;
-//		controls[SDLK_RETURN] = Controls::START;
-//		controls[SDLK_BACKSPACE] = Controls::SELECT;
 	}
 }
 

@@ -29,7 +29,7 @@ all: makefile $(TARGET) convert
 $(TARGET): logs $(SUBS) $(OBJ)
 	$(CC) $(OBJ) -Wl,--start-group $(shell find -maxdepth 1 -name "*.a") -Wl,--end-group -o $(TARGET) $(LIBS)
 
-convert:
+convert: convert.cpp
 	$(CC) $(CFLAGS) -I. -I/home/dave/include convert.cpp libgz.a -o convert -lz
 
 .PHONY: logs clean

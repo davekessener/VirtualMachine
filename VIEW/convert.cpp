@@ -5,6 +5,7 @@
 #include "inc.h"
 #include "bmp_header.h"
 #include "dav_header.h"
+#include "encrypt_stream.hpp"
 
 void convert(const std::string&);
 
@@ -45,12 +46,17 @@ void convert(const std::string& fn)
 	in.close();
 
 	dav_header_t dav;
+	dav.id = DAV_MAGIC;
 	dav.width = dib.width;
 	dav.height = dib.height;
+	dav.filesize = sizeof(dav) + dav.width * dav.height * 3;
 
 	int row = buf.size() / dib.height;
 	const char *p = reinterpret_cast<const char *>(&*buf.cbegin());
-	gzip::ogzstream out((fn + ".gz").c_str());
+
+	gzip::ogzstream out_raw((fn + ".gz").c_str());
+	encrypt_stream<gzip::ogzstream> out(out_raw);
+	
 	out.write(reinterpret_cast<const char *>(&dav), sizeof(dav));
 	for(int h = dib.height ; h ; --h)
 	{

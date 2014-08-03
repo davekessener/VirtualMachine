@@ -6,6 +6,7 @@
 namespace gl
 {
 	DWORD create_texture(const BYTE *, int, int);
+	void set_texture(DWORD, const BYTE *, int, int);
 	void init2d(int, int);
 	void init3d(int, int, float = 45.0, float = 1.0, float = 100.0);
 	void start_draw( );
