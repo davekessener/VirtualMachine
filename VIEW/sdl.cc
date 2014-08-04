@@ -23,7 +23,7 @@ namespace sdl
 
 		SDL_Window *win(
 			SDL_CreateWindow(wn, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, w, h, 
-				SDL_WINDOW_OPENGL));
+				SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL));
 		
 		SDL_GL_CreateContext(win);
 

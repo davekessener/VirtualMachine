@@ -1,13 +1,17 @@
 #include <vector>
 #include <fstream>
+#include <sstream>
+#include <iomanip>
 #include <cassert>
 #include <gz/gzstream>
+#include <aux>
 #include "inc.h"
 #include "bmp_header.h"
 #include "dav_header.h"
 #include "encrypt_stream.hpp"
 
 void convert(const std::string&);
+std::string to_hex(size_t, size_t = sizeof(size_t));
 
 int main(int argc, char *argv[])
 {
@@ -45,8 +49,8 @@ void convert(const std::string& fn)
 	in.read(&*buf.begin(), buf.size());
 	in.close();
 
-	dav_header_t dav;
-	dav.id = DAV_MAGIC;
+	dav::imgheader_t dav;
+	dav.id = dav::DAV_MAGIC;
 	dav.width = dib.width;
 	dav.height = dib.height;
 	dav.filesize = sizeof(dav) + dav.width * dav.height * 3;
@@ -54,7 +58,8 @@ void convert(const std::string& fn)
 	int row = buf.size() / dib.height;
 	const char *p = reinterpret_cast<const char *>(&*buf.cbegin());
 
-	gzip::ogzstream out_raw((fn + ".gz").c_str());
+	std::string hash(to_hex(std::hash<std::string>()(fn)) + ".gz");
+	gzip::ogzstream out_raw(hash.c_str());
 	encrypt_stream<gzip::ogzstream> out(out_raw);
 	
 	out.write(reinterpret_cast<const char *>(&dav), sizeof(dav));
@@ -69,5 +74,12 @@ void convert(const std::string& fn)
 		}
 	}
 	out.close();
+}
+
+std::string to_hex(size_t v, size_t d)
+{
+	std::stringstream ss;
+	ss << std::setbase(16) << std::setw(d * 2) << std::setfill('0') << v;
+	return ss.str();
 }
 

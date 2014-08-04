@@ -9,12 +9,12 @@
 
 void Image::load(const std::string& fn)
 {
-	dav_header_t dav;
+	dav::imgheader_t dav;
 	gzip::igzstream in_raw(fn.c_str());
 	encrypt_stream<gzip::igzstream> in(in_raw);
 
 	in.read(reinterpret_cast<char *>(&dav), sizeof(dav));
-	assert(dav.id==DAV_MAGIC);
+	assert(dav.id==dav::DAV_MAGIC);
 	width_ = dav.width;
 	height_ = dav.height;
 	data_.resize(width_ * height_ * 3);

@@ -10,8 +10,8 @@
 #include "Randomizer.hpp"
 
 #define MXT_WINDOWNAME "DaViewer"
-#define MXT_WIDTH 1240
-#define MXT_HEIGHT 720
+#define MXT_WIDTH 1920
+#define MXT_HEIGHT 1080
 #define MXT_STEP 16
 #define MXT_HIDEIMAGE "hidden.bmp.gz"
 
@@ -19,8 +19,6 @@ struct Manager::Impl
 {
 	typedef std::vector<std::string> svec;
 	typedef svec::const_iterator siter;
-	typedef std::vector<siter> ivec;
-	typedef ivec::const_iterator iiter;
 	typedef sdl::Controls Controls;
 	typedef unsigned int uint;
 
