@@ -10,17 +10,27 @@
 #include "dav_header.h"
 #include "encrypt_stream.hpp"
 
-void convert(const std::string&);
+std::string convert(const std::string&);
 std::string to_hex(size_t, size_t = sizeof(size_t));
 
 int main(int argc, char *argv[])
 {
-	assert(argc==2);
-	convert(argv[1]);
+	assert(argc>=2&&argc<=3);
+
+	if(argc == 2)
+	{
+		convert(argv[1]);
+	}
+	else if(argc == 3)
+	{
+		assert(argv[1] == std::string("-v"));
+		std::cout << convert(argv[2]);
+	}
+
 	return 0;
 }
 
-void convert(const std::string& fn)
+std::string convert(const std::string& fn)
 {
 	using namespace lib::bmp;
 
@@ -74,6 +84,8 @@ void convert(const std::string& fn)
 		}
 	}
 	out.close();
+
+	return hash;
 }
 
 std::string to_hex(size_t v, size_t d)

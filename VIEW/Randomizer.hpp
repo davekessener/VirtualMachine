@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <random>
+#include <algorithm>
 #include <aux>
 
 struct RNGStraight

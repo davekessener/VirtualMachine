@@ -1,8 +1,7 @@
 #include <gz/gzstream>
 #include <vector>
 #include <cassert>
-#include "image.h"
-//#include "gl.h"
+#include "Image.h"
 #include "dav_header.h"
 #include "Manager.h"
 #include "encrypt_stream.hpp"
@@ -26,29 +25,23 @@ void Image::load(const std::string& fn)
 void Image::create(void)
 {
 	assert(data_.size()==(size_t)(width_*height_*3));
-//	id_ = docreate(&*data_.cbegin(), width_, height_, &pw_, &ph_);
 	Manager::instance().createTexture(&*data_.cbegin(), width_, height_);
 	std::vector<BYTE>().swap(data_);
 	loaded_ = true;
 }
 
-//void Image::bind(void) const
-//{
-//	gl::bind_texture(id_);
-//}
-
 void Image::erase(void)
 {
-//	gl::bind_texture(0);
-//	gl::delete_texture(id_);
-//	id_ = 0;
 	std::vector<BYTE>().swap(data_);
 	loaded_ = false;
 }
 
 void Image::draw(int w, int h, int dx, int dy) const
 {
-	int x1((w - width_) / 2 + dx), y1((h - height_) / 2 + dy);
+#define min(a,b) (((a)<(b))?(a):(b))
+	int tx(-min(0, (w - width_) / 2)), ty(-min(0, (h - height_) / 2));
+#undef min
+	int x1((w - width_) / 2 + tx + dx), y1((h - height_) / 2 + ty + dy);
 	int x2(x1 + width_), y2(y1 + height_);
 	float u1(0.0), v1(0.0), u2(1.0), v2(1.0);
 
@@ -76,12 +69,6 @@ void Image::draw(int w, int h, int dx, int dy) const
 		y2 = h;
 	}
 
-//	float cx(width_ / (float)pw_), cy(height_ / (float)ph_);
-//
-//	u1 *= cx; u2 *= cx;
-//	v1 *= cy; v2 *= cy;
-
-//	gl::draw_face2d(u1, v1, u2, v2, x1, y1, x2, y2);
 	Manager::instance().draw(u1, v1, u2, v2, x1, y1, x2, y2);
 }
 
@@ -107,32 +94,6 @@ void Image::center(int w, int h) const
 		x2 = x1 + tw;
 	}
 
-//	gl::draw_face2d(u1, v1, u2, v2, x1, y1, x2, y2);
 	Manager::instance().draw(u1, v1, u2, v2, x1, y1, x2, y2);
 }
-
-//DWORD Image::docreate(const BYTE *img, int w, int h, int *ppw, int *pph)
-//{
-//	int pw = 1, ph = 1;
-//
-//	while(pw < w) pw <<= 1;
-//	while(ph < h) ph <<= 1;
-//	
-//	std::vector<BYTE> buf(pw * ph * 3);
-//	
-//	for(int y = 0 ; y < h ; ++y)
-//	{
-//		for(int x = 0 ; x < w ; ++x)
-//		{
-//			buf[x * 3 + 0 + y * pw * 3] = img[x * 3 + 0 + y * w * 3];
-//			buf[x * 3 + 1 + y * pw * 3] = img[x * 3 + 1 + y * w * 3];
-//			buf[x * 3 + 2 + y * pw * 3] = img[x * 3 + 2 + y * w * 3];
-//		}
-//	}
-//
-//	if(ppw) *ppw = pw;
-//	if(pph) *pph = ph;
-//
-//	return gl::create_texture(&*buf.cbegin(), pw, ph);
-//}
 

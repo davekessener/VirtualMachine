@@ -1,4 +1,5 @@
 #include <vector>
+#include <cassert>
 #include "GLBuffer.h"
 #include "gl.h"
 

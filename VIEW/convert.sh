@@ -1,8 +1,12 @@
 #!/bin/bash
-for FILE in *.png; do
-	convert $FILE -type truecolor $FILE.bmp
-	../convert $FILE.bmp
-	rm $FILE
-	rm $FILE.bmp
+for FILE in *.{jpg,jpeg,JPG,png,PNG,bmp,BMP}; do
+	if [ -f "./$FILE" ]; then
+		echo -n "Converting file '$FILE' -> '"
+		convert "./$FILE" -type truecolor "./$FILE.bmp"
+		rm "./$FILE"
+		../convert -v "./$FILE.bmp"
+		rm "./$FILE.bmp"
+		echo "' [DONE]"
+	fi
 done
 

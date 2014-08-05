@@ -5,22 +5,25 @@ template<typename S>
 class encrypt_stream
 {
 	public:
-		encrypt_stream(S& s) : s_(s), last_(0) { }
+		encrypt_stream(S& s) : s_(&s), last_(0), cleanup_(false) { }
+		encrypt_stream(const std::string& s) : s_(new S(s)), last_(0), cleanup_(true) { }
+		~encrypt_stream( ) { if(cleanup_) delete s_; }
 		int get( );
 		void read(void *, size_t);
 		void put(int);
 		void write(const void *, size_t);
-		void close( ) { s_.close(); }
+		void close( ) { s_->close(); }
 	private:
-		S &s_;
+		S *s_;
 		int last_;
+		bool cleanup_;
 };
 
 template<typename S>
 int encrypt_stream<S>::get(void)
 {
 	int t(last_);
-	last_ = s_.get();
+	last_ = s_->get();
 	return last_ ^ t;
 }
 
@@ -38,7 +41,7 @@ void encrypt_stream<S>::read(void *dst, size_t n)
 template<typename S>
 void encrypt_stream<S>::put(int c)
 {
-	s_.put(last_ ^= c);
+	s_->put(last_ ^= c);
 }
 
 template<typename S>
