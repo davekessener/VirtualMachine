@@ -1,9 +1,9 @@
 #include <vector>
 #include <SDL2/SDL_opengl.h>
-#include <png/png.hpp>
 #include "Charset.h"
 #include "inc.h"
 #include "gl.h"
+#include "png.h"
 
 struct Charset::Impl
 {
@@ -14,6 +14,8 @@ struct Charset::Impl
 
 Charset::Charset(void) : impl_(new Impl)
 {
+	impl_->id_ = 0;
+	impl_->s_ = 16;
 }
 
 Charset::~Charset(void)
@@ -25,22 +27,9 @@ Charset::~Charset(void)
 
 void Charset::load(const std::string& fn)
 {
-	png::image<png::rgba_pixel> img(fn);
-	impl_->w_ = img.get_width();
-	impl_->h_ = img.get_height();
-	impl_->s_ = impl_->w_ / 16;
-	
-	std::vector<DWORD> data(impl_->w_ * impl_->h_);
+	std::vector<BYTE> data;
 
-	auto i = data.begin();
-	for(int y = 0 ; y < impl_->h_ ; ++y)
-	{
-		for(int x = 0 ; x < impl_->w_ ; ++x)
-		{
-			auto c = img.get_pixel(x, y);
-			*i++ = (c.alpha << 24) | (c.blue << 16) | (c.green << 8) | c.red;
-		}
-	}
+	load_png(data, fn, &impl_->w_, &impl_->h_);
 
 	glGenTextures(1, &impl_->id_);
 	glBindTexture(GL_TEXTURE_2D, impl_->id_);
@@ -48,8 +37,8 @@ void Charset::load(const std::string& fn)
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, impl_->w_, impl_->h_, 0, GL_RGBA, GL_UNSIGNED_BYTE, 
-		reinterpret_cast<const BYTE *>(&*data.cbegin()));
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, impl_->w_, impl_->h_, 0, GL_RGBA,
+		GL_UNSIGNED_BYTE, &*data.cbegin());
 }
 
 void Charset::renderStringAt(const std::string& s, int x, int y, int c) const

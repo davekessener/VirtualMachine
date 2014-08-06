@@ -39,12 +39,12 @@ Viewer::Viewer(void) : impl_(new Impl)
 {
 }
 
-Viewer::~Viewer(void)
+Viewer::~Viewer(void) noexcept
 {
 	delete impl_;
 }
 
-void Viewer::setScreen(int sw, int sh)
+void Viewer::i_setScreen(int sw, int sh)
 {
 	impl_->sw_ = sw;
 	impl_->sh_ = sh;
@@ -71,16 +71,9 @@ void Viewer::clear(void)
 	impl_->loaded_ = false;
 }
 
-void Viewer::suspend(bool suspend)
+void Viewer::i_suspend(bool s)
 {
-	if(!suspend)
-	{
-		render_ = impl_->getRender();
-	}
-	else
-	{
-		render_fn().swap(render_);
-	}
+	setRender(s ? render_fn() : impl_->getRender());
 }
 
 void Viewer::shift(Direction d, bool s)
@@ -114,7 +107,7 @@ void Viewer::shift(Direction d, bool s)
 			break;
 	}
 
-	render_ = impl_->getRender();
+	setRender(impl_->getRender());
 }
 
 void Viewer::shuffle(void)
@@ -151,7 +144,7 @@ void Viewer::scale(bool zoom)
 	if(impl_->scale_ != zoom)
 	{
 		impl_->scale_ = zoom;
-		render_ = impl_->getRender();
+		setRender(impl_->getRender());
 	}
 }
 
@@ -162,9 +155,49 @@ void Viewer::hide(void)
 void Viewer::loadImage(const std::string& in)
 {
 	impl_->img_.load(in);
-	impl_->img_.create();
 	impl_->dx_ = impl_->dy_ = 0;
 	
-	render_ = impl_->getRender();
+	setRender(impl_->getRender());
+}
+
+void Viewer::i_keyPress(Controls c, const modifier_t& m)
+{
+#define pressed(k) (m.find(k)!=m.cend())
+	bool s = pressed(Controls::SHIFT);
+#undef pressed
+
+	switch(c)
+	{
+		case Controls::SPACE:
+		case Controls::X:
+			next();
+			break;
+		case Controls::Z:
+			back();
+			break;
+		case Controls::L:
+			toggleScale();
+			break;
+		case Controls::R:
+			if(s) reset(); else shuffle();
+			break;
+		case Controls::W:
+			shift(Direction::UP, s);
+			break;
+		case Controls::S:
+			shift(Direction::DOWN, s);
+			break;
+		case Controls::A:
+			shift(Direction::LEFT, s);
+			break;
+		case Controls::D:
+			shift(Direction::RIGHT, s);
+			break;
+		case Controls::Q:
+			hide();
+			break;
+		default:
+			break;
+	}
 }
 

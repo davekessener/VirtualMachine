@@ -139,11 +139,55 @@ namespace sdl
 		controls[SDLK_x] = Controls::X;
 		controls[SDLK_y] = Controls::Y;
 		controls[SDLK_z] = Controls::Z;
+		controls[SDLK_0] = Controls::ZERO;
+		controls[SDLK_1] = Controls::ONE;
+		controls[SDLK_2] = Controls::TWO;
+		controls[SDLK_3] = Controls::THREE;
+		controls[SDLK_4] = Controls::FOUR;
+		controls[SDLK_5] = Controls::FIVE;
+		controls[SDLK_6] = Controls::SIX;
+		controls[SDLK_7] = Controls::SEVEN;
+		controls[SDLK_8] = Controls::EIGHT;
+		controls[SDLK_9] = Controls::NINE;
 		controls[SDLK_ESCAPE] = Controls::ESCAPE;
 		controls[SDLK_SPACE] = Controls::SPACE;
 		controls[SDLK_LSHIFT] = Controls::SHIFT;
 		controls[SDLK_RSHIFT] = Controls::SHIFT;
 		controls[SDLK_RETURN] = Controls::RETURN;
+		controls[SDLK_UP] = Controls::UP;
+		controls[SDLK_DOWN] = Controls::DOWN;
+		controls[SDLK_LEFT] = Controls::LEFT;
+		controls[SDLK_RIGHT] = Controls::RIGHT;
+		controls[SDLK_LCTRL] = Controls::CTRL;
+		controls[SDLK_RCTRL] = Controls::CTRL;
+		controls[SDLK_BACKSPACE] = Controls::BACKSPACE;
+		controls[SDLK_DELETE] = Controls::DELETE;
+		controls[SDLK_TAB] = Controls::TAB;
+		controls[SDLK_MINUS] = Controls::DASH;
+		controls[SDLK_EQUALS] = Controls::EQUALS;
+		controls[SDLK_LEFTBRACKET] = Controls::LSQUARE;
+		controls[SDLK_RIGHTBRACKET] = Controls::RSQUARE;
+		controls[SDLK_QUOTE] = Controls::QUOTE;
+		controls[SDLK_SEMICOLON] = Controls::SEMICOLON;
+		controls[SDLK_BACKSLASH] = Controls::BACKSLASH;
+		controls[SDLK_COMMA] = Controls::COMMA;
+		controls[SDLK_PERIOD] = Controls::PERIOD;
+		controls[SDLK_SLASH] = Controls::SLASH;
+		controls[SDLK_BACKQUOTE] = Controls::BACKTICK;
+	}
+
+	inline const char *find(char c, const char *s) { for(; *s ; ++s) if(*s == c) return s; return nullptr; }
+
+	char translate(Controls key, bool shift)
+	{
+		static const char *lo = "0123456789`-=[]'\\,./; ";
+		static const char *hi = ")!@#$%^&*(~_+{}\"|<>?: ";
+		char c = static_cast<char>(key);
+
+		if(c >= 'a' && c <= 'z') return c + (shift ? 'A' - 'a' : 0);
+		if(const char *s = find(c, lo)) return *(shift ? hi + (s - lo) : s);
+
+		return '\0';
 	}
 }
 

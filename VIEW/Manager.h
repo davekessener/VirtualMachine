@@ -12,6 +12,7 @@ class Manager
 		int run(const std::vector<std::string>&);
 		void createTexture(const BYTE *, int, int);
 		void draw(float, float, float, float, int, int, int, int) const;
+		void setCharSize(int);
 		void renderString(const std::string&, int, int, int = 0xffffff) const;
 		void renderCenteredString(const std::string&, int, int, int = 0xffffff) const;
 	private:

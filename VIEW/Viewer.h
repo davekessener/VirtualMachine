@@ -1,12 +1,14 @@
 #ifndef VIEWER_H
 #define VIEWER_H
 
-#include <functional>
 #include <string>
+#include "Screen.h"
 
-class Viewer
+class Viewer : public Screen
 {
-	typedef std::function<void(void)> render_fn;
+	using Screen::Controls;
+	using Screen::modifier_t;
+	using Screen::render_fn;
 
 	public:
 	enum class Direction
@@ -19,17 +21,13 @@ class Viewer
 
 	public:
 		Viewer( );
-		~Viewer( );
-		void setScreen(int, int);
+		virtual ~Viewer( ) noexcept;
 		template<typename I>
 			void load(I, I);
 		void add(const std::string&);
 		void finalize( );
 		void clear( );
-		bool ready( ) const { return static_cast<bool>(render_); };
-		void suspend(bool = true);
 		void shift(Direction, bool = false);
-		void render( ) const { render_(); }
 		void shuffle( );
 		void reset( );
 		void next( );
@@ -39,8 +37,10 @@ class Viewer
 		void hide( );
 	private:
 		void loadImage(const std::string&);
+		void i_setScreen(int, int);
+		void i_suspend(bool);
+		void i_keyPress(Controls, const modifier_t&);
 	private:
-		render_fn render_;
 		struct Impl;
 		Impl *impl_;
 };

@@ -99,6 +99,30 @@ namespace gl
 		glColor3f(r, g, b);
 	}
 
+	void draw_rect(int x1, int y1, int x2, int y2, int c)
+	{
+		if(c >= 0)
+		{
+#define CL(i) (((c>>((i)<<3))&0xff)/255.0)
+			glColor3f(CL(2), CL(1), CL(0));
+#undef CL
+		}
+
+		glDisable(GL_TEXTURE_2D);
+		glBegin(GL_QUADS);
+    	    glVertex2f  (x1, y1);
+    	    glVertex2f  (x2, y1);
+    	    glVertex2f  (x2, y2);
+    	    glVertex2f  (x1, y2);
+		glEnd();
+		glEnable(GL_TEXTURE_2D);
+
+		if(c >= 0)
+		{
+			glColor3f(1.0, 1.0, 1.0);
+		}
+	}
+
 	void draw_face2d(float sx1, float sy1, float sx2, float sy2, int tx1, int ty1, int tx2, int ty2)
 	{
     	glBegin(GL_QUADS);

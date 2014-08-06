@@ -24,6 +24,7 @@ namespace gl
 	void translate(float, float, float);
 	void bind_texture(DWORD);
 	void color(float, float, float);
+	void draw_rect(int, int, int, int, int = -1);
 	void draw_face2d(float, float, float, float, int, int, int, int);
 	void draw_face3d(float, float, float, float,
 		float, float, float, 

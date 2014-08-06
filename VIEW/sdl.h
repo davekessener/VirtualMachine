@@ -13,16 +13,33 @@ namespace sdl
 		LEFT,
 		RIGHT,
 		ESCAPE,
-		SPACE,
 		SHIFT,
+		CTRL,
 		RETURN,
-		A, B, C, D, E, F, G, H,
+		BACKSPACE,
+		DELETE,
+		TAB,
+		SPACE = ' ',
+		DASH = '-',
+		EQUALS = '=',
+		LSQUARE = '[',
+		RSQUARE = ']',
+		QUOTE = '\'',
+		SEMICOLON = ';',
+		BACKSLASH = '\\',
+		COMMA = ',',
+		PERIOD = '.',
+		SLASH = '/',
+		BACKTICK = '`',
+		A = 'a', B, C, D, E, F, G, H,
 		I, J, K, L, M, N, O, P,
 		Q, R, S, T, U, V, W, X,
 		Y, Z,
-		ZERO, ONE, TWO, THREE, FOUR,
+		ZERO = '0', ONE, TWO, THREE, FOUR,
 		FIVE, SIX, SEVEN, EIGHT, NINE
 	};
+
+	char translate(Controls, bool = false);
 
 	typedef std::function<void(int, int)> init_t;
 	typedef std::function<bool(int)> update_t;

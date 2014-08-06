@@ -1,11 +1,14 @@
 #include <set>
+#include <stack>
 #include <memory>
 #include <algorithm>
 #include "Manager.h"
 #include "inc.h"
 #include "GLBuffer.h"
+#include "Screen.h"
 #include "Viewer.h"
 #include "Charset.h"
+#include "Input.h"
 #include "gl.h"
 #include "sdl.h"
 
@@ -25,9 +28,10 @@ struct Manager::Impl
 {
 	typedef sdl::Controls Controls;
 	typedef unsigned int uint;
+	typedef std::shared_ptr<Screen> screen_ptr;
 
 	GLBuffer glBuf_;
-	Viewer view_;
+	std::stack<screen_ptr> screens_;
 	Charset charset_;
 	std::set<Controls> modifier_;
 	bool running_ = true;
@@ -36,7 +40,9 @@ struct Manager::Impl
 	bool do_update(int);
 	void do_keyboard(Controls, bool);
 	void do_mouse(uint, uint, int, int);
+
 	inline bool pressed(Controls c) { return modifier_.find(c) != modifier_.cend(); }
+	screen_ptr getScreen(void);
 
 	void viewInput(Controls c);
 };
@@ -47,14 +53,16 @@ Manager& Manager::instance(void)
 	return m;
 }
 
+Viewer *view(nullptr);
+
 int Manager::run(const std::vector<std::string>& args)
 {
 	typedef Impl::Controls Controls;
 	typedef Impl::uint uint;
 
-	impl_->view_.setScreen(MXT_WIDTH, MXT_HEIGHT);
-
-	impl_->view_.load(args.cbegin() + 1, args.cend());
+	view = new Viewer;
+	view->setScreen(MXT_WIDTH, MXT_HEIGHT);
+	view->load(args.cbegin() + 1, args.cend());
 
 	sdl::set_init(  [this](int w, int h){ impl_->do_init(w, h); });
 	sdl::set_update([this](int d){ return impl_->do_update(d); });
@@ -66,6 +74,8 @@ int Manager::run(const std::vector<std::string>& args)
 	return 0;
 }
 
+// # ===========================================================================
+
 void Manager::createTexture(const BYTE *data, int w, int h)
 {
 	impl_->glBuf_.set(data, w, h);
@@ -75,6 +85,11 @@ void Manager::draw(float u1, float v1, float u2, float v2, int x1, int y1, int x
 {
 	impl_->glBuf_.bind();
 	impl_->glBuf_.render(u1, v1, u2, v2, x1, y1, x2, y2);
+}
+
+void Manager::setCharSize(int s)
+{
+	impl_->charset_.setCharSize(s);
 }
 
 void Manager::renderString(const std::string& s, int x, int y, int c) const
@@ -89,6 +104,8 @@ void Manager::renderCenteredString(const std::string& s, int x, int y, int c) co
 			y - impl_->charset_.getCharHeight() / 2, c);
 }
 
+// # ===========================================================================
+
 Manager::Manager(void) : impl_(new Impl)
 {
 }
@@ -98,25 +115,33 @@ Manager::~Manager(void)
 	delete impl_;
 }
 
+// # ===========================================================================
+
 void Manager::Impl::do_init(int w, int h)
 {
 	gl::init2d(w, h);
 
-	view_.finalize();
-//	view_.suspend();
+	view->finalize();
+	screens_.push(screen_ptr(view));
 
 	charset_.load(MXT_CHARSET);
 	charset_.setCharSize(64);
+	
+	Input *i = new Input;
+	i->setScreen(MXT_WIDTH, MXT_HEIGHT);
+	screens_.push(screen_ptr(i));
 }
 
 bool Manager::Impl::do_update(int d)
 {
 	gl::start_draw();
 
-	if(view_.ready())
+	if(screens_.top()->ready())
 	{
-		view_.render();
+		screens_.top()->render();
 	}
+
+//	Manager::instance().renderCenteredString("This is a test!", MXT_WIDTH / 2, MXT_HEIGHT / 2);
 	
 	gl::update();
 
@@ -145,11 +170,11 @@ void Manager::Impl::do_keyboard(sdl::Controls c, bool down)
 		}
 		else if(c == Controls::RETURN)
 		{
-			view_.suspend(false);
+			getScreen()->suspend(getScreen()->ready());
 		}
-		else if(view_.ready())
+		else if(getScreen()->ready())
 		{
-			viewInput(c);
+			getScreen()->keyPress(c, modifier_);
 		}
 	}
 }
@@ -158,42 +183,15 @@ void Manager::Impl::do_mouse(uint x, uint y, int dx, int dy)
 {
 }
 
-void Manager::Impl::viewInput(Controls c)
+Manager::Impl::screen_ptr Manager::Impl::getScreen(void)
 {
-	bool s = pressed(Controls::SHIFT);
+	assert(!screens_.empty());
 
-	switch(c)
+	while(!screens_.top()->alive())
 	{
-		case Controls::SPACE:
-		case Controls::X:
-			view_.next();
-			break;
-		case Controls::Z:
-			view_.back();
-			break;
-		case Controls::L:
-			view_.toggleScale();
-			break;
-		case Controls::R:
-			if(s) view_.reset(); else view_.shuffle();
-			break;
-		case Controls::W:
-			view_.shift(Viewer::Direction::UP, s);
-			break;
-		case Controls::S:
-			view_.shift(Viewer::Direction::DOWN, s);
-			break;
-		case Controls::A:
-			view_.shift(Viewer::Direction::LEFT, s);
-			break;
-		case Controls::D:
-			view_.shift(Viewer::Direction::RIGHT, s);
-			break;
-		case Controls::Q:
-			view_.hide();
-			break;
-		default:
-			break;
+		screens_.pop();
 	}
+	
+	return screens_.top();
 }
 

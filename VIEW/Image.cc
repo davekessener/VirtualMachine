@@ -20,10 +20,7 @@ void Image::load(const std::string& fn)
 	assert(data_.size()+sizeof(dav)==dav.filesize);
 	in.read(reinterpret_cast<char *>(&*data_.begin()), data_.size());
 	in.close();
-}
 
-void Image::create(void)
-{
 	assert(data_.size()==(size_t)(width_*height_*3));
 	Manager::instance().createTexture(&*data_.cbegin(), width_, height_);
 	std::vector<BYTE>().swap(data_);

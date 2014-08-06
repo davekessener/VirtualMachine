@@ -10,7 +10,6 @@ class Image
 	public:
 		Image( ) : loaded_(false) { }
 		void load(const std::string&);
-		void create( );
 		void erase( );
 		void draw(int, int, int = 0, int = 0) const;
 		void center(int, int) const;
