@@ -11,7 +11,6 @@
 #include "encrypt_stream.hpp"
 
 std::string convert(const std::string&);
-std::string to_hex(size_t, size_t = sizeof(size_t));
 
 int main(int argc, char *argv[])
 {
@@ -68,7 +67,7 @@ std::string convert(const std::string& fn)
 	int row = buf.size() / dib.height;
 	const char *p = reinterpret_cast<const char *>(&*buf.cbegin());
 
-	std::string hash(to_hex(std::hash<std::string>()(fn)) + ".gz");
+	std::string hash(lib::aux::to_hex(dav::hash(fn)) + ".gz");
 	gzip::ogzstream out_raw(hash.c_str());
 	encrypt_stream<gzip::ogzstream> out(out_raw);
 	
@@ -86,12 +85,5 @@ std::string convert(const std::string& fn)
 	out.close();
 
 	return hash;
-}
-
-std::string to_hex(size_t v, size_t d)
-{
-	std::stringstream ss;
-	ss << std::setbase(16) << std::setw(d * 2) << std::setfill('0') << v;
-	return ss.str();
 }
 

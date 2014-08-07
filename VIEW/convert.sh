@@ -10,3 +10,6 @@ for FILE in *.{jpg,jpeg,JPG,png,PNG,bmp,BMP}; do
 	fi
 done
 
+echo -n "Password: "
+../generate *.gz > config.dat
+

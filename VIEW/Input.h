@@ -1,4 +1,4 @@
-#ifndef INPU_H
+#ifndef INPUT_H
 #define INPUT_H
 
 #include "Screen.h"
@@ -8,16 +8,21 @@ class Input : public Screen
 	protected:
 	using Screen::Controls;
 	using Screen::modifier_t;
+	typedef std::function<void(const std::string&)> activate_fn;
 
 	public:
 		Input( );
 		virtual ~Input( ) noexcept;
+		void setPrompt(const std::string&);
+		void setActivate(activate_fn);
+		const std::string& getContent( ) const;
 	protected:
-		virtual void setString(const std::string&, int = -1, int = -1);
+		void setString(const std::string&, int = -1, int = -1);
+		void moveCursor(int);
+		virtual void i_keyPress(Controls, const modifier_t&);
+		virtual void i_setScreen(int, int);
 	private:
-		void i_setScreen(int, int);
 		void i_suspend(bool);
-		void i_keyPress(Controls, const modifier_t&);
 	private:
 		struct Impl;
 		Impl *impl_;

@@ -96,10 +96,10 @@ BR::BR(const std::string& fn)
 	l_ = in.tellg();
 	in.seekg(0, std::ios_base::beg);
 
-	c_ = new vm::WORD[l_];
+	c_ = new vm::WORD[l_ / 2];
 
 	in.read(reinterpret_cast<char *>(c_), l_);
-	l_ <<= 1;
+	l_ /= 2;
 }
 
 BR::~BR(void) throw()

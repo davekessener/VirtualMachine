@@ -5,6 +5,10 @@
 #include <cmath>
 #include <cstdint>
 
+#define MXT_BGCOLOR 0x00627d
+#define MXT_WHITE   0xffffff
+#define MXT_BLACK   0x000000
+
 typedef std::uint8_t BYTE;
 typedef std::uint16_t WORD;
 typedef std::uint32_t DWORD;

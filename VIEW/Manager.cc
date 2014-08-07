@@ -1,14 +1,19 @@
+#include <iostream>
+#include <fstream>
 #include <set>
 #include <stack>
-#include <memory>
 #include <algorithm>
 #include "Manager.h"
 #include "inc.h"
 #include "GLBuffer.h"
 #include "Screen.h"
+#include "Dialog.h"
 #include "Viewer.h"
 #include "Charset.h"
 #include "Input.h"
+#include "Password.h"
+#include "FileInput.h"
+#include "Header.h"
 #include "gl.h"
 #include "sdl.h"
 
@@ -16,25 +21,19 @@
 #define MXT_WIDTH 1920
 #define MXT_HEIGHT 1080
 #define MXT_STEP 16
-#define MXT_CHARSET "charset.png"
-
-enum class Action
-{
-	VIEWER,
-	NONE
-};
+#define MXT_CHARSET "../charset.png"
 
 struct Manager::Impl
 {
 	typedef sdl::Controls Controls;
 	typedef unsigned int uint;
-	typedef std::shared_ptr<Screen> screen_ptr;
 
 	GLBuffer glBuf_;
 	std::stack<screen_ptr> screens_;
 	Charset charset_;
 	std::set<Controls> modifier_;
 	bool running_ = true;
+	int w_, h_;
 
 	void do_init(int, int);
 	bool do_update(int);
@@ -42,7 +41,7 @@ struct Manager::Impl
 	void do_mouse(uint, uint, int, int);
 
 	inline bool pressed(Controls c) { return modifier_.find(c) != modifier_.cend(); }
-	screen_ptr getScreen(void);
+	Screen& getScreen(void);
 
 	void viewInput(Controls c);
 };
@@ -53,16 +52,10 @@ Manager& Manager::instance(void)
 	return m;
 }
 
-Viewer *view(nullptr);
-
 int Manager::run(const std::vector<std::string>& args)
 {
 	typedef Impl::Controls Controls;
 	typedef Impl::uint uint;
-
-	view = new Viewer;
-	view->setScreen(MXT_WIDTH, MXT_HEIGHT);
-	view->load(args.cbegin() + 1, args.cend());
 
 	sdl::set_init(  [this](int w, int h){ impl_->do_init(w, h); });
 	sdl::set_update([this](int d){ return impl_->do_update(d); });
@@ -92,6 +85,11 @@ void Manager::setCharSize(int s)
 	impl_->charset_.setCharSize(s);
 }
 
+int Manager::getStringWidth(const std::string& s) const
+{
+	return impl_->charset_.getStringWidth(s);
+}
+
 void Manager::renderString(const std::string& s, int x, int y, int c) const
 {
 	impl_->charset_.renderStringAt(s, x, y, c);
@@ -102,6 +100,12 @@ void Manager::renderCenteredString(const std::string& s, int x, int y, int c) co
 	impl_->charset_.renderStringAt(s, 
 			x - impl_->charset_.getStringWidth(s) / 2, 
 			y - impl_->charset_.getCharHeight() / 2, c);
+}
+
+void Manager::pushScreen(screen_ptr p)
+{
+	p->setScreen(impl_->w_, impl_->h_);
+	impl_->screens_.push(p);
 }
 
 // # ===========================================================================
@@ -121,14 +125,30 @@ void Manager::Impl::do_init(int w, int h)
 {
 	gl::init2d(w, h);
 
-	view->finalize();
-	screens_.push(screen_ptr(view));
+	w_ = w;
+	h_ = h;
 
 	charset_.load(MXT_CHARSET);
-	charset_.setCharSize(64);
+	charset_.setCharSize(h / 16);
 	
-	Input *i = new Input;
-	i->setScreen(MXT_WIDTH, MXT_HEIGHT);
+	Input *i = new FileInput;
+	i->setScreen(w_, h_);
+	i->setActivate([](const std::string& fn)
+		{
+			std::ifstream in(fn);
+			if(!in.is_open())
+			{
+				Screen *s = new Dialog("ERR: File\n'" + fn + "'\ncannot be opened.");
+				Manager::instance().pushScreen(Manager::screen_ptr(s));
+			}
+			else
+			{
+				Password *p = new Password;
+				p->setActivate(Header(in));
+				in.close();
+				Manager::instance().pushScreen(Manager::screen_ptr(p));
+			}
+		});
 	screens_.push(screen_ptr(i));
 }
 
@@ -136,13 +156,12 @@ bool Manager::Impl::do_update(int d)
 {
 	gl::start_draw();
 
-	if(screens_.top()->ready())
+	Screen &s(getScreen());
+	if(s.ready())
 	{
-		screens_.top()->render();
+		s.render();
 	}
 
-//	Manager::instance().renderCenteredString("This is a test!", MXT_WIDTH / 2, MXT_HEIGHT / 2);
-	
 	gl::update();
 
 	return running_;
@@ -168,13 +187,9 @@ void Manager::Impl::do_keyboard(sdl::Controls c, bool down)
 		{
 			running_ = false;
 		}
-		else if(c == Controls::RETURN)
+		else if(getScreen().ready())
 		{
-			getScreen()->suspend(getScreen()->ready());
-		}
-		else if(getScreen()->ready())
-		{
-			getScreen()->keyPress(c, modifier_);
+			getScreen().keyPress(c, modifier_);
 		}
 	}
 }
@@ -183,7 +198,7 @@ void Manager::Impl::do_mouse(uint x, uint y, int dx, int dy)
 {
 }
 
-Manager::Impl::screen_ptr Manager::Impl::getScreen(void)
+Screen& Manager::Impl::getScreen(void)
 {
 	assert(!screens_.empty());
 
@@ -192,6 +207,6 @@ Manager::Impl::screen_ptr Manager::Impl::getScreen(void)
 		screens_.pop();
 	}
 	
-	return screens_.top();
+	return *screens_.top();
 }
 

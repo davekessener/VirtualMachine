@@ -41,9 +41,65 @@
 //
 //inline bool pressed(sdl::Controls c) { return modifier_.find(c) != modifier_.cend(); }
 
+//#include <fstream>
+//#include <sstream>
+//#include <vector>
+//#include <iomanip>
+//#include <aux>
+//#include "dav_header.h"
+
+#include <boost/filesystem.hpp>
+#include <algorithm>
+#include <iostream>
+#include <iterator>
+
 int main(int argc, char *argv[])
 {
 	std::vector<std::string> args(argv, argv + argc);
+
+	using namespace boost::filesystem;
+
+	const std::string inp(args.size() > 1 ? args.at(1) : ".");
+	std::string fp(inp.substr(0, inp.find_last_of('/')));
+	if(fp.empty()) fp = "/";
+	path p(fp);
+	std::string f;
+	if(inp != "/") f = inp.substr(inp.find_last_of('/') + 1);
+
+	for(directory_iterator i(p), e ; i != e ; ++i)
+	{
+		std::string fn(i->path().filename().generic_string());
+		if(fn.length() >= f.length() && (f.empty() || fn.substr(0, f.length()) == f)) std::cout << fn << std::endl;
+	}
+
+	return 0;
+
+//	std::ifstream in("list.txt");
+//	dav::dataheader_t h;
+//	h.id = dav::DAV_MAGIC;
+//	h.hash = dav::hash("password");
+//	std::vector<dav::data_t> v;
+//	while(!in.eof())
+//	{
+//		std::string s("");
+//		unsigned long hash = 0;
+//		in >> s;
+//		if(s.length() != 19) continue;
+//		dav::data_t t;
+//		std::stringstream ss;
+//		ss << std::string(s.cbegin(), s.cbegin() + 16);
+//		ss << std::setbase(16);
+//		ss >> hash;
+//		t.name = hash;
+//		t.viewed_ms = t.viewed_c = 0;
+//		v.push_back(t);
+//	}
+//	in.close();
+//	h.imgcount = v.size();
+//	std::ofstream out("test.cfg");
+//	out << lib::aux::write_to(h);
+//	out << lib::aux::write_to(*v.cbegin(), v.size() * sizeof(dav::data_t));
+//	out.close();
 
 	return Manager::instance().run(args);
 

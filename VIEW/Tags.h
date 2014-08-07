@@ -1,6 +1,7 @@
 #ifndef TAGS_H
 #define TAGS_H
 
+#include <iosfwd>
 #include <string>
 #include <set>
 #include <map>
@@ -31,9 +32,17 @@ namespace dav
 			bool hasTag(DWORD id) const { return tags_.find(id) != tags_.cend(); }
 			void createTag(DWORD, const std::string&);
 			Tag& getTag(DWORD id) { return *tags_.at(id); }
+			void read(std::istream&);
+			void clear( ) { std::map<DWORD, Tag_ptr>().swap(tags_); }
 		private:
 			std::map<DWORD, Tag_ptr> tags_;
 	};
+
+	inline std::istream& operator>>(std::istream& is, TagTree& tt)
+	{
+		tt.read(is);
+		return is;
+	}
 }
 
 #endif

@@ -139,6 +139,8 @@ namespace nbt
 			template<typename T>
 			class iterator
 			{
+				typedef std::vector<NBT_ptr_t>::iterator i_t;
+
 				public:
 					std::shared_ptr<T> operator*() { return std::dynamic_pointer_cast<T>(*i); }
 					T& operator->() { return *operator*(); }
@@ -147,8 +149,8 @@ namespace nbt
 					bool operator!=(const iterator& _i) { return i != _i.i; }
 				private:
 					friend class NBTList<ID>;
-					iterator(std::vector<NBT_ptr_t>::iterator _i) : i(_i) { }
-					std::vector<NBT_ptr_t>::iterator i;
+					iterator(i_t _i) : i(_i) { }
+					i_t i;
 			};
 			template<typename T>
 			iterator<T> begin(void) { return iterator<T>(vec_t::begin()); }

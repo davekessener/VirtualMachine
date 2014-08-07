@@ -5,7 +5,7 @@
 
 namespace dav
 {
-	static const DWORD DAV_MAGIC(('D' << 24) | ('a' << 16) | ('V' << 8) | '!');
+	static const DWORD DAV_MAGIC('D' | ('a' << 8) | ('V' << 16) | ('!' << 24));
 	
 	struct imgheader_t
 	{
@@ -19,16 +19,17 @@ namespace dav
 	{
 		DWORD id;
 		QWORD hash;
-		DWORD imagecount;
+		DWORD imgcount;
 	} __attribute__((packed));
 
 	struct data_t
 	{
-		DWORD id;
 		QWORD name;
 		QWORD viewed_ms;
 		DWORD viewed_c;
 	} __attribute__((packed));
+
+	inline size_t hash(const std::string& s) { return std::hash<std::string>()(s); }
 }
 
 #endif
