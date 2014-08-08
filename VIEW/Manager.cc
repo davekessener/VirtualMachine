@@ -3,6 +3,7 @@
 #include <set>
 #include <stack>
 #include <algorithm>
+#include <unistd.h>
 #include "Manager.h"
 #include "inc.h"
 #include "GLBuffer.h"
@@ -21,7 +22,7 @@
 #define MXT_WIDTH 1920
 #define MXT_HEIGHT 1080
 #define MXT_STEP 16
-#define MXT_CHARSET "../charset.png"
+#define MXT_CHARSET "./charset.png"
 
 struct Manager::Impl
 {
@@ -148,6 +149,9 @@ void Manager::Impl::do_init(int w, int h)
 				in.close();
 				Manager::instance().pushScreen(Manager::screen_ptr(p));
 			}
+
+			std::string p(fn.substr(0, fn.find_last_of('/') + 1));
+			if(!p.empty()) chdir(p.c_str());
 		});
 	screens_.push(screen_ptr(i));
 }

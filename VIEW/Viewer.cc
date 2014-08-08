@@ -20,6 +20,8 @@ struct Viewer::Impl
 	int sw_, sh_;
 	bool loaded_ = false, scale_ = true;
 
+	svec favs_;
+
 	render_fn getRender( ) const;
 };
 
@@ -196,6 +198,18 @@ void Viewer::i_keyPress(Controls c, const modifier_t& m)
 		case Controls::Q:
 			hide();
 			break;
+		case Controls::F:
+			if(s)
+			{
+				impl_->files_.swap(impl_->favs_);
+				impl_->rand_.clear();
+				impl_->rand_.load(impl_->files_.cbegin(), impl_->files_.cend());
+				next();
+			}
+			else
+			{
+				impl_->favs_.push_back(impl_->rand_.get());
+			}
 		default:
 			break;
 	}

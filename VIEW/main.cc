@@ -48,31 +48,9 @@
 //#include <aux>
 //#include "dav_header.h"
 
-#include <boost/filesystem.hpp>
-#include <algorithm>
-#include <iostream>
-#include <iterator>
-
 int main(int argc, char *argv[])
 {
 	std::vector<std::string> args(argv, argv + argc);
-
-	using namespace boost::filesystem;
-
-	const std::string inp(args.size() > 1 ? args.at(1) : ".");
-	std::string fp(inp.substr(0, inp.find_last_of('/')));
-	if(fp.empty()) fp = "/";
-	path p(fp);
-	std::string f;
-	if(inp != "/") f = inp.substr(inp.find_last_of('/') + 1);
-
-	for(directory_iterator i(p), e ; i != e ; ++i)
-	{
-		std::string fn(i->path().filename().generic_string());
-		if(fn.length() >= f.length() && (f.empty() || fn.substr(0, f.length()) == f)) std::cout << fn << std::endl;
-	}
-
-	return 0;
 
 //	std::ifstream in("list.txt");
 //	dav::dataheader_t h;

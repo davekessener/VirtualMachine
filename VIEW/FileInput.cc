@@ -1,46 +1,38 @@
-#include <vector>
+#include <memory>
 #include "FileInput.h"
+#include "dir.h"
 
 #define MXT_FILEPROMPT "Enter path:"
 
 struct FileInput::Impl
 {
 	bool ready( ) const;
-	void generate(const std::string&);
+	std::string generate(const std::string&);
 	std::string getNext( );
 	void clear( );
 
-	std::string part_;
-	std::vector<std::string> opt_;
-	std::vector<std::string>::const_iterator cur_;
+	std::shared_ptr<dir> dir_;
 };
 
 bool FileInput::Impl::ready(void) const
 {
-	return part_ != "";
+	return static_cast<bool>(dir_);
 }
 
-void FileInput::Impl::generate(const std::string& s)
+std::string FileInput::Impl::generate(const std::string& s)
 {
-	part_ = s;
-	std::string path = s.substr(0, s.find_last_of('/'));
-	if(path.empty()) path = ".";
-	// TODO
+	dir_.reset(new dir(s));
+	return dir_->getBase() + dir_->getBest();
 }
 
 std::string FileInput::Impl::getNext(void)
 {
-	if(opt_.empty()) return part_;
-	std::string r(*cur_);
-	if(++cur_ == opt_.cend()) cur_ = opt_.cbegin();
-	return r;
+	return dir_->getBase() + dir_->getNext();
 }
 
 void FileInput::Impl::clear(void)
 {
-	part_ = "";
-	std::vector<std::string>().swap(opt_);
-	cur_ = opt_.cend();
+	dir_.reset();
 }
 
 void FileInput::i_setScreen(int w, int h)
@@ -53,8 +45,17 @@ void FileInput::i_keyPress(Controls key, const modifier_t& m)
 {
 	if(key == Controls::TAB)
 	{
-		if(!impl_->ready()) impl_->generate(getContent());
-		setString(impl_->getNext());
+		std::string s;
+		if(!impl_->ready())
+		{
+			s = impl_->generate(getContent());
+		}
+		else
+		{
+			s = impl_->getNext();
+		}
+		setString(s);
+		moveCursor(s.length());
 	}
 	else
 	{
