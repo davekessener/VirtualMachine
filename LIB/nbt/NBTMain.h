@@ -9,8 +9,8 @@
 #include <map>
 #include <algorithm>
 #include <cassert>
-#include <string.h>
-#include <GZ/gzstream.h>
+#include <cstring>
+#include <dav/gzstream.h>
 #include "common.h"
 #include "Reader.h"
 #include "Writer.h"

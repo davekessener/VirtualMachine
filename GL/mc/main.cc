@@ -3,9 +3,9 @@
 #include <vector>
 #include <set>
 #include <cmath>
-#include <image/noise.h>
-#include "gl.h"
-#include "sdl.h"
+#include <dav/noise.h>
+#include <dav/gl.h>
+#include <dav/sdl.h>
 #include "simple_bmp.h"
 #include "World.h"
 #include "Frustum.h"
@@ -135,16 +135,16 @@ bool do_update(int d)
 
 	float ox = x_, oy = y_, oz = z_;
 
-	if(pressed(Controls::DOWN))
+	if(pressed(Controls::S))
 	{
 		if(fspeed_ < max_speed) fspeed_ += accel * d;
 	}
-	if(pressed(Controls::UP))
+	if(pressed(Controls::W))
 	{
 		if(fspeed_ > -max_speed) fspeed_ -= accel * d;
 	}
 
-	if(!pressed(Controls::UP) && !pressed(Controls::DOWN))
+	if(!pressed(Controls::W) && !pressed(Controls::S))
 	{
 		fspeed_ = 0.0;
 	}
@@ -155,16 +155,16 @@ bool do_update(int d)
 		z_ += vz_ * fspeed_;
 	}
 
-	if(pressed(Controls::LEFT))
+	if(pressed(Controls::A))
 	{
 		if(sspeed_ < max_speed) sspeed_ += accel * d;
 	}
-	if(pressed(Controls::RIGHT))
+	if(pressed(Controls::D))
 	{
 		if(sspeed_ > -max_speed) sspeed_ -= accel * d;
 	}
 
-	if(!pressed(Controls::LEFT) && !pressed(Controls::RIGHT))
+	if(!pressed(Controls::A) && !pressed(Controls::D))
 	{
 		sspeed_ = 0.0;
 	}
@@ -174,16 +174,16 @@ bool do_update(int d)
 		z_ += sz_ * sspeed_;
 	}
 
-	if(pressed(Controls::DESCEND))
+	if(pressed(Controls::Q))
 	{
 		if(vspeed_ < max_speed) vspeed_ += accel * d;
 	}
-	if(pressed(Controls::ASCEND))
+	if(pressed(Controls::E))
 	{
 		if(vspeed_ > -max_speed) vspeed_ -= accel * d;
 	}
 
-	if(!pressed(Controls::ASCEND) && !pressed(Controls::DESCEND))
+	if(!pressed(Controls::E) && !pressed(Controls::Q))
 	{
 		vspeed_ = 0.0;
 	}

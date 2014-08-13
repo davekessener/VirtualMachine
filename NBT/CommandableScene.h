@@ -39,6 +39,7 @@ class CommandableScene : public Scene
 		bool isSuitable(int);
 		std::vector<std::string> processCommand(const std::string&);
 		void command(const std::string&, bool = true);
+	private:
 		std::map<int, std::pair<std::string, bool>> keymap;
 		std::map<std::string, commandFn_t> cmdmap;
 		std::stack<std::string> history;

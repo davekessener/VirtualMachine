@@ -1,14 +1,19 @@
 CC=g++-4.7
 SDLCFLAGS=$(shell sdl2-config --cflags)
-SDLLIBS=$(shell sdl2-config --libs)
 PNGCFLAGS=$(shell libpng16-config --cflags)
+
 PNGLIBS=$(shell libpng16-config --ldflags)
-CFLAGS=-std=c++0x -O0 -Wall -Wl,--no-as-needed -ggdb -DDEBUG $(SDLCFLAGS) $(PNGCFLAGS)
+SDLLIBS=$(shell sdl2-config --libs)
 GLLIBS=-lGL -lglut
 BOOSTLIBS=-lboost_system -lboost_filesystem
+DAVLIBS=-ldav_gz -ldav_gl -ldav_sdl
+
 LIBDIRS=-L/home/dave/include/lib
 INCDIRS=-I. -I/home/dave/include 
-LIBS=$(LIBDIRS) $(SDLLIBS) $(PNGLIBS) $(GLLIBS) $(BOOSTLIBS) -lSDL2_image -lSDL2_ttf -lpthread -lz
+
+CFLAGS=-std=c++0x -O0 -Wall -Wl,--no-as-needed -ggdb -DDEBUG $(SDLCFLAGS) $(PNGCFLAGS)
+LIBS=$(DAVLIBS) $(SDLLIBS) $(PNGLIBS) $(GLLIBS) $(BOOSTLIBS) -lSDL2_image -lSDL2_ttf -lpthread -lz
+
 SRC=$(wildcard *.cc)
 OBJ=$(SRC:.cc=.o)
 HEADERS=$(wildcard *.h)
@@ -29,13 +34,13 @@ TARGET=view
 all: makefile $(TARGET) convert generate
 
 $(TARGET): logs $(SUBS) $(OBJ)
-	$(CC) $(OBJ) -Wl,--start-group $(shell find -maxdepth 1 -name "*.a") -Wl,--end-group -o $(TARGET) $(LIBS)
+	$(CC) $(OBJ) -Wl,--start-group $(shell find -maxdepth 1 -name "*.a") -Wl,--end-group $(LIBDIRS) -o $(TARGET) $(LIBS)
 
 convert: convert.cpp
-	$(CC) $(CFLAGS) -I. -I/home/dave/include convert.cpp libgz.a -o convert -lz
+	$(CC) $(CFLAGS) $(INCDIRS) $(LIBDIRS) convert.cpp -o convert -ldav_gz -lz
 
 generate: generate.cpp
-	$(CC) $(CFLAGS) $(INCDIRS) generate.cpp -o generate
+	$(CC) $(CFLAGS) $(INCDIRS) $(LIBDIRS) generate.cpp -o generate
 
 .PHONY: logs clean
 

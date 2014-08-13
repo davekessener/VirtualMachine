@@ -1,4 +1,4 @@
-#include <NBT/NBT.h>
+#include <nbt/NBT.h>
 #include <Misc/SDLException.h>
 #include <iostream>
 #include <vector>

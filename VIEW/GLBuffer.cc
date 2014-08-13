@@ -1,7 +1,7 @@
 #include <vector>
 #include <cassert>
 #include "GLBuffer.h"
-#include "gl.h"
+#include <dav/gl.h>
 
 GLBuffer::GLBuffer(void) : id_(0), w_(0), h_(0), pp_(0)
 {
@@ -38,7 +38,7 @@ void GLBuffer::set(const BYTE *data, int width, int height)
 
 	if(!hasTexture(pp_))
 	{
-		id_ = gl::create_texture(&*buf.cbegin(), pp_, pp_);
+		id_ = gl::create_texture(&*buf.cbegin(), pp_, pp_, gl::RGB, gl::LINEAR);
 
 		tex_[pp_] = id_;
 	}

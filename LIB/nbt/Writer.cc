@@ -1,8 +1,10 @@
 #define WRITER_IMP
 #include "Writer.h"
 #undef WRITER_IMP
-
-#define __WRITER_DEBUG
+#include <fstream>
+#include <cassert>
+#include <cstdio>
+#include <cstring>
 
 namespace nbt
 {
@@ -13,7 +15,7 @@ namespace nbt
 
 		os.write(d, n);
 
-#ifndef __WRITER_DEBUG
+#ifdef DEBUG
 		BYTE *_b = new BYTE[n];
 		memcpy(_b, d, n);
 		fprintf(stderr, "%% Wrote (%d): ", (int) n);
@@ -28,7 +30,7 @@ namespace nbt
 	{
 		assert(d);
 
-#ifndef __WRITER_DEBUG
+#ifdef DEBUG
 		BYTE *_b = new BYTE[n];
 		memcpy(_b, d, n);
 		fprintf(stderr, "%% Wrote (%d): ", (int) n);

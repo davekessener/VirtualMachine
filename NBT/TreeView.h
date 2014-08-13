@@ -3,9 +3,6 @@
 
 #include "Node.h"
 
-#ifdef TREEVIEW_MAIN
-#endif
-
 class TreeView
 {
 	typedef Node::Node_ptr_t Node_ptr_t;

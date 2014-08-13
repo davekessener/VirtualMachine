@@ -6,22 +6,23 @@ namespace gl
 {
 	void d_gluPerspective(GLfloat fovY, GLfloat aspect, GLfloat zNear, GLfloat zFar);
 
-	DWORD create_texture(const BYTE *data, int w, int h, int pixel)
+	DWORD create_texture(const void *data, int w, int h, int pixel, int filter)
 	{
     	GLuint object;
+		GLuint f = filter == NEAR ? GL_NEAREST : GL_LINEAR;
 
 		glGenTextures(1, &object);
     	glBindTexture(GL_TEXTURE_2D, object);
-    	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, f);
+    	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, f);
     	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		set_texture(0, data, w, h, pixel);
+		if(data) set_texture(0, data, w, h, pixel);
     	
 		return object;
 	}
 
-	void set_texture(DWORD id, const BYTE *data, int w, int h, int pixel)
+	void set_texture(DWORD id, const void *data, int w, int h, int pixel)
 	{
 		int p(pixel == RGB ? GL_RGB : GL_RGBA);
     	if(id) glBindTexture(GL_TEXTURE_2D, id);
@@ -92,6 +93,11 @@ namespace gl
 		{
     		glBindTexture(GL_TEXTURE_2D, id_ = id);
 		}
+	}
+
+	void color(DWORD c)
+	{
+		glColor3f(((c >> 16) & 0xff) / 255.0, ((c >> 8) & 0xff) / 255.0, (c & 0xff) / 255.0);
 	}
 
 	void color(float r, float g, float b)

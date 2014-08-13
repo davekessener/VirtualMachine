@@ -3,7 +3,7 @@
 
 #include <array>
 #include "inc.h"
-#include "gl.h"
+#include <dav/gl.h>
 
 #define MXT_TESS_BUFSIZE 0x200000
 

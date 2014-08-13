@@ -1,4 +1,6 @@
 #include "FileIO.h"
+#include "Reader.h"
+#include "Writer.h"
 
 namespace nbt
 {

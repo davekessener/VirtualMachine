@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 #include <cassert>
-#include <NBT/NBT.h>
+#include <nbt/NBT.h>
 #include <Misc/Logger.h>
 #include "Settings.h"
 

@@ -2,8 +2,6 @@
 #define NBT_FILEIO_H
 
 #include <string>
-#include "Reader.h"
-#include "Writer.h"
 #include "NBTMain.h"
 
 namespace nbt

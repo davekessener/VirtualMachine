@@ -1,14 +1,7 @@
 #ifndef DISPLAY_H
 #define DISPLAY_H
 
-#include <cstdint>
-
-#ifdef NULL
-#undef NULL
-#endif
-
-#define NULL nullptr
-#define NULL_t decltype(nullptr)
+#include <dav/inc.h>
 
 namespace display
 {

@@ -17,13 +17,13 @@ namespace sdl
 		SDL_SetRelativeMouseMode(trapped ? SDL_TRUE : SDL_FALSE);
 	}
 
-	void start(const char *wn, int w, int h)
+	void start(const char *wn, int w, int h, bool full)
 	{
     	SDL_Init(SDL_INIT_EVERYTHING);
 
 		SDL_Window *win(
 			SDL_CreateWindow(wn, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, w, h, 
-				SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL));
+				(full ? SDL_WINDOW_FULLSCREEN : 0) | SDL_WINDOW_OPENGL));
 		
 		SDL_GL_CreateContext(win);
 

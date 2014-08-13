@@ -5,7 +5,7 @@
 #include <functional>
 #include <memory>
 #include <cassert>
-#include "sdl.h"
+#include <dav/sdl.h>
 
 class Screen
 {

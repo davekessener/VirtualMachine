@@ -1,16 +1,11 @@
 #ifndef NBT_COMMON_H
 #define NBT_COMMON_H
 
-#include <cstdint>
 #include <memory>
+#include <dav/inc.h>
 
 namespace nbt
 {
-	typedef std::uint8_t   BYTE;
-	typedef std::uint16_t  WORD;
-	typedef std::uint32_t DWORD;
-	typedef std::uint64_t QWORD;
-
 	typedef WORD  SHORT;
 	typedef DWORD   INT;
 	typedef QWORD  LONG;

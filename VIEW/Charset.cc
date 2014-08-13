@@ -2,7 +2,7 @@
 #include <SDL2/SDL_opengl.h>
 #include "Charset.h"
 #include "inc.h"
-#include "gl.h"
+#include <dav/gl.h>
 #include "png.h"
 
 struct Charset::Impl

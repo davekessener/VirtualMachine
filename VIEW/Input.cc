@@ -2,7 +2,7 @@
 #include <algorithm>
 #include "Input.h"
 #include "Manager.h"
-#include "gl.h"
+#include <dav/gl.h>
 
 struct Input::Impl
 {

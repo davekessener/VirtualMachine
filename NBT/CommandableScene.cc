@@ -237,7 +237,24 @@ void CommandableScene::command(const std::string& cmd, bool doHistory)
 	}
 	else
 	{
-		setErrorMsg(std::string("Command '") + params.at(0) + "' isn't recognized.");
+		std::string choice;
+		for(const auto& i : cmdmap)
+		{
+			if(i.first.length() >= cmd.length() && i.first.substr(0, cmd.length()) == cmd)
+			{
+				if(!choice.empty()) { choice = ""; break; }
+				else choice = i.first;
+			}
+		}
+
+		if(!choice.empty())
+		{
+			cmdmap.at(choice)(params);
+		}
+		else
+		{
+			setErrorMsg(std::string("Command '") + params.at(0) + "' isn't recognized.");
+		}
 	}
 }
 

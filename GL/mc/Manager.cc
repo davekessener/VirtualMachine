@@ -2,7 +2,7 @@
 #include <memory>
 #include <cassert>
 #include "Manager.h"
-#include "gl.h"
+#include <dav/gl.h>
 #include "simple_bmp.h"
 #include "Block.h"
 #include "BlockGrass.h"
@@ -35,7 +35,7 @@ Manager::img_t Manager::loadTexture(const std::string& fn)
 	using lib::img::simple::read_simple_bmp;
 
 	image img(read_simple_bmp(fn));
-	DWORD id(gl::create_texture(raw(img), img.width, img.height));
+	DWORD id(gl::create_texture(raw(img), img.width, img.height, gl::RGBA, gl::NEAR));
 	img_t r{id, img.width, img.height};
 
 	impl_->imgs_.push_back(r);

@@ -1,13 +1,16 @@
 CC=g++-4.7
+INCDIR=-I$(shell echo ~/include)
+LIBDIR=-L$(shell echo ~/include/lib)
 SDLCFLAGS=$(shell sdl2-config --cflags)
 SDLLIBS=$(shell sdl2-config --libs)
-CFLAGS=-std=c++0x -O0 -Wall -Wl,--no-as-needed -ggdb -DDEBUG $(SDLCFLAGS)
-LIBS=$(SDLLIBS) -lSDL2_image -lSDL2_ttf -lpthread -lz
+DAVLIBS=-ldav_nbt -ldav_gzstream
+CFLAGS=-std=c++0x -O0 -Wall -Wl,--no-as-needed -ggdb -DDEBUG $(INCDIR) $(SDLCFLAGS)
+LIBS=$(LIBDIR) $(DAVLIBS) $(SDLLIBS) -lSDL2_image -lSDL2_ttf -lpthread -lz
 SRC=$(wildcard *.cc)
 OBJ=$(SRC:.cc=.o)
 HEADERS=$(wildcard *.h)
 TEMPLATES=$(wildcard *.hpp)
-SUBS=NBT.a GZ.a Surface.a Editor.a Misc.a Overworld.a
+SUBS=Surface.a Editor.a Misc.a Overworld.a
 TARGET=pokemon
 
 %.o: %.cc $(HEADERS) $(TEMPLATES)

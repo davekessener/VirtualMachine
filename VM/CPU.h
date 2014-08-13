@@ -39,6 +39,7 @@ namespace vm
 				virtual ~CPU( );
 				virtual void init( );
 				void execute( );
+				void step( );
 				void reset( );
 				void write(ADDRESS, size_t, const WORD *);
 				void read(ADDRESS, size_t, WORD *);
@@ -51,7 +52,8 @@ namespace vm
 				std::ostream& print(std::ostream&) const;
 				const std::string printOpcodes( ) const;
 				const std::string printRAM(ADDRESS, size_t) const;
-				bool isRunning( ) const { return !isHalted_; }
+				inline bool isRunning( ) const { return !isHalted_; }
+				inline bool isSuspended( ) const { return isSuspended_; }
 				void halt( ) { isHalted_ = true; }
 				void suspend( ) { isSuspended_ = true; }
 				void in(size_t, WORD);

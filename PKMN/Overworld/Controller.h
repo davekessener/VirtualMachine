@@ -10,7 +10,7 @@
 #include <Misc/Logger.h>
 
 #ifdef CONTROLLER_MAIN
-#include <NBT/NBT.h>
+#include <nbt/NBT.h>
 #include <cassert>
 #include "MapRenderer.h"
 #include "OWSpriteRenderer.h"

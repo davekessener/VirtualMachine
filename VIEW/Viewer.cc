@@ -2,7 +2,7 @@
 #include "Viewer.h"
 #include "Randomizer.hpp"
 #include "Image.h"
-#include "sdl.h"
+#include <dav/sdl.h>
 
 #define MXT_STEP 16
 

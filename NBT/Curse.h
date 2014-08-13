@@ -5,12 +5,6 @@
 #include "Display.h"
 #include "Terminal.h"
 
-#ifdef CURSE_MAIN
-#include <cstdlib>
-#include <locale.h>
-#include "NCurse.h"
-#endif
-
 namespace ncurses
 {
 	class Curse : public display::Terminal

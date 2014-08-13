@@ -15,12 +15,11 @@ namespace vm
 		class Periphery
 		{
 			public:
-				Periphery( );
-				virtual ~Periphery( );
+				virtual ~Periphery( ) { }
 				virtual void in(WORD) = 0;
 				virtual WORD out( ) = 0;
 				virtual void step( ) = 0;
-				virtual void link(cpu::CPU&);
+				virtual void link(cpu::CPU& cpu) { cpu_ = &cpu; }
 			protected:
 				cpu::CPU *cpu_;
 		};

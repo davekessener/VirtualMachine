@@ -2,12 +2,8 @@
 #define NBT_READER_H
 
 #include <iostream>
-#include <fstream>
 #include <algorithm>
-#include <assert.h>
-#include <stdio.h>
-#include <string.h>
-#include <GZ/gzstream.h>
+#include <dav/gzstream.h>
 #include "common.h"
 
 namespace nbt

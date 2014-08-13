@@ -100,6 +100,17 @@ namespace editor
 		reg("undo", [this](params_t p_) { if(_map) _map->getContent().undo(); });
 		reg("redo", [this](params_t p_) { if(_map) _map->getContent().redo(); });
 		reg("save", [this](params_t p_) { if(_project) _project->save(); });
+		reg("help", [](params_t p_)
+			{
+				std::cout << "open filename" << std::endl;
+				std::cout << "map mapname - creates testmap, sized 16 x 10" << std::endl;
+				std::cout << "wid id - opens map" << std::endl;
+				std::cout << "setlayer layerid" << std::endl;
+				std::cout << "undo" << std::endl;
+				std::cout << "redo" << std::endl;
+				std::cout << "save" << std::endl;
+				std::cout << "help" << std::endl;
+			});
 	}
 	
 	int Editor::run(int argc, char *argv[])

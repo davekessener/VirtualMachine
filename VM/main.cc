@@ -7,31 +7,45 @@
 #include "CPU.h"
 #include "Instruction.h"
 #include "Processor.h"
-#include "Screen.h"
-#include "Image.h"
-#include "SDLException.h"
+//#include "Image.h"
+//#include "SDLException.h"
 #include "Logger.h"
 #include "Timer.h"
+#include "Screen.h"
+#include <dav/sdl.h>
+#include <dav/gl.h>
+
+#define MXT_P 4
 
 class BR
 {
 	public:
-		BR(const std::string&);
 		~BR( ) throw();
-		inline operator vm::WORD *( ) { return c_; }
+		void load(const std::string&);
+		inline operator WORD *( ) { return c_; }
 		inline int length( ) { return l_; }
 	private:
-		vm::WORD *c_;
+		WORD *c_;
 		int l_;
 };
 
+typedef unsigned int uint;
+void do_init(int, int);
+bool do_update(int);
+void do_keyboard(::sdl::Controls, bool);
+void do_mouse(uint, uint, int, int);
+
 void print_opcodes(const std::string&);
+
+vm::cpu::Processor p;
+BR boot;
+Timer t;
 
 int main(int argc, char *argv[])
 {
 	using namespace vm;
 	using namespace cpu;
-	using namespace sdl;
+	using namespace vga;
 
 	std::vector<std::string> args(argv, argv + argc);
 
@@ -43,25 +57,15 @@ int main(int argc, char *argv[])
 
 	assert(args.size() > 1);
 
-	Screen &s = Screen::instance();
-	Processor p;
-	BR boot(args[1]);
-	Timer t;
+//	Screen &s = Screen::instance();
 
-	p.init();
-	p.reset();
-	p.write(0, boot.length(), boot);
+	boot.load(argv[1]);
 
-	while(p.isRunning())
-	{
-		t.reset();
-		while(t.elapsed() < 16)
-		{
-			p.execute();
-		}
-		s.update();
-		s.refresh();
-	}
+	::sdl::set_init(&do_init);
+	::sdl::set_update(&do_update);
+	::sdl::set_input(&do_keyboard, &do_mouse);
+
+	::sdl::start("CPU", COLS * CHAR_SIZE, ROWS * (CHAR_SIZE + MXT_P));
 
 	std::ostringstream oss;
 	oss << p << std::endl 
@@ -71,6 +75,50 @@ int main(int argc, char *argv[])
 	Logger::log(oss.str());
 
 	return 0;
+}
+
+void do_init(int w, int h)
+{
+	gl::init2d(w, h);
+
+	p.init();
+	p.reset();
+	p.write(0, boot.length(), boot);
+}
+
+bool do_update(int d)
+{
+	t.reset();
+	const int DELTA = 1000 / 60; // 1 / FPS = T per frame
+	while(t.elapsed() < DELTA && !p.isSuspended())
+	{
+		for(int i = 16 ; i ; --i)
+		{
+			p.execute();
+		}
+	}
+	p.step();
+
+	gl::start_draw();
+	
+	vm::sdl::Screen::instance().render();
+	
+	gl::update();
+
+	return p.isRunning();
+}
+
+void do_keyboard(::sdl::Controls c, bool down)
+{
+	if(down)
+	{
+		if(c == ::sdl::Controls::ESCAPE) p.halt();
+		vm::sdl::Screen::instance().pressKey(c);
+	}
+}
+
+void do_mouse(uint x, uint y, int dx, int dy)
+{
 }
 
 void print_opcodes(const std::string& fn)
@@ -86,7 +134,7 @@ void print_opcodes(const std::string& fn)
 	}
 }
 
-BR::BR(const std::string& fn)
+void BR::load(const std::string& fn)
 {
 	std::ifstream in(fn.c_str(), std::ios::in | std::ios::binary);
 
@@ -96,7 +144,7 @@ BR::BR(const std::string& fn)
 	l_ = in.tellg();
 	in.seekg(0, std::ios_base::beg);
 
-	c_ = new vm::WORD[l_ / 2];
+	c_ = new WORD[l_ / 2];
 
 	in.read(reinterpret_cast<char *>(c_), l_);
 	l_ /= 2;

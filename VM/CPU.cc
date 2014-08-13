@@ -33,14 +33,9 @@ void CPU::execute(void)
 {
 	if(isHalted_) return;
 
-	for(auto i : peripheries_)
-	{
-		i->step();
-	}
-
 	if(isSuspended_)
 	{
-		t_.keepRate(MXT_FRAMERATE);
+//		t_.keepRate(MXT_FRAMERATE);
 		return;
 	}
 
@@ -56,6 +51,14 @@ void CPU::execute(void)
 	}
 
 	if(interrupt_ == Interrupt::RUNNING) interrupt_ = Interrupt::ENABLED;
+}
+
+void CPU::step(void)
+{
+	for(auto i : peripheries_)
+	{
+		i->step();
+	}
 }
 
 void CPU::reset(void)

@@ -1,6 +1,7 @@
-#define CURSE_MAIN
+#include <cstdlib>
+#include <locale.h>
 #include "Curse.h"
-#undef CURSE_MAIN
+#include "NCurse.h"
 
 namespace ncurses
 {
@@ -15,7 +16,9 @@ namespace ncurses
 	void Curse::init(void)
 	{
 		if(getenv("ESCDELAY") == NULL)
+		{
 			set_escdelay(25);
+		}
 		setlocale(LC_ALL, "");
 		initscr();
 		keypad();

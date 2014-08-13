@@ -1,7 +1,7 @@
 #include <vector>
 #include "Dialog.h"
 #include "Manager.h"
-#include "gl.h"
+#include <dav/gl.h>
 
 class MsgRenderer
 {

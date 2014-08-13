@@ -1,8 +1,8 @@
 #ifndef NODE_H
 #define NODE_H
 
-#ifdef NODE_MAIN
-#endif
+#include <vector>
+#include <memory>
 
 class Node
 {

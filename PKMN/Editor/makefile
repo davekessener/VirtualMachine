@@ -1,5 +1,6 @@
 CC=g++-4.7
-CFLAGS=-std=c++0x -O0 -Wl,--no-as-needed $(shell sdl2-config --cflags)
+INCDIR=-I$(shell echo $$HOME)/include
+CFLAGS=-std=c++0x -O0 -Wl,--no-as-needed $(shell sdl2-config --cflags) $(INCDIR)
 DEBUG=-ggdb -DDEBUG
 SRC=$(wildcard *.cc)
 OBJ=$(SRC:.cc=.o)

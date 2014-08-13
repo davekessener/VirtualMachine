@@ -15,8 +15,8 @@
 #include "Password.h"
 #include "FileInput.h"
 #include "Header.h"
-#include "gl.h"
-#include "sdl.h"
+#include <dav/gl.h>
+#include <dav/sdl.h>
 
 #define MXT_WINDOWNAME "DaViewer"
 #define MXT_WIDTH 1920
@@ -63,7 +63,7 @@ int Manager::run(const std::vector<std::string>& args)
 	sdl::set_input( [this](Controls c, bool p){ impl_->do_keyboard(c, p); },
 				    [this](uint x, uint y, int dx, int dy){ impl_->do_mouse(x, y, dx, dy); });
 
-	sdl::start(MXT_WINDOWNAME, MXT_WIDTH, MXT_HEIGHT);
+	sdl::start(MXT_WINDOWNAME, MXT_WIDTH, MXT_HEIGHT, true);
 
 	return 0;
 }

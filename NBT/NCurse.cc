@@ -1,6 +1,23 @@
-#define NCURSE_MAIN
 #include "NCurse.h"
-#undef NCURSE_MAIN
+
+#include <string>
+#include <cstdlib>
+#include <cstring>
+#include <ncurses.h>
+
+#define WPRINT_BUFSIZE 2048
+
+#undef getyx
+#undef getmaxyx
+#undef clrtoeol
+#undef getch
+#undef getstr
+#undef getnstr
+#undef addwstr
+#undef addstr
+#undef timeout
+#undef erase
+#undef chgat
 
 namespace ncurses
 {
@@ -156,14 +173,12 @@ namespace ncurses
 	
 	void clearRect(int x1, int y1, int x2, int y2)
 	{
-		char *s = static_cast<char *>(malloc(x2 - x1 + 1));
-		memset(s, ' ', x2 - x1);
-		s[x2 - x1] = '\0';
+		std::string s(x2 - x1, ' ');
 	
 		for(int y = y1 ; y < y2 ; ++y)
 		{
 			move(y, x1);
-			addstr(s);
+			addstr(s.c_str());
 		}
 	}
 	

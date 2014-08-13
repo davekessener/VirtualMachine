@@ -1,8 +1,10 @@
 #define READER_IMP
 #include "Reader.h"
 #undef READER_IMP
-
-#define __READER_DEBUG
+#include <fstream>
+#include <cassert>
+#include <cstdio>
+#include <cstring>
 
 namespace nbt
 {
@@ -13,7 +15,7 @@ namespace nbt
 
 		is.read(d, n);
 
-#ifndef __READER_DEBUG
+#ifdef DEBUG
 		BYTE *_b = new BYTE[n];
 		memcpy(_b, d, n); 
 		fprintf(stderr, "%% Read (%d): ", (int) n);
@@ -28,14 +30,14 @@ namespace nbt
 	{
 		assert(d);
 
-#ifndef __READER_DEBUG
+#ifdef DEBUG
 		char *_d = d;
 		int _n = (int) n;
 #endif
 
 		while(n--) is.get(*d++);
 
-#ifndef __READER_DEBUG
+#ifdef DEBUG
 		BYTE *_b = new BYTE[_n];
 		memcpy(_b, _d, _n); 
 		fprintf(stderr, "%% Read (%d): ", _n);

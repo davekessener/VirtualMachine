@@ -3,7 +3,7 @@ SDLCFLAGS=$(shell sdl2-config --cflags)
 SDLLIBS=$(shell sdl2-config --libs)
 CFLAGS=-std=c++0x -O4 -Wall -Wl,--no-as-needed -DDEBUG $(SDLCFLAGS)
 GLLIBS=-lGL -lglut
-LIBS=$(SDLLIBS) $(GLLIBS) -lSDL2_image -lSDL2_ttf -lpthread -lz
+LIBS=-L/home/dave/include/lib -ldav_noise -ldav_gl -ldav_sdl $(SDLLIBS) $(GLLIBS) -lSDL2_image -lSDL2_ttf -lpthread -lz
 SRC=$(wildcard *.cc)
 OBJ=$(SRC:.cc=.o)
 HEADERS=$(wildcard *.h)

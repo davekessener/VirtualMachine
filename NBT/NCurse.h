@@ -2,26 +2,7 @@
 #define NCURSE_H
 
 #include <cstdint>
-
-#ifdef NCURSE_MAIN
-#include <cstdlib>
-#include <cstring>
-#include <ncurses.h>
-
-#define WPRINT_BUFSIZE 2048
-
-#undef getyx
-#undef getmaxyx
-#undef clrtoeol
-#undef getch
-#undef getstr
-#undef getnstr
-#undef addwstr
-#undef addstr
-#undef timeout
-#undef erase
-#undef chgat
-#endif
+#include <cstdarg>
 
 namespace ncurses
 {
