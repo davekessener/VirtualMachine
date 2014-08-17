@@ -5,7 +5,7 @@
 #include "ddef.h"
 #include "Periphery.h"
 //#include "Image.h"
-#include "Timer.h"
+#include <dav/Timer.h>
 
 namespace vm
 {
@@ -32,7 +32,7 @@ namespace vm
 				DWORD palette_[16];
 				DWORD ipalette_[16];
 				const WORD *vidmem_;
-				Timer t_;
+				dav::Timer t_;
 		};
 	}
 }

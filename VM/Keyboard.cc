@@ -1,7 +1,9 @@
 #include "Keyboard.h"
 #include "Screen.h"
-#include "Logger.h"
+#include <dav/Logger.h>
 #include "CPU.h"
+
+using namespace dav;
 
 namespace vm { namespace periphery {
 

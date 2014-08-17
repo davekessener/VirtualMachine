@@ -5,7 +5,7 @@
 #include <vector>
 #include <iostream>
 #include "ddef.h"
-#include "Timer.h"
+#include <dav/Timer.h>
 
 namespace vm
 {
@@ -75,7 +75,7 @@ namespace vm
 				peripheries_t peripheries_;
 				bool isHalted_, isSuspended_;
 				Interrupt interrupt_;
-				Timer t_;
+				dav::Timer t_;
 
 			private:
 				CPU(const CPU&);

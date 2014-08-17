@@ -11,6 +11,8 @@
 #include "Frustum.h"
 #include "Manager.h"
 
+using namespace dav;
+
 static const int SCREEN_WIDTH = 1240;
 static const int SCREEN_HEIGHT = 720;
 static const int WWIDTH = 1000, WHEIGHT = 100, WLENGTH = 1000;
@@ -234,7 +236,7 @@ void mmotion(unsigned int x, unsigned int y, int dx, int dy)
 
 void populateWorld(void)
 {
-	lib::aux::Noise noise(0x64);
+	Noise noise(0x64);
 
 	world_ = World(WWIDTH, WHEIGHT, WLENGTH);
 

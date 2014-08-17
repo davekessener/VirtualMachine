@@ -1,20 +1,12 @@
 #ifndef CMDSCENE_H
 #define CMDSCENE_H
 
-#include <iostream>
+#include <iosfwd>
+#include <string>
 #include <functional>
 #include <map>
 #include <vector>
 #include "Scene.h"
-
-#ifdef CMDSCENE_MAIN
-#include <sstream>
-#include <cstring>
-#include "Terminal.h"
-#include "Logger.h"
-
-#define STD_BUFSIZE 256
-#endif
 
 class CommandableScene : public Scene
 {

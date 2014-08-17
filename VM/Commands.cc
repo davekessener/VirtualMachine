@@ -1,8 +1,10 @@
 #include "Commands.h"
 #include "CPU.h"
-#include "Logger.h"
+#include <dav/Logger.h>
 
 #define MXT_PC 15
+
+using namespace dav;
 
 namespace vm { namespace cpu {
 

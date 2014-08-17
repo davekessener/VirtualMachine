@@ -1,12 +1,11 @@
 CC=g++-4.7
 SDLCFLAGS=$(shell sdl2-config --cflags)
 PNGCFLAGS=$(shell libpng16-config --cflags)
-
 PNGLIBS=$(shell libpng16-config --ldflags)
 SDLLIBS=$(shell sdl2-config --libs)
 GLLIBS=-lGL -lglut
 BOOSTLIBS=-lboost_system -lboost_filesystem
-DAVLIBS=-ldav_gz -ldav_gl -ldav_sdl
+DAVLIBS=-Wl,--start-group -ldav_gzstream -ldav_gl -ldav_sdl -ldav_Timer -ldav_Logger -Wl,--end-group
 
 LIBDIRS=-L/home/dave/include/lib
 INCDIRS=-I. -I/home/dave/include 

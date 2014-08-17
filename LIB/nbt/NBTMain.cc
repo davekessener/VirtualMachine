@@ -2,6 +2,8 @@
 #include "NBTMain.h"
 #undef NBT_IMP
 
+using namespace dav;
+
 namespace nbt
 {
 // # ===========================================================================

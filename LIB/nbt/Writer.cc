@@ -6,6 +6,8 @@
 #include <cstdio>
 #include <cstring>
 
+using namespace dav;
+
 namespace nbt
 {
 	template<>

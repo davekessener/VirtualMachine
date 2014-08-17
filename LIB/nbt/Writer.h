@@ -48,11 +48,11 @@ namespace nbt
 
 #ifndef WRITER_IMP
 	extern template class nbt_writer<std::ostream>;
-	extern template class nbt_writer<gzip::ogzstream>;
+	extern template class nbt_writer<dav::gzip::ogzstream>;
 #endif
 
 	typedef nbt_writer<std::ostream> nbt_std_writer;
-	typedef nbt_writer<gzip::ogzstream> nbt_gzip_writer;
+	typedef nbt_writer<dav::gzip::ogzstream> nbt_gzip_writer;
 
 	typedef basic_nbt_writer nbtostream;
 }

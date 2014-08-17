@@ -27,9 +27,10 @@ class InputField
 	private:
 		void resize(int = -1);
 		bool isSuitable(int);
-		int x, y, l, pos;
-		char *_buf;
-		int _i, _idx, _l;
+	private:
+		int x_, y_, l_, pos_;
+		char *buf_;
+		int i_, idx_, len_;
 };
 
 #endif

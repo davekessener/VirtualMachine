@@ -1,12 +1,14 @@
 #include <cassert>
 #include "VGA.h"
-#include "Logger.h"
+#include <dav/Logger.h>
 #include "CPU.h"
 #include "Screen.h"
 #include <dav/gl.h>
 #include <png/png.hpp>
 
 #define MXT_CHARSET "./charset.png"
+
+using namespace dav;
 
 namespace vm { namespace periphery {
 

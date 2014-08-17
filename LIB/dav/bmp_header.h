@@ -3,7 +3,7 @@
 
 #include <cstdint>
 
-namespace lib
+namespace dav
 {
 	namespace img
 	{

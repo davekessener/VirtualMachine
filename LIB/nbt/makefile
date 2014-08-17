@@ -3,7 +3,7 @@ CFLAGS=-std=c++0x -O3 -Wl,--no-as-needed
 DEBUG=-ggdb -DDEBUG
 SRC=$(wildcard *.cc)
 OBJ=$(SRC:.cc=.o)
-TARGET=libdav_nbt.a
+TARGET=libdav_NBT.a
 
 %.o: %.cc %.h
 	$(CC) -c $(CFLAGS) $(DEBUG) -I.. $< -o $@

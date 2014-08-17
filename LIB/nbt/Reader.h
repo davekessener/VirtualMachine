@@ -51,11 +51,11 @@ namespace nbt
 
 #ifndef READER_IMP
 	extern template class nbt_reader<std::istream>;
-	extern template class nbt_reader<gzip::igzstream>;
+	extern template class nbt_reader<dav::gzip::igzstream>;
 #endif
 
 	typedef nbt_reader<std::istream> nbt_std_reader;
-	typedef nbt_reader<gzip::igzstream> nbt_gzip_reader;
+	typedef nbt_reader<dav::gzip::igzstream> nbt_gzip_reader;
 
 	typedef basic_nbt_reader nbtistream;
 }

@@ -1,22 +1,40 @@
 CC=g++-4.7
-INCDIR=-I$(shell echo ~/include)
-LIBDIR=-L$(shell echo ~/include/lib)
-CFLAGS=-std=c++0x -Wl,--no-as-needed -ggdb -DDEBUG $(INCDIR)
-DAVLIB=-ldav_nbt -ldav_gzstream
-LIBS=$(LIBDIR) $(DAVLIB) -lncursesw -lpthread
+DAVCFLAGS=
+DAVLIBS=-ldav_Logger -ldav_NBT -ldav_gzstream
+GLIBS=-lpthread -lz -lncursesw
+DAVDIR=$(shell echo ~/include)
+INCDIRS=-I$(DAVDIR)
+LIBDIRS=-L$(DAVDIR)/lib
+CFLAGS=-std=c++0x -O0 -Wall -Wl,--no-as-needed -ggdb -DDEBUG $(DAVCFLAGS) $(INCDIRS)
+LIBS=$(LIBDIRS) -Wl,--start-group $(DAVLIBS) $(GLIBS) -Wl,--end-group
 SRC=$(wildcard *.cc)
 OBJ=$(SRC:.cc=.o)
 HEADERS=$(wildcard *.h)
+TEMPLATES=$(wildcard *.hpp)
+SUBS=
 TARGET=nbtedit
 
-%.o: %.cc $(HEADERS)
-	$(CC) -c $(CFLAGS) -I. $< -o $@
+%.o: %.cc $(HEADERS) $(TEMPLATES)
+	$(CC) -c $(CFLAGS) $< -o $@
 
-all: $(TARGET)
+%.a:
+	$(MAKE) -C $(@:.a=)/
+	cp $(@:.a=)/*.a .
 
-$(TARGET): $(OBJ)
-	$(CC) $(OBJ) -o $(TARGET) $(LIBS)
+%.clean:
+	-$(MAKE) -C $(@:.clean=)/ clean
 
-clean:
-	rm -r *.o $(TARGET)
+$(TARGET): logs $(SUBS) $(OBJ)
+	$(CC) $(OBJ) -Wl,--start-group $(shell find -maxdepth 1 -name "*.a") -Wl,--end-group -o $(TARGET) $(LIBS)
+
+.PHONY: logs clean cleanlibs
+
+logs:
+	for file in *.log; do if [ -f "$$file" ]; then mv "$$file" logs/; fi; done
+
+cleanlibs:
+	rm -f *.a
+
+clean: logs $(SUBS:.a=.clean)
+	rm -f *.o $(TARGET)
 

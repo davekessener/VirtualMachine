@@ -10,7 +10,7 @@ typedef uint32_t RGBA;
 
 void test(void)
 {
-	using namespace lib::img;
+	using namespace dav::img;
 
 	bmp_header_t bmp;
 	dib_header_t dib;

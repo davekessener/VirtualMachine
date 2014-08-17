@@ -6,9 +6,11 @@
 #include "CPU.h"
 #include "Instruction.h"
 #include "Periphery.h"
-#include "Logger.h"
+#include <dav/Logger.h>
 
 #define MXT_FRAMERATE 60
+
+using namespace dav;
 
 namespace vm { namespace cpu {
 

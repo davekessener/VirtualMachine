@@ -29,10 +29,10 @@ namespace nbt
 				free(name);
 			}
 			void write(std::ostream&) const;
-			void write(gzip::ogzstream&) const;
+			void write(dav::gzip::ogzstream&) const;
   			void write(const nbtostream&) const;
 			void read(std::istream&);
-			void read(gzip::igzstream&);
+			void read(dav::gzip::igzstream&);
 			void read(const nbtistream&);
 			void setName(const std::string&);
 			std::string getName(void) { return std::string(reinterpret_cast<const char *>(name)); }
@@ -322,7 +322,7 @@ namespace nbt
 	{
 		public:
 			NBT_ptr_t Read(std::istream&);
-			NBT_ptr_t Read(gzip::igzstream&);
+			NBT_ptr_t Read(dav::gzip::igzstream&);
 			NBTBase *Default(BYTE);
 			NBTBase *Read(const nbtistream&);
 			static NBTHelper& Instance( );

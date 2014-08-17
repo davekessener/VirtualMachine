@@ -9,6 +9,8 @@
 
 #define MXT_BLOCKCOUNT 3
 
+using namespace dav;
+
 Manager& Manager::instance(void)
 {
 	static Manager m;

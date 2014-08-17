@@ -2,6 +2,8 @@
 #include "Reader.h"
 #include "Writer.h"
 
+using namespace dav;
+
 namespace nbt
 {
 	TAG_Compound::ptr_t readFile(const std::string& path)

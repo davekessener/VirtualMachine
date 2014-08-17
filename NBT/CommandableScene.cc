@@ -1,6 +1,13 @@
-#define CMDSCENE_MAIN
+#include <iostream>
+#include <sstream>
+#include <cstring>
 #include "CommandableScene.h"
-#undef CMDSCENE_MAIN
+#include "Terminal.h"
+#include <dav/Logger.h>
+
+#define STD_BUFSIZE 256
+
+using namespace dav;
 
 CommandableScene::CommandableScene(void) : _buf(NULL), _i(0), _l(0), _idx(0)
 {
@@ -85,9 +92,9 @@ void CommandableScene::assignKeys(const std::string& cmd, std::initializer_list<
 
 bool CommandableScene::isSuitable(int ch)
 {
-	if(ch >= 'a' && ch <= 'z' ||
-		ch >= 'A' && ch <= 'Z' ||
-		ch >= '0' && ch <= '9')
+	if( (ch >= 'a' && ch <= 'z') ||
+		(ch >= 'A' && ch <= 'Z') ||
+		(ch >= '0' && ch <= '9'))
 		return true;
 
 	const char *s = " `~!@#$%^&*()_+-={}|[]\\;:'\"/?.>,<";

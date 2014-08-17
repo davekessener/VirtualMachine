@@ -9,13 +9,15 @@
 #include "Processor.h"
 //#include "Image.h"
 //#include "SDLException.h"
-#include "Logger.h"
-#include "Timer.h"
+#include <dav/Logger.h>
+#include <dav/Timer.h>
 #include "Screen.h"
 #include <dav/sdl.h>
 #include <dav/gl.h>
 
 #define MXT_P 4
+
+using namespace dav;
 
 class BR
 {
@@ -32,7 +34,7 @@ class BR
 typedef unsigned int uint;
 void do_init(int, int);
 bool do_update(int);
-void do_keyboard(::sdl::Controls, bool);
+void do_keyboard(dav::sdl::Controls, bool);
 void do_mouse(uint, uint, int, int);
 
 void print_opcodes(const std::string&);
@@ -61,11 +63,11 @@ int main(int argc, char *argv[])
 
 	boot.load(argv[1]);
 
-	::sdl::set_init(&do_init);
-	::sdl::set_update(&do_update);
-	::sdl::set_input(&do_keyboard, &do_mouse);
+	dav::sdl::set_init(&do_init);
+	dav::sdl::set_update(&do_update);
+	dav::sdl::set_input(&do_keyboard, &do_mouse);
 
-	::sdl::start("CPU", COLS * CHAR_SIZE, ROWS * (CHAR_SIZE + MXT_P));
+	dav::sdl::start("CPU", COLS * CHAR_SIZE, ROWS * (CHAR_SIZE + MXT_P));
 
 	std::ostringstream oss;
 	oss << p << std::endl 
@@ -108,11 +110,11 @@ bool do_update(int d)
 	return p.isRunning();
 }
 
-void do_keyboard(::sdl::Controls c, bool down)
+void do_keyboard(dav::sdl::Controls c, bool down)
 {
 	if(down)
 	{
-		if(c == ::sdl::Controls::ESCAPE) p.halt();
+		if(c == dav::sdl::Controls::ESCAPE) p.halt();
 		vm::sdl::Screen::instance().pressKey(c);
 	}
 }

@@ -19,7 +19,7 @@ namespace vm
 			public:
 //			typedef std::function<void(void)> quitFn_t;
 			typedef std::function<void(void)> render_fn;
-			typedef ::sdl::Controls Key;
+			typedef dav::sdl::Controls Key;
 
 			public:
 				static Screen& instance( );

@@ -1,9 +1,11 @@
 //#include <SDL_image.h>
 #include <cassert>
 #include "Screen.h"
-#include "Logger.h"
+#include <dav/Logger.h>
 //#include "Image.h"
 //#include "SDLException.h"
+
+using namespace dav;
 
 namespace vm { namespace sdl {
 
