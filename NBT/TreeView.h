@@ -10,6 +10,7 @@ class TreeView
 		~TreeView( ) noexcept;
 		void setRoot(Node_ptr);
 		void render( ) const;
+		void input(int);
 	private:
 		struct Impl;
 		Impl *impl_;

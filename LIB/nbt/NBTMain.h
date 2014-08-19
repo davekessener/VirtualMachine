@@ -258,6 +258,7 @@ namespace nbt
 			NBTTagCompound(std::initializer_list<NBT_ptr_t> v) : Names(*this), Tags(*this) { init("", v); }
 			bool hasTag(const std::string& s) { return map_t::count(s) > 0; }
 			bool empty( ) { return map_t::empty(); }
+			size_t size( ) { return map_t::size(); }
 			NBT_ptr_t getTag(const std::string& s) { return hasTag(s) ? map_t::operator[](s) : NBT_ptr_t(NULL); }
 			template<typename T> std::shared_ptr<T> getTag(const std::string& s) { return std::dynamic_pointer_cast<T>(getTag(s)); }
 			void setTag(const std::string& s, NBT_ptr_t p) { p->setName(s); map_t::operator[](s) = p; }

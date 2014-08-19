@@ -2,10 +2,9 @@
 #define EDITOR_H
 
 #include <functional>
+#include <memory>
 #include "CommandableScene.h"
-
-#ifdef EDITOR_MAIN
-#endif
+#include "TreeView.h"
 
 class Editor : public CommandableScene
 {
@@ -21,6 +20,8 @@ class Editor : public CommandableScene
 		void update(int);
 		void refresh( );
 		void finalize( );
+	private:
+		std::shared_ptr<TreeView> tv_;
 };
 
 #endif

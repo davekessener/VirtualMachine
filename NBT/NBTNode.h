@@ -7,7 +7,7 @@
 class NBTNode : public Node
 {
 	public:
-		explicit NBTNode(nbt::NBT_ptr_t p = nbt::NBT_ptr_t()) : Node() { load(p); }
+		explicit NBTNode(nbt::NBT_ptr_t p = nbt::NBT_ptr_t()) : Node() { if(static_cast<bool>(p)) load(p); }
 		void load(nbt::NBT_ptr_t);
 	private:
 		std::string i_doGetContent( ) const;

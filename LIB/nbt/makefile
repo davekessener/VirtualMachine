@@ -1,6 +1,6 @@
 CC=g++-4.7
 CFLAGS=-std=c++0x -O3 -Wl,--no-as-needed
-DEBUG=-ggdb -DDEBUG
+DEBUG=-ggdb -DNDEBUG
 SRC=$(wildcard *.cc)
 OBJ=$(SRC:.cc=.o)
 TARGET=libdav_NBT.a

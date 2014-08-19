@@ -1,6 +1,7 @@
 #ifndef TERMINAL_H
 #define TERMINAL_H
 
+#include <stack>
 #include <cstdarg>
 #include <cassert>
 #include "Display.h"
@@ -49,8 +50,18 @@ namespace display
 			}
 			inline void saveCursorPos(bool restore = false)
 			{
-				static int x, y;
-				if(restore) setCursorPos(x, y); else getCursorPos(x, y);
+				static std::stack<std::pair<int, int>> save;
+				if(restore)
+				{
+					setCursorPos(save.top().first, save.top().second);
+					save.pop();
+				}
+				else
+				{
+					int x, y;
+					getCursorPos(x, y);
+					save.push(std::make_pair(x, y));
+				}
 			}
 			inline void restoreCursorPos( ) { saveCursorPos(true); }
 		protected:

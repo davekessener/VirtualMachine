@@ -24,6 +24,7 @@ namespace nbt
 			else
 			{
 				in->close();
+				delete in;
 				in = NULL;
 			
 				if(c == 0x1f)
