@@ -306,6 +306,19 @@ namespace dav
 		}
 
 		reverse_.erase(reverse_.find(e));
+
+		if(c_ > MXT_DEFAULTCAP && i_ < c_ / 4)
+		{
+			stable_vector<T> v(0ul, c_ / 2);
+			v.insert(v_, v_ + i_, v.v_);
+			for(size_t j = 0 ; j < i_ ; ++j)
+			{
+				id_t id(reverse_[v_ + j]);
+				v.lookup_[id] = v.v_ + j;
+				v.reverse_[v.v_ + j] = id;
+			}
+			swap(v);
+		}
 	}
 
 	template<typename T>
@@ -337,14 +350,14 @@ namespace dav
 	template<typename T>
 	T& stable_vector<T>::at(int idx)
 	{
-		assert(v_&&idx>=0&&idx<i_);
+		assert(v_&&idx>=0&&idx<(long)i_);
 		return v_[idx];
 	}
 
 	template<typename T>
 	const T& stable_vector<T>::at(int idx) const
 	{
-		assert(v_&&idx>=0&&idx<i_);
+		assert(v_&&idx>=0&&idx<(long)i_);
 		return v_[idx];
 	}
 

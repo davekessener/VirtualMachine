@@ -9,8 +9,10 @@ class NBTNode : public Node
 	public:
 		explicit NBTNode(nbt::NBT_ptr_t p = nbt::NBT_ptr_t()) : Node() { if(static_cast<bool>(p)) load(p); }
 		void load(nbt::NBT_ptr_t);
+		nbt::NBT_ptr_t getTag( ) { return tag_; }
 	private:
 		std::string i_doGetContent( ) const;
+		void i_doErase(Node_ptr);
 	private:
 		nbt::NBT_ptr_t tag_;
 };

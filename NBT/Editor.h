@@ -5,6 +5,7 @@
 #include <memory>
 #include "CommandableScene.h"
 #include "TreeView.h"
+#include "Object.h"
 
 class Editor : public CommandableScene
 {
@@ -22,6 +23,8 @@ class Editor : public CommandableScene
 		void finalize( );
 	private:
 		std::shared_ptr<TreeView> tv_;
+		Object_ptr o_;
+		struct { int x, y, w, h; } winsize_;
 };
 
 #endif

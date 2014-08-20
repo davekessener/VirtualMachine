@@ -27,18 +27,29 @@ void NBTNode::load(nbt::NBT_ptr_t tag)
 
 	LOG("Loaded node with tag-ID %02x", tag->getID());
 
+	auto generate = [this](nbt::NBT_ptr_t nbt) -> Node_ptr
+		{
+			NBTNode *n(new NBTNode);
+			Node_ptr p(n); // <-- IMPORTANT!!!
+
+			n->load(nbt);
+			n->setParent(shared_from_this());
+
+			return p;
+		};
+
 	switch(tag->getID())
 	{
 		case nbt::TAG_List::ID:
 		{
 			nbt::TAG_List::ptr_t p(std::dynamic_pointer_cast<nbt::TAG_List>(tag));
-			for(const auto& t : *p) vec.push_back(Node_ptr(new NBTNode(t)));
+			for(const auto& t : *p) vec.push_back(generate(t));
 			break;
 		}
 		case nbt::TAG_Compound::ID:
 		{
 			nbt::TAG_Compound::ptr_t p(std::dynamic_pointer_cast<nbt::TAG_Compound>(tag));
-			for(const auto& t : p->Tags) vec.push_back(Node_ptr(new NBTNode(t)));
+			for(const auto& t : p->Tags) vec.push_back(generate(t));
 			break;
 		}
 	}
@@ -98,12 +109,37 @@ std::string NBTNode::i_doGetContent(void) const
 	return ss.str();
 }
 
+void NBTNode::i_doErase(Node_ptr p)
+{
+	NBTNode &node(*dynamic_cast<NBTNode *>(&*p));
+
+	switch(tag_->getID())
+	{
+		case nbt::TAG_List::ID:
+		{
+			nbt::TAG_List::ptr_t list = std::dynamic_pointer_cast<nbt::TAG_List>(tag_);
+			list->removeTag(node.tag_);
+			break;
+		}
+		case nbt::TAG_Compound::ID:
+		{
+			nbt::TAG_Compound::ptr_t nbttagcompound = std::dynamic_pointer_cast<nbt::TAG_Compound>(tag_);
+			nbttagcompound->removeTag(node.tag_->getName());
+			break;
+		}
+	}
+}
+
 namespace
 {
+	template<typename T> struct traits { typedef long display_type; };
+	template<> struct traits<float> { typedef double display_type; };
+	template<> struct traits<double> { typedef double display_type; };
+
 	template<BYTE ID, typename T>
 	void printTag(std::shared_ptr<nbt::NBTSimple<ID, T>> tag, std::stringstream& ss)
 	{
-		ss << (long)tag->get();
+		ss << static_cast<typename traits<T>::display_type>(tag->get());
 	}
 
 	template<BYTE ID, typename T1, typename T2>

@@ -1,6 +1,8 @@
 #include <stack>
+#include <functional>
 #include "TreeView.h"
 #include "Terminal.h"
+#include "Node.h"
 #include <dav/Logger.h>
 
 #define MXT_TABSTOP 4
@@ -9,54 +11,44 @@ using display::Terminal;
 
 struct TreeView::Impl
 {
-	typedef Node::iterator iter;
-	struct Branch
-	{
-		inline Branch(Node_ptr p) : node(p), i(p->begin()) { }
-		inline Branch(Node_ptr p, iter j) : node(p), i(j) { }
-
-		Node_ptr node;
-		iter i;
-	};
-	typedef std::stack<Branch> nstack_t;
-
-	void display( ) const { int y(y1_); display(root_, x1_, y); }
+	void display( ) const { int y(y1_ + dy_); display(root_, x1_ + dx_, y); }
 	void display(Node_ptr, int, int&) const;
 	void initPos( );
 	void up( );
 	void down( );
+	void in( );
+	void out( );
 	void erase( );
-	Node_ptr cur( ) { return cur_.nodes.empty() ? root_ : *cur_.nodes.top().i; }
-	inline bool isEnd(Branch& b) { iter i(b.i); return ++i == b.node->end(); }
+	Node_ptr cur( ) { return static_cast<bool>(current_) ? current_->current() : root_; }
+	void recalculate( );
+	int calcHeight( ) const;
 
 	int x1_, y1_, x2_, y2_;
-	Node_ptr root_;
-	struct
-	{
-		nstack_t nodes;
-		int y, x;
-	} cur_;
+	int dx_, dy_;
+	Object_ptr obj_;
+	Node_ptr root_, current_;
+	struct { int x, y; } pos_;
 };
 
-TreeView::TreeView(int x, int y, int w, int h) : impl_(new Impl)
+TreeView::TreeView(int x, int y, int w, int h, Object_ptr o) : impl_(new Impl)
 {
 	impl_->x1_ = x;
 	impl_->y1_ = y;
 	impl_->x2_ = x + w;
 	impl_->y2_ = y + h;
+	impl_->dx_ = 0;
+	impl_->dy_ = 0;
+	impl_->obj_ = o;
+	impl_->root_ = o->get();
 
 	assert(x>=0&&y>=0&&w>0&&h>0);
+
+	impl_->initPos();
 }
 
 TreeView::~TreeView(void) noexcept
 {
 	delete impl_;
-}
-
-void TreeView::setRoot(Node_ptr p)
-{
-	impl_->root_ = p;
-	impl_->initPos();
 }
 
 void TreeView::render(void) const
@@ -65,7 +57,9 @@ void TreeView::render(void) const
 
 	impl_->display();
 
-	Terminal::instance().setCursorPos(impl_->cur_.x, impl_->cur_.y);
+	Terminal::instance().setCursorPos(
+		impl_->x1_ + impl_->dx_ + impl_->pos_.x * MXT_TABSTOP + 1,
+		impl_->y1_ + impl_->dy_ + impl_->pos_.y);
 }
 
 void TreeView::input(int in)
@@ -79,11 +73,12 @@ void TreeView::input(int in)
 			impl_->down();
 			break;
 		case 'a':
-			impl_->cur()->close();
+			impl_->out();
 			break;
 		case 'd':
-			impl_->cur()->open();
+			impl_->in();
 			break;
+		case ' ':
 		case '\n':
 			impl_->cur()->toggle();
 			break;
@@ -91,91 +86,117 @@ void TreeView::input(int in)
 			impl_->erase();
 			break;
 	}
+
+	impl_->recalculate();
+}
+
+namespace
+{
+	bool addPosIn(Node_ptr p, Node_ptr e, int& x, int& y)
+	{
+		if(p == e) return false;
+		
+		++y;
+
+		if(!p->hasChildren() || !p->isOpen()) return true;
+
+		++x;
+		
+		for(Node_ptr i : *p)
+		{
+			if(!addPosIn(i, e, x, y)) return false;
+		}
+
+		--x;
+
+		return true;
+	}
+}
+
+void TreeView::Impl::recalculate(void)
+{
+	pos_.x = 1;
+	pos_.y = 0;
+
+	addPosIn(root_, cur(), pos_.x, pos_.y);
+
+	int w = x2_ - x1_, h = y2_ - y1_, mh = calcHeight();
+	if(pos_.y + dy_ >= h)
+	{
+		dy_ = h - pos_.y - h / 4;
+		if(dy_ < -mh + h) dy_ = -mh + h;
+	}
+	else if(pos_.y + dy_ < 0)
+	{
+		dy_ = -pos_.y + h / 4;
+		if(dy_ > 0) dy_ = 0;
+	}
+}
+
+int TreeView::Impl::calcHeight(void) const
+{
+	std::function<int(Node_ptr)> calc = [&calc](Node_ptr p) -> int
+		{
+			int h = 1;
+			if(p->hasChildren() && p->isOpen())
+			{
+				for(Node_ptr pp : *p)
+				{
+					h += calc(pp);
+				}
+			}
+			return h;
+		};
+	
+	return calc(root_);
 }
 
 void TreeView::Impl::initPos(void)
 {
-	nstack_t().swap(cur_.nodes);
-
-	cur_.x = x1_ + 1;
-	cur_.y = y1_;
+	current_.reset();
+	pos_.x = 1;
+	pos_.y = 0;
 }
 
 void TreeView::Impl::up(void)
 {
-	if(cur_.nodes.empty()) return;
-
-	Branch cur(cur_.nodes.top());
-
-	if(cur.i == cur.node->begin())
+	if(current_)
 	{
-		cur_.nodes.pop();
-		--cur_.y;
-		cur_.x -= MXT_TABSTOP;
+		current_->prev();
 	}
-	else
-	{
-		--cur_.nodes.top().i;
-		--cur_.y;
+}
 
-		cur = cur_.nodes.top();
-		if((*cur.i)->hasChildren() && (*cur.i)->isOpen())
-		{
-			cur_.nodes.push(Branch(*cur.i, (*cur.i)->end()));
-			--cur_.nodes.top().i;
-			cur_.x += MXT_TABSTOP;
-		}
+void TreeView::Impl::out(void)
+{
+	if(current_)
+	{
+		current_ = current_->parent();
 	}
+}
+
+void TreeView::Impl::in(void)
+{
+	Node_ptr c(cur());
+	if(!c->hasChildren()) return;
+	if(!c->isOpen()) c->open();
+	current_ = c;
 }
 
 void TreeView::Impl::down(void)
 {
-	if(cur_.nodes.empty())
+	if(current_)
 	{
-		if(root_->hasChildren() && root_->isOpen())
-		{
-			cur_.nodes.push(Branch(root_));
-			++cur_.y;
-			cur_.x += MXT_TABSTOP;
-		}
-
-		return;
-	}
-
-	Branch cur(cur_.nodes.top());
-
-	if((*cur.i)->hasChildren() && (*cur.i)->isOpen())
-	{
-		cur_.nodes.push(Branch(*cur.i));
-		++cur_.y;
-		cur_.x += MXT_TABSTOP;
-	}
-	else if(isEnd(cur))
-	{
-		cur_.nodes.pop();
-
-		if(!cur_.nodes.empty() && !isEnd(cur_.nodes.top()))
-		{
-			++cur_.nodes.top().i;
-			++cur_.y;
-			cur_.x -= MXT_TABSTOP;
-		}
-		else
-		{
-			cur_.nodes.push(cur);
-		}
-	}
-	else
-	{
-		++cur_.nodes.top().i;
-		++cur_.y;
+		current_->next();
 	}
 }
 
 void TreeView::Impl::erase(void)
 {
-	Branch &cur(cur_.nodes.top());
-	cur.node.eras
+	if(current_)
+	{
+		current_->erase();
+		if(!current_->hasChildren()) out();
+	}
 }
 
 void TreeView::Impl::display(Node_ptr node, int x, int& y) const
@@ -186,19 +207,22 @@ void TreeView::Impl::display(Node_ptr node, int x, int& y) const
 
 	if(node->hasChildren())
 	{
-		p += node->isOpen() ? "[-] " : "[+] ";
+		p += node->isOpen() ? " -  " : " +  ";
 	}
 	else
 	{
-		p += "    ";
+		p += " |  ";
 	}
 
 	p += node->getContent();
 
 	if((long)p.length() > x2_ - x) std::string(p.data(), x2_ - x).swap(p);
 
-	Terminal::instance().setCursorPos(x, y);
-	Terminal::instance().printf("%s", p.data());
+	if(x >= x1_ && y >= y1_)
+	{
+		Terminal::instance().setCursorPos(x, y);
+		Terminal::instance().printf("%s", p.data());
+	}
 
 	if(node->isOpen() && node->hasChildren())
 	{
