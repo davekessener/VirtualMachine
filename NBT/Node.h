@@ -44,7 +44,7 @@ class Node : public std::enable_shared_from_this<Node>
 		bool empty( ) const { return vec_.empty(); }
 		bool hasChildren( ) const { return !vec_.empty(); }
 		void erase(iterator i) { i_doErase(*i); vec_.erase(i); dirty(); }
-		inline void erase( ) { assert(hasChildren()); erase(vec_.begin() + idx_); }
+		inline void erase( ) { assert(hasChildren()); erase(vec_.begin() + idx_); if(!vec_.empty()) while(idx_ >= vec_.size()) --idx_; }
 		Node_ptr parent( ) { return parent_.lock(); }
 		Node_ptr current( ) { assert(hasChildren()); return vec_.at(idx_); }
 		inline int index( ) { return idx_; }

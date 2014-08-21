@@ -1,5 +1,6 @@
 #include "Object.h"
 #include "NBTNode.h"
+#include "FileSystem.h"
 
 Object::Object(void)
 {
@@ -11,7 +12,7 @@ Object::Object(void)
 
 void Object::load(const std::string& fn)
 {
-	fn_ = fn;
+	bck_ = backup(fn_ = fn);
 
 	nbt::NBT_ptr_t tag = nbt::readFile(fn_);
 	
@@ -32,5 +33,28 @@ void Object::save(const std::string& fn)
 	NBTNode &node(*dynamic_cast<NBTNode *>(&*node_));
 
 	nbt::writeFile(fn_, std::dynamic_pointer_cast<nbt::TAG_Compound>(node.getTag()));
+}
+
+void Object::restore(void)
+{
+	if(bck_.empty()) throw std::string("no backup to restore from!");
+	FileSystem::copyFile(bck_, fn_);
+	load(fn_);
+}
+
+void Object::deleteBackup(void)
+{
+	if(!bck_.empty())
+	{
+		FileSystem::removeFile(bck_);
+		bck_ = "";
+	}
+}
+
+std::string Object::backup(const std::string& path) const
+{
+	std::string fn(FileSystem::getPath(path) + "." + FileSystem::getFile(path) + ".bak");
+	FileSystem::copyFile(path, fn);
+	return fn;
 }
 

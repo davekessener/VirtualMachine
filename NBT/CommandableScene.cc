@@ -194,6 +194,9 @@ bool CommandableScene::processInput(int in)
 			command(_buf);
 			endInput();
 			return true;
+		case display::Keys::TAB:
+			// TODO
+			break;
 		default:
 			if(isSuitable(in))
 			{
@@ -239,6 +242,8 @@ void CommandableScene::command(const std::string& cmd, bool doHistory)
 	if(doHistory) history.push(cmd);
 
 	commandFn_t action;
+	bool force = params.at(0).at(params.at(0).length() - 1) == '!';
+	if(force) params.at(0).erase(params.at(0).length() - 1);
 
 	if(cmdmap.count(params.at(0)) > 0)
 	{
@@ -268,7 +273,7 @@ void CommandableScene::command(const std::string& cmd, bool doHistory)
 	{
 		try
 		{
-			action(params);
+			action(params, force);
 		}
 		catch(const std::string& e)
 		{

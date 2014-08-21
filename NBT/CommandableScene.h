@@ -10,7 +10,9 @@
 
 class CommandableScene : public Scene
 {
-	typedef std::function<void(std::vector<std::string>)> commandFn_t;
+	protected:
+	typedef std::function<void(const std::vector<std::string>&, bool)> commandFn_t;
+	typedef std::vector<std::string> params_t;
 
 	public:
 		CommandableScene( );

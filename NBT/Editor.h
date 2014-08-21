@@ -1,14 +1,12 @@
 #ifndef EDITOR_H
 #define EDITOR_H
 
-#include <functional>
-#include <memory>
 #include "CommandableScene.h"
-#include "TreeView.h"
-#include "Object.h"
 
 class Editor : public CommandableScene
 {
+	using CommandableScene::params_t;
+
 	public:
 		Editor( );
 		~Editor( );
@@ -22,9 +20,8 @@ class Editor : public CommandableScene
 		void refresh( );
 		void finalize( );
 	private:
-		std::shared_ptr<TreeView> tv_;
-		Object_ptr o_;
-		struct { int x, y, w, h; } winsize_;
+		struct Impl;
+		Impl *impl_;
 };
 
 #endif
