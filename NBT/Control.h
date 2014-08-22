@@ -6,14 +6,22 @@
 class Control
 {
 	public:
-		inline void render( ) const { i_doRender(); }
-		inline void input(int i) { i_doInput(i); }
+	typedef std::shared_ptr<Control> Control_ptr;
+
+	public:
+		inline void render( ) const { self().i_doRender(); }
+		inline void input(int i) { self().i_doInput(i); }
+		inline void pushControl(Control_ptr c) { self().super_ = c; }
+		inline Control& self( ) { return static_cast<bool>(super_) ? super_->self() : *this; }
+		inline const Control& self( ) const { return static_cast<bool>(super_) ? super_->self() : *this; }
 	private:
 		virtual void i_doRender( ) const = 0;
 		virtual void i_doInput(int) = 0;
+	private:
+		Control_ptr super_;
 };
 
-typedef std::shared_ptr<Control> Control_ptr;
+typedef Control::Control_ptr Control_ptr;
 
 #endif
 

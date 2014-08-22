@@ -222,13 +222,13 @@ namespace nbt
 
 // # ===========================================================================
 
-	NBTBase *NBTHelper::Default(BYTE id)
+	NBTBase *NBTHelper::Default(BYTE id, const std::string& name)
 	{
 		if(!id) return NULL;
 
 		assert(id < 12);
 
-		return cons[id]();
+		return cons[id](name);
 	}
 
 	NBT_ptr_t NBTHelper::Read(std::istream& is)
@@ -268,17 +268,17 @@ namespace nbt
 
 	NBTHelper::NBTHelper(void)
 	{
-		cons[TAG_Byte::ID]       = []()->NBTBase * { return new TAG_Byte; };
-		cons[TAG_Short::ID]      = []()->NBTBase * { return new TAG_Short; };
-		cons[TAG_Int::ID]        = []()->NBTBase * { return new TAG_Int; };
-		cons[TAG_Long::ID]       = []()->NBTBase * { return new TAG_Long; };
-		cons[TAG_Float::ID]      = []()->NBTBase * { return new TAG_Float; };
-		cons[TAG_Double::ID]     = []()->NBTBase * { return new TAG_Double; };
-		cons[TAG_Byte_Array::ID] = []()->NBTBase * { return new TAG_Byte_Array; };
-		cons[TAG_String::ID]     = []()->NBTBase * { return new TAG_String; };
-		cons[TAG_List::ID]       = []()->NBTBase * { return new TAG_List; };
-		cons[TAG_Compound::ID]   = []()->NBTBase * { return new TAG_Compound; };
-		cons[TAG_Int_Array::ID]  = []()->NBTBase * { return new TAG_Int_Array; };
+		cons[TAG_Byte::ID]       = [](const std::string& n)->NBTBase * { return new TAG_Byte(n); };
+		cons[TAG_Short::ID]      = [](const std::string& n)->NBTBase * { return new TAG_Short(n); };
+		cons[TAG_Int::ID]        = [](const std::string& n)->NBTBase * { return new TAG_Int(n); };
+		cons[TAG_Long::ID]       = [](const std::string& n)->NBTBase * { return new TAG_Long(n); };
+		cons[TAG_Float::ID]      = [](const std::string& n)->NBTBase * { return new TAG_Float(n); };
+		cons[TAG_Double::ID]     = [](const std::string& n)->NBTBase * { return new TAG_Double(n); };
+		cons[TAG_Byte_Array::ID] = [](const std::string& n)->NBTBase * { return new TAG_Byte_Array(n); };
+		cons[TAG_String::ID]     = [](const std::string& n)->NBTBase * { return new TAG_String(n); };
+		cons[TAG_List::ID]       = [](const std::string& n)->NBTBase * { return new TAG_List(n); };
+		cons[TAG_Compound::ID]   = [](const std::string& n)->NBTBase * { return new TAG_Compound(n); };
+		cons[TAG_Int_Array::ID]  = [](const std::string& n)->NBTBase * { return new TAG_Int_Array(n); };
 	}
 
 	NBTHelper::~NBTHelper(void)

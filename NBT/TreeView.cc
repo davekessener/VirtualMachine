@@ -2,10 +2,12 @@
 #include <stack>
 #include <functional>
 #include "TreeView.h"
+#include <nbt/NBT.h>
 #include <dav/Logger.h>
 #include <aux>
 #include "Terminal.h"
 #include "Node.h"
+#include "NBTNode.h"
 #include "FileSystem.h"
 #include "ViewBuffer.h"
 
@@ -18,30 +20,39 @@ using display::Terminal;
 struct TreeView::Impl
 {
 	void display( ) const;
-	void display(Node_ptr, int, int&) const;
-	void initPos( );
 	void up( );
 	void down( );
 	void in( );
 	void out( );
 	void expand( );
-	void erase( );
 	Node_ptr cur( ) { return static_cast<bool>(current_) ? current_->current() : root_; }
 	void recalculate( );
 	int calcHeight( ) const;
 	void updateView( );
-	void dirty(bool f = true) { dirty_ = f; }
-	std::string getStatusMsg( ) const;
+	void dirty(bool f = true);
+	const std::string& getStatus( ) const;
 
 	int x1_, y1_, x2_, y2_;
 	int dx_, dy_;
 	Object_ptr obj_;
 	Node_ptr root_, current_;
 	struct { int x, y; } pos_;
-	bool dirty_;
-	std::string status_;
+	bool dirty_, needRecalculate_;
+	mutable struct { bool dirty; std::string msg; } status_;
 	ViewBuffer view_;
 };
+
+void TreeView::Impl::dirty(bool f)
+{
+	if(dirty_ != f) status_.dirty = true;
+	
+	if((dirty_ = f))
+	{
+		if(static_cast<bool>(current_) && !current_->hasChildren()) out();
+		updateView();
+		needRecalculate_ = true;
+	}
+}
 
 // # ===========================================================================
 
@@ -56,10 +67,13 @@ TreeView::TreeView(int x, int y, int w, int h, Object_ptr o) : impl_(new Impl)
 	impl_->obj_ = o;
 	impl_->root_ = o->get();
 	impl_->dirty_ = false;
+	impl_->status_.dirty = true;
+	impl_->needRecalculate_ = true;
 
 	assert(x>=0&&y>=0&&w>0&&h>0);
 
-	impl_->initPos();
+	impl_->recalculate();
+	impl_->updateView();
 }
 
 TreeView::~TreeView(void) noexcept
@@ -72,6 +86,16 @@ bool TreeView::isModified(void) const
 	return impl_->dirty_;
 }
 
+Object_ptr TreeView::getObject(void)
+{
+	return impl_->obj_;
+}
+
+Node_ptr TreeView::getNode(void)
+{
+	return impl_->cur();
+}
+
 void TreeView::modify(bool v)
 {
 	impl_->dirty(v);
@@ -81,7 +105,7 @@ void TreeView::modify(bool v)
 
 void TreeView::i_doRender(void) const
 {
-	if(!static_cast<bool>(impl_->root_)) return;
+	impl_->recalculate();
 
 	impl_->display();
 
@@ -120,12 +144,7 @@ void TreeView::i_doInput(int in)
 		case 'e':
 			impl_->expand();
 			break;
-		case 'x':
-			impl_->erase();
-			break;
 	}
-
-	impl_->recalculate();
 }
 
 // # ===========================================================================
@@ -157,6 +176,8 @@ namespace
 
 void TreeView::Impl::recalculate(void)
 {
+	if(!needRecalculate_) return;
+
 	pos_.x = 1;
 	pos_.y = 0;
 
@@ -185,7 +206,7 @@ void TreeView::Impl::recalculate(void)
 		if(dx_ > 0) dx_ = 0;
 	}
 
-	status_ = getStatusMsg();
+	needRecalculate_ = false;
 }
 
 int TreeView::Impl::calcHeight(void) const
@@ -250,48 +271,46 @@ void TreeView::Impl::updateView(void)
 	view_.update(std::move(vec));
 }
 
-std::string TreeView::Impl::getStatusMsg(void) const
+const std::string& TreeView::Impl::getStatus(void) const
 {
 	using lib::aux::lexical_cast;
 
-	std::stringstream ss;
-
-	ss << obj_->filename() << " ";
-	if(dirty_) ss << "[+] ";
-
+	if(status_.dirty)
 	{
-		size_t s = FileSystem::getFileSize(obj_->filename());
-		const char *a = "BKMGT";
-		int r = 0;
-		while(s > 1024) { r = s % 1024; s /= 1024; ++a; }
-		r = (50 + (1000 * r + 1023) / 1024) / 100;
-		std::string pre = lexical_cast<std::string>(s);
-		std::string post = r ? "." + lexical_cast<std::string>(r) : "";
-		ss << pre << post << *a << " ";
+		std::stringstream ss;
+
+		ss << obj_->filename() << " ";
+		if(dirty_) ss << "[+] ";
+
+		{
+			size_t s = FileSystem::getFileSize(obj_->filename());
+			const char *a = "BKMGT";
+			int r = 0;
+			while(s > 1024) { r = s % 1024; s /= 1024; ++a; }
+			r = (50 + (1000 * r + 1023) / 1024) / 100;
+			std::string pre = lexical_cast<std::string>(s);
+			std::string post = r ? "." + lexical_cast<std::string>(r) : "";
+			ss << pre << post << *a << " ";
+		}
+
+		ss  << (static_cast<bool>(current_) ? current_->index() : 0) 
+			<< "," << (pos_.x - 1);
+
+		status_.msg = ss.str();
+		status_.dirty = false;
 	}
 
-	ss  << (static_cast<bool>(current_) ? current_->index() : 0) 
-		<< "," << (pos_.x - 1);
-
-	return ss.str();
+	return status_.msg;
 }
 
 // # ---------------------------------------------------------------------------
-
-void TreeView::Impl::initPos(void)
-{
-	current_.reset();
-	pos_.x = 1;
-	pos_.y = 0;
-	status_ = getStatusMsg();
-	updateView();
-}
 
 void TreeView::Impl::up(void)
 {
 	if(current_)
 	{
 		current_->prev();
+		needRecalculate_ = true;
 	}
 }
 
@@ -300,6 +319,7 @@ void TreeView::Impl::down(void)
 	if(current_)
 	{
 		current_->next();
+		needRecalculate_ = true;
 	}
 }
 
@@ -309,6 +329,7 @@ void TreeView::Impl::in(void)
 	if(!c->hasChildren()) return;
 	if(!c->isOpen()) { c->open(); updateView(); }
 	current_ = c;
+	needRecalculate_ = true;
 }
 
 void TreeView::Impl::out(void)
@@ -316,6 +337,7 @@ void TreeView::Impl::out(void)
 	if(current_)
 	{
 		current_ = current_->parent();
+		needRecalculate_ = true;
 	}
 }
 
@@ -336,61 +358,105 @@ void TreeView::Impl::expand(void)
 	exp(cur());
 
 	updateView();
+
+	needRecalculate_ = true;
 }
 
-void TreeView::Impl::erase(void)
-{
-	if(current_)
-	{
-		current_->erase();
-		if(!current_->hasChildren()) out();
-		dirty();
-		updateView();
-	}
-}
+//void TreeView::Impl::erase(bool force)
+//{
+//	if(current_)
+//	{
+//		if(!force && current_->current()->hasChildren())
+//		{
+//			throw std::string("node has children. if you are sure, use '!' to override.");
+//		}
+//
+//		current_->erase();
+//		if(!current_->hasChildren()) out();
+//		dirty();
+//		updateView();
+//		needRecalculate_ = true;
+//	}
+//	else
+//	{
+//		throw std::string("cannot delete root!");
+//	}
+//}
+//
+//void TreeView::Impl::insert(BYTE id, const std::string& name)
+//{
+//	if(id < 1 || id > 11) throw std::string("invalid id!");
+//
+//	Node_ptr p(cur());
+//
+//	nbt::NBT_ptr_t tag = nbt::Make(id, name);
+//	nbt::NBT_ptr_t super = dynamic_cast<NBTNode *>(&*p)->getTag();
+//
+//	switch(super->getID())
+//	{
+//		case nbt::TAG_List::ID:
+//		{
+//			nbt::TAG_List::ptr_t list = std::dynamic_pointer_cast<nbt::TAG_List>(super);
+//			if(list->tagID() && list->tagID() != id) throw std::string("invalid type for list!");
+//			list->addTag(tag);
+//			break;
+//		}
+//		case nbt::TAG_Compound::ID:
+//		{
+//			nbt::TAG_Compound::ptr_t nbt = std::dynamic_pointer_cast<nbt::TAG_Compound>(super);
+//			nbt->setTag(tag);
+//			break;
+//		}
+//		default:
+//			throw std::string("only lists and compounds can have tags!");
+//	}
+//
+//	NBTNode *node = new NBTNode;
+//	Node_ptr pp(node);
+//
+//	node->load(tag);
+//	
+//	p->addChild(pp);
+//
+//	dirty();
+//	updateView();
+//}
+//
+//void TreeView::Impl::rename(const std::string& name)
+//{
+//	if(current_)
+//	{
+//		Node_ptr c(current_->current());
+//		nbt::NBT_ptr_t tag = dynamic_cast<NBTNode *>(&*c)->getTag();
+//		nbt::NBT_ptr_t parent = dynamic_cast<NBTNode *>(&*c->parent())->getTag();
+//
+//		if(tag->getName() == name) return;
+//
+//		if(parent->getID() == nbt::TAG_List::ID) throw std::string("list elements cannot be named!");
+//
+//		assert(parent->getID()==nbt::TAG_Compound::ID);
+//
+//		nbt::TAG_Compound::ptr_t nbt = std::dynamic_pointer_cast<nbt::TAG_Compound>(parent);
+//
+//		if(nbt->hasTag(name)) throw std::string("an element with that name already exists!");
+//
+//		tag->setName(name);
+//
+//		dirty();
+//		updateView();
+//	}
+//	else
+//	{
+//		throw std::string("cannot name root!");
+//	}
+//}
 
 // # ---------------------------------------------------------------------------
 
 void TreeView::Impl::display(void) const
 {
-//	int y(y1_ + dy_); 
-//	display(root_, x1_ + dx_, y);
 	view_.renderAt(x1_, y1_, x1_ - dx_, y1_ - dy_, x2_ - x1_, y2_ - y1_);
 	Terminal::instance().setCursorPos(x1_, y2_);
-	Terminal::instance().printf("%s", status_.data());
-}
-
-void TreeView::Impl::display(Node_ptr node, int x, int& y) const
-{
-	if(x >= x2_ || y >= y2_) return;
-
-	std::string p;
-
-	if(node->hasChildren())
-	{
-		p += node->isOpen() ? " -  " : " +  ";
-	}
-	else
-	{
-		p += " |  ";
-	}
-
-	p += node->getContent();
-
-	if((long)p.length() > x2_ - x) std::string(p.data(), x2_ - x).swap(p);
-
-	if(x >= x1_ && y >= y1_)
-	{
-		Terminal::instance().setCursorPos(x, y);
-		Terminal::instance().printf("%s", p.data());
-	}
-
-	if(node->isOpen() && node->hasChildren())
-	{
-		for(const Node_ptr& p : *node)
-		{
-			display(p, x + 4, ++y);
-		}
-	}
+	Terminal::instance().printf("%s", getStatus().data());
 }
 

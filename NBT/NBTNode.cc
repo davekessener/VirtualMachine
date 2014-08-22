@@ -15,6 +15,12 @@ namespace
 	void printTag(nbt::TAG_String::ptr_t, std::stringstream&);
 	void printTag(nbt::TAG_List::ptr_t, std::stringstream&);
 	void printTag(nbt::TAG_Compound::ptr_t, std::stringstream&);
+
+	enum
+	{
+		NOERR = 0,
+		ERR_NOERASE
+	};
 }
 
 void NBTNode::load(nbt::NBT_ptr_t tag)
@@ -54,6 +60,66 @@ void NBTNode::load(nbt::NBT_ptr_t tag)
 		}
 	}
 
+	dirty();
+}
+
+void NBTNode::insert(BYTE id, const std::string& name)
+{
+	if(id < 1 || id > 11) throw std::string("invalid id!");
+
+	nbt::NBT_ptr_t tag = nbt::Make(id, name);
+
+	switch(tag_->getID())
+	{
+		case nbt::TAG_List::ID:
+		{
+			nbt::TAG_List::ptr_t list = std::dynamic_pointer_cast<nbt::TAG_List>(tag_);
+			if(list->tagID() && list->tagID() != id) throw std::string("invalid type for list!");
+			list->addTag(tag);
+			break;
+		}
+		case nbt::TAG_Compound::ID:
+		{
+			nbt::TAG_Compound::ptr_t nbt = std::dynamic_pointer_cast<nbt::TAG_Compound>(tag_);
+			nbt->setTag(tag);
+			break;
+		}
+		default:
+			throw std::string("only lists and compounds can have tags!");
+	}
+
+	NBTNode *node = new NBTNode;
+	Node_ptr pp(node);
+
+	node->load(tag);
+	
+	addChild(pp);
+	dirty();
+}
+
+void NBTNode::rename(const std::string& name)
+{
+	if(!hasParent())
+	{
+		throw std::string("cannot name root!");
+	}
+
+	nbt::NBT_ptr_t tag = std::dynamic_pointer_cast<NBTNode>(current())->tag_;
+	nbt::NBT_ptr_t parent = tag_;
+
+	if(tag->getName() == name) throw std::string("tag already has that name!");
+
+	if(parent->getID() == nbt::TAG_List::ID) throw std::string("list elements cannot be named!");
+
+	assert(parent->getID()==nbt::TAG_Compound::ID);
+
+	nbt::TAG_Compound::ptr_t nbt = std::dynamic_pointer_cast<nbt::TAG_Compound>(parent);
+
+	if(nbt->hasTag(name)) throw std::string("an element with that name already exists!");
+
+	nbt->removeTag(tag->getName());
+	nbt->setTag(name, tag);
+	
 	dirty();
 }
 
@@ -107,6 +173,20 @@ std::string NBTNode::i_doGetContent(void) const
 	}
 
 	return ss.str();
+}
+
+void NBTNode::i_doProcessError(uint err) const
+{
+	switch(err)
+	{
+		case ERR_NOERASE:
+			throw std::string("node has children. if you are sure, use '!' to override.");
+	}
+}
+
+NBTNode::uint NBTNode::i_canErase(Node_ptr p) const
+{
+	return p->hasChildren() ? ERR_NOERASE : NOERR;
 }
 
 void NBTNode::i_doErase(Node_ptr p)

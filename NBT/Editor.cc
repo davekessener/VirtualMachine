@@ -2,6 +2,8 @@
 #include <vector>
 #include "Editor.h"
 #include <nbt/NBT.h>
+#include <dav/Logger.h>
+#include <aux>
 #include "Terminal.h"
 #include "NBTNode.h"
 #include "TreeView.h"
@@ -15,13 +17,17 @@ struct Editor::Impl
 		void edit(const params_t&);
 		void write(const params_t&);
 		void close(bool = false);
+		void erase(bool = false);
+		void insert(const params_t&);
+		void rename(const params_t&);
+		void refresh( ) const;
 		bool canQuit( ) const;
 		void input(int);
-		void refresh( ) const;
+	private:
+		void checkTV( ) const;
+		NBTNode& getNode( );
 	private:
 		std::shared_ptr<TreeView> tv_;
-		std::vector<Control_ptr> controls_;
-		Object_ptr obj_;
 		struct { int x, y, w, h; } s_;
 };
 
@@ -34,19 +40,19 @@ void Editor::Impl::init(void)
 void Editor::Impl::edit(const params_t& args)
 {
 	if(args.size() != 2) throw std::string("needs only one argument! :edit filename");
-	obj_.reset(new Object);
-	obj_->load(args.at(1));
-	controls_.clear();
-	tv_.reset(new TreeView(s_.x, s_.y, s_.w, s_.h - 1, obj_));
+	Object_ptr o(new Object);
+	o->load(args.at(1));
+	tv_.reset(new TreeView(s_.x, s_.y, s_.w, s_.h - 1, o));
 }
 
 void Editor::Impl::write(const params_t& args)
 {
 	if(args.size() > 2) throw std::string("too many arguments! :save [filename]");
-	if(!static_cast<bool>(obj_)) throw std::string("no savable buffer open!");
+	if(!static_cast<bool>(tv_)) throw std::string("no savable buffer open!");
 
 	std::string fn(args.size() == 2 ? args.at(1) : "");
-	obj_->save(fn);
+	
+	tv_->getObject()->save(fn);
 	tv_->modify(false);
 }
 
@@ -54,9 +60,7 @@ void Editor::Impl::close(bool force)
 {
 	if(force || canQuit())
 	{
-		obj_.reset();
 		tv_.reset();
-		controls_.clear();
 	}
 	else
 	{
@@ -66,19 +70,72 @@ void Editor::Impl::close(bool force)
 
 bool Editor::Impl::canQuit(void) const
 {
-	return static_cast<bool>(tv_) ? !tv_->isModified() : true;
+	return !static_cast<bool>(tv_) || !tv_->isModified();
 }
 
 void Editor::Impl::input(int in)
 {
-	if(!controls_.empty()) controls_.back()->input(in);
-	else if(tv_) tv_->input(in);
+	if(tv_) tv_->input(in);
+}
+
+void Editor::Impl::erase(bool force)
+{
+	checkTV();
+
+	NBTNode &node(getNode());
+	
+	if(!node.hasParent()) throw std::string("cannot delete root!");
+	
+	node.parent()->erase(force);
+	tv_->modify();
+}
+
+void Editor::Impl::insert(const params_t& args)
+{
+	checkTV();
+	if(args.size() / 2 != 1) throw std::string("invalid arguments! :insert ID [name]");
+
+	std::string name(args.size() == 3 ? args.at(2) : "");
+	int id = 0;
+
+	try
+	{
+		if(!args.at(1).empty()) id = lexical_cast<int>(args.at(1));
+	}
+	catch(...)
+	{
+		char c(args.at(1).at(0));
+		id = 0;
+		
+		if(args.at(1).size() == 1 && c >= 'a' && c <= 'b') id = c - 'a' + 10;
+	}
+
+	getNode().insert(id, name);
+	tv_->modify();
+}
+
+void Editor::Impl::rename(const params_t& args)
+{
+	checkTV();
+	if(args.size() != 2) throw std::string("need new name! :rename newname");
+
+	getNode().rename(args.at(1));
+	tv_->modify();
 }
 
 void Editor::Impl::refresh(void) const
 {
 	if(tv_) tv_->render();
-	for(const auto& p : controls_) p->render();
+}
+
+void Editor::Impl::checkTV(void) const
+{
+	if(!static_cast<bool>(tv_)) throw std::string("no editable buffer open!");
+}
+
+NBTNode& Editor::Impl::getNode(void)
+{
+	return *std::dynamic_pointer_cast<NBTNode>(tv_->getNode());
 }
 
 // # ===========================================================================
@@ -94,24 +151,18 @@ Editor::~Editor(void)
 
 void Editor::registerCommands(void)
 {
-	registerCommand("quit", [this](const params_t& args, bool force)
-		{
-			impl_->close(force);
-			quit();
-		});
-	registerCommand("edit", [this](const params_t& args, bool force)
-		{
-			impl_->close(force);
-			impl_->edit(args);
-		});
-	registerCommand("write", [this](const params_t& args, bool force)
-		{
-			impl_->write(args);
-		});
-	registerCommand("close", [this](const params_t& args, bool force)
-		{
-			impl_->close(force);
-		});
+#define CMD(name) registerCommand(name, [this](const params_t& args, bool force)
+#define CEND )
+	CMD("quit")   { impl_->close(force); quit(); } CEND;
+//	CMD("echo")   { for(const std::string& s : args) LOG("echoed '%s'", s.data()); } CEND;
+	CMD("edit")   { impl_->close(force); impl_->edit(args); } CEND;
+	CMD("write")  { impl_->write(args);  } CEND;
+	CMD("close")  { impl_->close(force); } CEND;
+	CMD("delete") { impl_->erase(force); } CEND;
+	CMD("insert") { impl_->insert(args); } CEND;
+	CMD("rename") { impl_->rename(args); } CEND;
+#undef CEND
+#undef CMD
 }
 
 void Editor::init(void)

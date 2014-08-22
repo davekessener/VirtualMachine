@@ -334,7 +334,7 @@ namespace nbt
 		public:
 			NBT_ptr_t Read(std::istream&);
 			NBT_ptr_t Read(dav::gzip::igzstream&);
-			NBTBase *Default(BYTE);
+			NBTBase *Default(BYTE, const std::string& = "");
 			NBTBase *Read(const nbtistream&);
 			static NBTHelper& Instance( );
 		private:
@@ -343,7 +343,7 @@ namespace nbt
 			NBTHelper(const NBTHelper&);
 			NBTHelper& operator=(const NBTHelper&);
 
-			std::map<BYTE, std::function<NBTBase *(void)>> cons;
+			std::map<BYTE, std::function<NBTBase *(const std::string&)>> cons;
 	};
 
 // # ===========================================================================
@@ -355,9 +355,14 @@ namespace nbt
 	}
 
 	template<class T, typename ... A>
-	std::shared_ptr<T> Make(A ... a)
+	typename T::ptr_t Make(A ... a)
 	{
-		return std::shared_ptr<T>(new T(a...));
+		return typename T::ptr_t(new T(a...));
+	}
+
+	inline NBT_ptr_t Make(BYTE id, const std::string& name = "")
+	{
+		return NBT_ptr_t(NBTHelper::Instance().Default(id, name));
 	}
 
 // # ---------------------------------------------------------------------------

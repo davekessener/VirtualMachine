@@ -220,17 +220,55 @@ void CommandableScene::resize(void)
 
 std::vector<std::string> CommandableScene::processCommand(const std::string& cmd)
 {
-	std::vector<std::string> v;
-	std::stringstream iss(cmd);
+	std::vector<std::string> args;
+	auto i = cmd.cbegin(), e = cmd.cend();
+	std::string s;
+	bool quote = false;
 
-	while(iss)
+	auto ready = [&s]( ) { return !s.empty(); };
+	auto push = [&s, &args]( ) { args.push_back(s); s.clear(); };
+	auto advance = [&i]( ) { ++i; };
+
+	while(i != e)
 	{
-		std::string s;
-		iss >> s;
-		if(!s.empty()) v.push_back(s);
+		if(*i == '\\')
+		{
+			advance();
+		}
+		else if(quote)
+		{
+			if(*i == '"')
+			{
+				quote = false;
+				push();
+				advance();
+				continue;
+			}
+		}
+		else if(*i == ' ')
+		{
+			if(ready()) push();
+			while(*i == ' ') advance();
+			continue;
+		}
+		else if(*i == '"')
+		{
+			if(ready()) push();
+			quote = true;
+			advance();
+			continue;
+		}
+
+		if(i == e) break;
+
+		s.push_back(*i);
+		
+		advance();
 	}
 
-	return v;
+	if(ready()) push();
+
+	return args;
 }
 
 void CommandableScene::command(const std::string& cmd, bool doHistory)
@@ -247,7 +285,6 @@ void CommandableScene::command(const std::string& cmd, bool doHistory)
 
 	if(cmdmap.count(params.at(0)) > 0)
 	{
-//		cmdmap.at(params.at(0))(params);
 		action = cmdmap.at(params.at(0));
 	}
 	else
@@ -264,7 +301,6 @@ void CommandableScene::command(const std::string& cmd, bool doHistory)
 
 		if(!choice.empty())
 		{
-//			cmdmap.at(choice)(params);
 			action = cmdmap.at(choice);
 		}
 	}

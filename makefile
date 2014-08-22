@@ -10,7 +10,7 @@ DAVLIBS=
 DAVDIR=$(shell echo ~/include)
 INCDIRS=-I$(DAVDIR)
 LIBDIRS=-L$(DAVDIR)/lib
-CFLAGS=-std=c++0x -O0 -Wall -Wl,--no-as-needed -ggdb -DDEBUG $(SDLCFLAGS) $(PNGCFLAGS) $(DAVCFLAGS) $(INCDIRS)
+CFLAGS=-std=gnu++11 -O0 -Wall -Wl,--no-as-needed -ggdb -DDEBUG $(SDLCFLAGS) $(PNGCFLAGS) $(DAVCFLAGS) $(INCDIRS)
 LIBS=$(LIBDIRS) -Wl,--start-group $(DAVLIBS) $(GLIBS) $(SDLLIBS) $(PNGLIBS) $(GLLIBS) -Wl,--end-group
 SRC=$(wildcard *.cc)
 OBJ=$(SRC:.cc=.o)

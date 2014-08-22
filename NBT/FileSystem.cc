@@ -14,7 +14,7 @@ catch(const boost::filesystem::filesystem_error& e)
 void FileSystem::copyFile(const std::string& fn1, const std::string& fn2)
 try
 {
-	boost::filesystem::copy_file(fn1, fn2);
+	boost::filesystem::copy_file(fn1, fn2, boost::filesystem::copy_option::overwrite_if_exists);
 }
 catch(const boost::filesystem::filesystem_error& e)
 {
