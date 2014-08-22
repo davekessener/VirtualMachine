@@ -20,6 +20,7 @@ struct Editor::Impl
 		void erase(bool = false);
 		void insert(const params_t&);
 		void rename(const params_t&);
+		void set(const params_t&);
 		void refresh( ) const;
 		bool canQuit( ) const;
 		void input(int);
@@ -98,6 +99,8 @@ void Editor::Impl::insert(const params_t& args)
 	std::string name(args.size() == 3 ? args.at(2) : "");
 	int id = 0;
 
+	using lib::aux::lexical_cast;
+
 	try
 	{
 		if(!args.at(1).empty()) id = lexical_cast<int>(args.at(1));
@@ -120,6 +123,15 @@ void Editor::Impl::rename(const params_t& args)
 	if(args.size() != 2) throw std::string("need new name! :rename newname");
 
 	getNode().rename(args.at(1));
+	tv_->modify();
+}
+
+void Editor::Impl::set(const params_t& args)
+{
+	checkTV();
+	if(args.size() != 2) throw std::string("bad form! :set \"value\"");
+
+	getNode().set(args.at(1));
 	tv_->modify();
 }
 
@@ -161,6 +173,7 @@ void Editor::registerCommands(void)
 	CMD("delete") { impl_->erase(force); } CEND;
 	CMD("insert") { impl_->insert(args); } CEND;
 	CMD("rename") { impl_->rename(args); } CEND;
+	CMD("set")    { impl_->set(args);    } CEND;
 #undef CEND
 #undef CMD
 }

@@ -14,6 +14,7 @@ class NBTNode : public Node
 		nbt::NBT_ptr_t getTag( ) { return tag_; }
 		void insert(BYTE, const std::string&);
 		void rename(const std::string& s);
+		void set(const std::string& s);
 	private:
 		std::string i_doGetContent( ) const;
 		void i_doProcessError(uint) const;

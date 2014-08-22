@@ -9,6 +9,7 @@ class Object
 {
 	public:
 		Object( );
+		~Object( );
 		Node_ptr get( ) { return node_; }
 		void load(const std::string&);
 		void save(const std::string& = "");

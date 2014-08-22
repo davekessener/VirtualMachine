@@ -10,13 +10,18 @@ Object::Object(void)
 	nbt->load(nbt::Make<nbt::TAG_Compound>());
 }
 
+Object::~Object(void)
+{
+	deleteBackup();
+}
+
 void Object::load(const std::string& fn)
 {
-	bck_ = backup(fn_ = fn);
-
-	nbt::NBT_ptr_t tag = nbt::readFile(fn_);
+	nbt::NBT_ptr_t tag = nbt::readFile(fn);
 	
 	if(!tag) throw std::string("couldn't read file!");
+
+	bck_ = backup(fn_ = fn);
 
 	NBTNode *nbt = new NBTNode;
 

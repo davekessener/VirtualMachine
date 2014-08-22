@@ -3,6 +3,7 @@
 #include <aux>
 #include "NBTNode.h"
 #include <dav/Logger.h>
+#include <aux>
 
 #define MXT_MAXARRAY 16
 
@@ -104,22 +105,57 @@ void NBTNode::rename(const std::string& name)
 		throw std::string("cannot name root!");
 	}
 
-	nbt::NBT_ptr_t tag = std::dynamic_pointer_cast<NBTNode>(current())->tag_;
-	nbt::NBT_ptr_t parent = tag_;
+	nbt::NBT_ptr_t parent_tag = std::dynamic_pointer_cast<NBTNode>(parent())->tag_;
 
-	if(tag->getName() == name) throw std::string("tag already has that name!");
+	if(tag_->getName() == name) throw std::string("tag already has that name!");
 
-	if(parent->getID() == nbt::TAG_List::ID) throw std::string("list elements cannot be named!");
+	if(parent_tag->getID() == nbt::TAG_List::ID) throw std::string("list elements cannot be named!");
 
-	assert(parent->getID()==nbt::TAG_Compound::ID);
+	assert(parent_tag->getID()==nbt::TAG_Compound::ID);
 
-	nbt::TAG_Compound::ptr_t nbt = std::dynamic_pointer_cast<nbt::TAG_Compound>(parent);
+	nbt::TAG_Compound::ptr_t nbt = std::dynamic_pointer_cast<nbt::TAG_Compound>(parent_tag);
 
 	if(nbt->hasTag(name)) throw std::string("an element with that name already exists!");
 
-	nbt->removeTag(tag->getName());
-	nbt->setTag(name, tag);
+	nbt->removeTag(tag_->getName());
+	nbt->setTag(name, tag_);
 	
+	dirty();
+}
+
+void NBTNode::set(const std::string& content)
+{
+	using lib::aux::lexical_cast;
+
+	switch(tag_->getID())
+	{
+		case nbt::TAG_Byte::ID:
+			break;
+		case nbt::TAG_Short::ID:
+			break;
+		case nbt::TAG_Int::ID:
+			break;
+		case nbt::TAG_Long::ID:
+			break;
+		case nbt::TAG_Float::ID:
+			std::dynamic_pointer_cast<nbt::TAG_Float>(tag_)->set(lexical_cast<float>(content));
+			break;
+		case nbt::TAG_Double::ID:
+			std::dynamic_pointer_cast<nbt::TAG_Double>(tag_)->set(lexical_cast<double>(content));
+			break;
+		case nbt::TAG_String::ID:
+			std::dynamic_pointer_cast<nbt::TAG_String>(tag_)->set(content);
+			break;
+		case nbt::TAG_Byte_Array::ID:
+			break;
+		case nbt::TAG_List::ID:
+			throw std::string("cannot set content of TagList!");
+		case nbt::TAG_Compound::ID:
+			throw std::string("cannot set content of CompoundTag!");
+		case nbt::TAG_Int_Array::ID:
+			break;
+	}
+
 	dirty();
 }
 

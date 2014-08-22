@@ -92,14 +92,14 @@ namespace nbt
 
 			NBTArray(const std::string& s = "") { NBTBase::setName(s); }
 			template<template<typename T, typename = std::allocator<T>> class C>
-			NBTArray(const std::string& s, C<NBT_ptr_t>& c) { init(s, c.begin(), c.end()); }
+				NBTArray(const std::string& s, C<NBT_ptr_t>& c) { init(s, c.begin(), c.end()); }
 			template<typename T>
-			NBTArray(const std::string& s, T t1, T t2) { init(s, t1, t2); }
+				NBTArray(const std::string& s, T t1, T t2) { init(s, t1, t2); }
 			NBTArray(const std::string& s, std::initializer_list<T2> v) { init(s, v); }
 			template<template<typename T, typename = std::allocator<T>> class C>
-			NBTArray(C<NBT_ptr_t>& c) { init("", c.begin(), c.end()); }
+				NBTArray(C<NBT_ptr_t>& c) { init("", c.begin(), c.end()); }
 			template<typename T>
-			NBTArray(T t1, T t2) { init("", t1, t2); }
+				NBTArray(T t1, T t2) { init("", t1, t2); }
 			NBTArray(std::initializer_list<T2> v) { init("", v); }
 			std::vector<T2> get() { return std::vector<T2>(vec_t::begin(), vec_t::end()); }
 		protected:
@@ -125,6 +125,7 @@ namespace nbt
 						reinterpret_cast<const BYTE *>(v.c_str() + v.length())) { }
 			NBTString(const std::string& s = "") : NBTArray<ID, WORD, BYTE>(s) { }
 			std::string get() { return std::string(vec_t::begin(), vec_t::end()); }
+			void set(const std::string& s) { vec_t(s.cbegin(), s.cend()).swap(*this); }
 	};
 
 // # ---------------------------------------------------------------------------
