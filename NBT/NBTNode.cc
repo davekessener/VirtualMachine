@@ -3,6 +3,7 @@
 #include <aux>
 #include "NBTNode.h"
 #include <dav/Logger.h>
+#include <dav/utils.h>
 #include <aux>
 
 #define MXT_MAXARRAY 16
@@ -16,6 +17,8 @@ namespace
 	void printTag(nbt::TAG_String::ptr_t, std::stringstream&);
 	void printTag(nbt::TAG_List::ptr_t, std::stringstream&);
 	void printTag(nbt::TAG_Compound::ptr_t, std::stringstream&);
+	template<typename T, BYTE id>
+		void readArray(std::shared_ptr<nbt::NBTArray<id, DWORD, T>>, const std::string&);
 
 	enum
 	{
@@ -32,7 +35,7 @@ void NBTNode::load(nbt::NBT_ptr_t tag)
 
 	Node::vec_t().swap(vec);
 
-	LOG("Loaded node with tag-ID %02x", tag->getID());
+//	LOG("Loaded node with tag-ID %02x", tag->getID());
 
 	auto generate = [this](nbt::NBT_ptr_t nbt) -> Node_ptr
 		{
@@ -130,13 +133,32 @@ void NBTNode::set(const std::string& content)
 	switch(tag_->getID())
 	{
 		case nbt::TAG_Byte::ID:
+		{
+			long v = dav::utils::toInt(content);
+			if(v < -0x80 || v > 0xff) throw std::string("number exceeds Byte boundaries!");
+			std::dynamic_pointer_cast<nbt::TAG_Byte>(tag_)->set(v);
 			break;
+		}
 		case nbt::TAG_Short::ID:
+		{
+			long v = dav::utils::toInt(content);
+			if(v < -0x8000 || v > 0xffff) throw std::string("number exceeds Short boundaries!");
+			std::dynamic_pointer_cast<nbt::TAG_Short>(tag_)->set(v);
 			break;
+		}
 		case nbt::TAG_Int::ID:
+		{
+			long v = dav::utils::toInt(content);
+			if(v < -0x80000000 || v > 0xffffffff) throw std::string("number exceeds Int boundaries!");
+			std::dynamic_pointer_cast<nbt::TAG_Int>(tag_)->set(v);
 			break;
+		}
 		case nbt::TAG_Long::ID:
+		{
+			long v = dav::utils::toInt(content);
+			std::dynamic_pointer_cast<nbt::TAG_Byte>(tag_)->set(v);
 			break;
+		}
 		case nbt::TAG_Float::ID:
 			std::dynamic_pointer_cast<nbt::TAG_Float>(tag_)->set(lexical_cast<float>(content));
 			break;
@@ -147,12 +169,14 @@ void NBTNode::set(const std::string& content)
 			std::dynamic_pointer_cast<nbt::TAG_String>(tag_)->set(content);
 			break;
 		case nbt::TAG_Byte_Array::ID:
+			readArray<BYTE>(std::dynamic_pointer_cast<nbt::TAG_Byte_Array>(tag_), content);
 			break;
 		case nbt::TAG_List::ID:
 			throw std::string("cannot set content of TagList!");
 		case nbt::TAG_Compound::ID:
 			throw std::string("cannot set content of CompoundTag!");
 		case nbt::TAG_Int_Array::ID:
+			readArray<DWORD>(std::dynamic_pointer_cast<nbt::TAG_Int_Array>(tag_), content);
 			break;
 	}
 
@@ -161,7 +185,7 @@ void NBTNode::set(const std::string& content)
 
 std::string NBTNode::i_doGetContent(void) const
 {
-	LOG("Generating content for tag %02x", tag_->getID());
+//	LOG("Generating content for tag %02x", tag_->getID());
 
 	if(!static_cast<bool>(tag_)) return std::string();
 
@@ -272,7 +296,8 @@ namespace
 				ss << "[...]";
 				break;
 			}
-			ss << v << "(0x" << lib::aux::to_hex(v) << ")";
+			ss	<< static_cast<typename traits<T2>::display_type>(v)
+				<< "(0x" << lib::aux::to_hex(v) << ")";
 		}
 
 		ss << "}";
@@ -291,6 +316,229 @@ namespace
 	void printTag(nbt::TAG_Compound::ptr_t tag, std::stringstream& ss)
 	{
 		ss << "Contains " << tag->size() << " tags.";
+	}
+
+	template<typename T> struct sign_traits;
+	template<> struct sign_traits<BYTE> { typedef BYTE unsigned_type; typedef char signed_type; };
+	template<> struct sign_traits<WORD> { typedef WORD unsigned_type; typedef short signed_type; };
+	template<> struct sign_traits<DWORD> { typedef DWORD unsigned_type; typedef int signed_type; };
+	template<> struct sign_traits<QWORD> { typedef QWORD unsigned_type; typedef long signed_type; };
+
+	template<typename T, BYTE id>
+		void readArray(std::shared_ptr<nbt::NBTArray<id, DWORD, T>> tag, const std::string& content)
+	{
+		typedef typename sign_traits<T>::unsigned_type unsigned_t;
+		typedef typename sign_traits<T>::signed_type signed_t;
+
+		using dav::utils::next;
+		using dav::utils::toInt;
+
+		LOG("Reading array '%s'", content.data());
+
+		std::string left(content);
+		std::string s(next(left)), old;
+//		bool skip = true;
+		const long min = static_cast<signed_t>(1 << (sizeof(T) * 8 - 1));
+		const unsigned long max = static_cast<unsigned_t>(-1);
+		size_t i = 0;
+		bool overwrite = false, isend = false;
+
+		LOG("Bound by [%li, %lu]", min, max);
+
+		LOG("Token '%s'", s.data());
+
+		if(s == "^")
+		{
+			LOG("Modify existing");
+			s = next(left);
+			LOG("Token '%s'", s.data());
+			i = tag->size();
+		}
+		else
+		{
+			LOG("Clearing array");
+			tag->clear();
+		}
+
+		if(s != "{") throw std::string("malformed array! [^]{val/op, ... }");
+
+		while(!left.empty())
+		{
+			if(isend) throw std::string("malformed array! exceeds end");
+
+			old.clear();
+			s = next(left);
+
+			while(s != "," && s != "}")
+			{
+				old.append(s);
+				s = next(left);
+				if(s != "}" && left.empty()) throw std::string("malformed array! premature end");
+			}
+
+			LOG("Token '%s' + '%s'", old.data(), s.data());
+
+			if(s == "}") isend = true;
+
+			s = next(old);
+			if(s == "/")
+			{
+				if(old.empty()) throw std::string("malformed array op! incomplete");
+				s = next(old);
+				if(s == "@")
+				{
+					if(old.empty()) throw std::string("empty address");
+					long a = toInt(next(old));
+					if(a < 0 || a > (long)tag->size())
+					{
+						LOG("ERR: Invalid index %ld/%lu", a, tag->size());
+						throw std::string("invalid index");
+					}
+					i = a;
+					LOG("# Moved to %d", i);
+				}
+				else if(s == "+")
+				{
+					if(old.empty()) throw std::string("empty offset");
+					long a = toInt(next(old));
+					if(a < 0 || a + (long)i > (long)tag->size())
+					{
+						LOG("ERR: Invalid offset @%i+%ld/%lu", i, a, tag->size());
+						throw std::string("invalid offset");
+					}
+					i += a;
+					LOG("# Jumped by %ld to %d", a, i);
+				}
+				else if(s == "-")
+				{
+					if(old.empty()) throw std::string("empty offset");
+					long a = toInt(next(old));
+					if(a < 0 || (long)i - a < 0)
+					{
+						LOG("ERR: Invalid offset @%i-%ld/%lu", i, a, tag->size());
+						throw std::string("invalid offset");
+					}
+					i -= a;
+					LOG("# Jumped by -%ld to %d", a, i);
+				}
+				else if(s == "$")
+				{
+					i = tag->size();
+					LOG("# Jumped to end (%d)", i);
+				}
+				else if(s == "^")
+				{
+					i = 0;
+					LOG("# Jumped to beginning");
+				}
+				else if(s == "#")
+				{
+					overwrite = !overwrite;
+					LOG("# %s overwrite mode", overwrite ? "Enabled" : "Disabled");
+				}
+				else if(s == "!")
+				{
+					int o = i, l = 1;
+					if(!old.empty())
+					{
+						o = toInt(s = next(old));
+						if(!old.empty())
+						{
+							if((s = next(old)) == "-")
+							{
+								l = toInt(old) - o;
+							}
+							else if(s == "+")
+							{
+								l = toInt(old);
+							}
+							else
+							{
+								LOG("ERR: malformed delete, expected '-' ('%s')", s.data());
+								throw std::string("malformed array op! expected '-'");
+							}
+						}
+					}
+
+					if(o < 0 || l <= 0 || o + l >= (long)tag->size())
+					{
+						LOG("ERR: Invalid delete: from %d with %d /%lu", o, l, tag->size());
+						throw std::string("malformed array op! invalid delete range");
+					}
+
+					LOG("# Delete %d from %d", l, o);
+					tag->erase(tag->begin() + o, tag->begin() + o + l);
+					i = o;
+				}
+				else
+				{
+					LOG("ERR: unknown op '%s'", s.data());
+					throw std::string("malformed array op! unknown op");
+				}
+			}
+			else
+			{
+				long v = toInt(s + old);
+				if(v < min || (unsigned long)v > max)
+				{
+					LOG("ERR: %ld exceeds boundaries!", v);
+					throw std::string("value exceeds boundaries!");
+				}
+				if(!overwrite)
+				{
+					tag->insert(tag->begin() + i, v);
+				}
+				else
+				{
+					if(i < tag->size()) tag->at(i) = v;
+					else tag->push_back(v);
+				}
+				LOG("### %s %ld at %i", overwrite ? "Wrote" : "Inserted", v, i);
+				++i;
+			}
+		}
+
+		if(!isend) throw std::string("malformed array! missing end");
+//
+//		while(!left.empty())
+//		{
+//			old = s;
+//			s = next(left);
+//
+//			LOG("Token '%s'", s.data());
+//
+//			if(s == ",")
+//			{
+//				if(skip) throw std::string("malformed array!");
+//				skip = true;
+//				continue;
+//			}
+//			else if(s == "-")
+//			{
+//				skip = true;
+//				continue;
+//			}
+//			else if(s == "}")
+//			{
+//				break;
+//			}
+//
+//			if(old == "-")
+//			{
+//				s = old + s;
+//			}
+//
+//			if(!skip) throw std::string("malformed array!");
+//
+//			skip = false;
+//			long v = toInt(s);
+//
+//			if(v < min || (unsigned long)v > max) throw std::string("value exceeds boundaries!");
+//
+//			tag->push_back(v);
+//		}
+//
+//		if(skip || s != "}") throw std::string("malformed array!");
 	}
 }
 

@@ -2,16 +2,25 @@
 #include "Interpreter.h"
 #include "IntImpl.h"
 #include <dav/Logger.h>
+#include <dav/utils.h>
+#include <aux>
 
 namespace lol {
 
 int Interpreter::doRun(const params_t& args)
 {
+	using dav::utils::next;
+
 	while(true)
 	{
 		std::string in(input());
 
 		if(in == "quit") break;
+
+		while(!in.empty())
+		{
+			writeLine(next(in));
+		}
 	}
 
 	return 0;

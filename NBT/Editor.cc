@@ -174,6 +174,7 @@ void Editor::registerCommands(void)
 	CMD("insert") { impl_->insert(args); } CEND;
 	CMD("rename") { impl_->rename(args); } CEND;
 	CMD("set")    { impl_->set(args);    } CEND;
+	CMD("wq")     { impl_->write(args); impl_->close(force); quit(); } CEND;
 #undef CEND
 #undef CMD
 }

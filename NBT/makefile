@@ -1,6 +1,6 @@
 CC=g++-4.7
 DAVCFLAGS=
-DAVLIBS=-ldav_Logger -ldav_NBT -ldav_gzstream
+DAVLIBS=-ldav_Logger -ldav_NBT -ldav_gzstream -ldav_utils
 GLIBS=-lpthread -lz -lncursesw
 BOOSTLIBS=-lboost_system -lboost_filesystem
 DAVDIR=$(shell echo ~/include)

@@ -1,7 +1,7 @@
 CC=g++-4.7
 DAVCFLAGS=
 GLIBS=
-DAVLIBS=-ldav_Logger
+DAVLIBS=-ldav_Logger -ldav_utils
 DAVDIR=$(shell echo ~/include)
 INCDIRS=-I$(DAVDIR)
 LIBDIRS=-L$(DAVDIR)/lib
