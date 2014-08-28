@@ -3,6 +3,7 @@
 #include "IntImpl.h"
 #include <dav/Logger.h>
 #include <dav/utils.h>
+#include <lex/lex.h>
 #include <aux>
 
 namespace lol {

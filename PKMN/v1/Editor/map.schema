@@ -1,0 +1,19 @@
+{
+	tag-list<compound-tag> : "Maps"
+	{
+		{
+			string : "Name";
+			long : "ID";
+			int : "Width";
+			int : "Height";
+			compound-tag : "Data"
+			{
+				int-list : "Bottom";
+				int-list : "Animation";
+				int-list : "Intermediate";
+				int-list : "Top";
+			}
+		}
+	}
+}
+
