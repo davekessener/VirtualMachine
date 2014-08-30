@@ -28,6 +28,8 @@ namespace dav
 					(full ? SDL_WINDOW_FULLSCREEN : 0) | SDL_WINDOW_OPENGL));
 			
 			SDL_GL_CreateContext(win);
+
+			SDL_GL_SetSwapInterval(1);
 	
 			bool running = true;
 	    	Uint32 start, delta(60);

@@ -11,6 +11,8 @@
 #include "Control.h"
 #include "EnterString.h"
 
+using dav::aux::lexical_cast;
+
 struct Editor::Impl
 {
 	public:
@@ -83,17 +85,17 @@ void Editor::Impl::input(int in)
 
 	switch(in)
 	{
-		case 'r':
-			pushInputFunction([this](int in)->bool{ tv_->input(in); return needNormalInput; });
-			tv_->pushControl(Control_ptr(new EnterString(
-				s_.w, s_.h, [this](const std::string& name)
-								{
-									needNormalInput = true;
-									getNode().rename(name);
-									tv_->modify();
-								},
-				"Enter new name:", getNode().getTag()->getName())));
-			break;
+//		case 'r':
+//			pushInputFunction([this](int in)->bool{ tv_->input(in); return needNormalInput; });
+//			tv_->pushControl(Control_ptr(new EnterString(
+//				s_.w, s_.h, [this](const std::string& name)
+//								{
+//									needNormalInput = true;
+//									getNode().rename(name);
+//									tv_->modify();
+//								},
+//				"Enter new name:", getNode().getTag()->getName())));
+//			break;
 		default:
 			tv_->input(in);
 			break;
@@ -119,8 +121,6 @@ void Editor::Impl::insert(const params_t& args)
 
 	std::string name(args.size() == 3 ? args.at(2) : "");
 	int id = 0;
-
-	using lib::aux::lexical_cast;
 
 	try
 	{

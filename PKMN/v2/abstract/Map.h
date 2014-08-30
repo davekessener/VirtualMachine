@@ -6,6 +6,8 @@
 #include <cassert>
 #include <nbt/NBT.h>
 
+#define MXT_LC 4
+
 namespace pkmn
 {
 	namespace abstract
@@ -21,10 +23,13 @@ namespace pkmn
 				size_t ID( ) const { return id_; }
 				uint width( ) const { return width_; }
 				uint height( ) const { return height_; }
-				const vec_t& operator[](size_t idx) const { assert(idx<4); return layers_[idx]; }
+				bool isLayerEmpty(size_t idx) const { assert(idx<MXT_LC); return empty_[idx]; }
+				static constexpr uint size( ) { return MXT_LC; }
+				const vec_t& operator[](size_t idx) const { assert(idx<MXT_LC); return layers_[idx]; }
 			private:
 				std::string name_;
-				vec_t layers_[4];
+				vec_t layers_[MXT_LC];
+				bool empty_[MXT_LC];
 				uint width_, height_;
 				size_t id_;
 		};

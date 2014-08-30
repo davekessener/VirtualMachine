@@ -1,7 +1,7 @@
 #ifndef PKMN_SCENE_H
 #define PKMN_SCENE_H
 
-#include <dav/inc.h>
+#include "common.h"
 #include <string>
 #include <vector>
 #include <memory>
@@ -15,7 +15,6 @@ namespace pkmn
 		typedef std::shared_ptr<Scene> Scene_ptr;
 		typedef std::weak_ptr<Scene> Scene_wptr;
 		typedef dav::sdl::Controls Controls;
-		typedef unsigned int uint;
 		typedef std::vector<std::string> params_t;
 
 		public:

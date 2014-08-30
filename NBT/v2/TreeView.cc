@@ -274,7 +274,7 @@ void TreeView::Impl::updateView(void)
 
 const std::string& TreeView::Impl::getStatus(void) const
 {
-	using lib::aux::lexical_cast;
+	using dav::aux::lexical_cast;
 
 	if(status_.dirty)
 	{

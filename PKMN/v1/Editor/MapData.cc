@@ -84,12 +84,22 @@ namespace editor
 		{
 			std::vector<unsigned int> v;
 
-			v.reserve(_w * _h);
+			v.resize(_w * _h);
+			auto i = v.begin();
 
-			for(auto i = _data->begin() ; i != _data->end() ; ++i)
+			for(size_t y = 0 ; y < _h ; ++y)
 			{
-				v.insert(v.end(), (*i)->begin(), (*i)->end());
+				for(size_t x = 0 ; x < _w ; ++x)
+				{
+					*i = _data->at(x)->at(y);
+					++i;
+				}
 			}
+
+//			for(auto i = _data->begin() ; i != _data->end() ; ++i)
+//			{
+//				v.insert(v.end(), (*i)->begin(), (*i)->end());
+//			}
 
 			return v;
 		}
@@ -150,14 +160,11 @@ namespace editor
 		nbt->setLong(Settings::NBT_MAP_ID, ID);
 		nbt->setInt(Settings::NBT_MAP_WIDTH, _w);
 		nbt->setInt(Settings::NBT_MAP_HEIGHT, _h);
-
-		std::vector<unsigned int> btm(_layers.at(LAYER_BOTTOM1).flatten());
-		std::vector<unsigned int> t(_layers.at(LAYER_BOTTOM2).flatten());
-		btm.insert(btm.end(), t.begin(), t.end());
 		
 		nbt::TAG_Compound::ptr_t data = nbt::Make<nbt::TAG_Compound>(Settings::NBT_MAP_DATA);
-		data->setIntArray(Settings::NBT_MAP_DATA_BOTTOM, btm);
-		data->setIntArray(Settings::NBT_MAP_DATA_INTER, _layers.at(LAYER_INTER).flatten());
+		data->setIntArray(Settings::NBT_MAP_DATA_BOTTOM, _layers.at(LAYER_BOTTOM1).flatten());
+		data->setIntArray(Settings::NBT_MAP_DATA_INTER, _layers.at(LAYER_BOTTOM2).flatten());
+		data->setIntArray(Settings::NBT_MAP_DATA_ANIMATION, _layers.at(LAYER_INTER).flatten());
 		data->setIntArray(Settings::NBT_MAP_DATA_TOP, _layers.at(LAYER_TOP).flatten());
 
 		nbt->setCompoundTag(data);

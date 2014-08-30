@@ -6,7 +6,9 @@
 #include <dav/utils.h>
 #include <aux>
 
-#define MXT_MAXARRAY 16
+#define MXT_MAXARRAY 8
+
+using dav::aux::lexical_cast;
 
 namespace
 {
@@ -84,6 +86,7 @@ void NBTNode::insert(BYTE id, const std::string& name)
 		}
 		case nbt::TAG_Compound::ID:
 		{
+			if(name.empty()) throw std::string("you can only add nameless tags to lists!");
 			nbt::TAG_Compound::ptr_t nbt = std::dynamic_pointer_cast<nbt::TAG_Compound>(tag_);
 			nbt->setTag(tag);
 			break;
@@ -128,35 +131,33 @@ void NBTNode::rename(const std::string& name)
 
 void NBTNode::set(const std::string& content)
 {
-	using lib::aux::lexical_cast;
-
 	switch(tag_->getID())
 	{
 		case nbt::TAG_Byte::ID:
 		{
 			long v = dav::utils::toInt(content);
-			if(v < -0x80 || v > 0xff) throw std::string("number exceeds Byte boundaries!");
+			if(v != static_cast<char>(v)) throw std::string("number exceeds Byte boundaries!");
 			std::dynamic_pointer_cast<nbt::TAG_Byte>(tag_)->set(v);
 			break;
 		}
 		case nbt::TAG_Short::ID:
 		{
 			long v = dav::utils::toInt(content);
-			if(v < -0x8000 || v > 0xffff) throw std::string("number exceeds Short boundaries!");
+			if(v != static_cast<short>(v)) throw std::string("number exceeds Short boundaries!");
 			std::dynamic_pointer_cast<nbt::TAG_Short>(tag_)->set(v);
 			break;
 		}
 		case nbt::TAG_Int::ID:
 		{
 			long v = dav::utils::toInt(content);
-			if(v < -0x80000000 || v > 0xffffffff) throw std::string("number exceeds Int boundaries!");
+			if(v != static_cast<int>(v)) throw std::string("number exceeds Int boundaries!");
 			std::dynamic_pointer_cast<nbt::TAG_Int>(tag_)->set(v);
 			break;
 		}
 		case nbt::TAG_Long::ID:
 		{
 			long v = dav::utils::toInt(content);
-			std::dynamic_pointer_cast<nbt::TAG_Byte>(tag_)->set(v);
+			std::dynamic_pointer_cast<nbt::TAG_Long>(tag_)->set(v);
 			break;
 		}
 		case nbt::TAG_Float::ID:
@@ -191,7 +192,7 @@ std::string NBTNode::i_doGetContent(void) const
 
 	std::stringstream ss;
 
-	ss << "[" << lib::aux::to_hex(tag_->getID())[1] << "] ";
+	ss << "[" << dav::aux::to_hex(tag_->getID())[1] << "] ";
 	
 	if(!tag_->getName().empty()) ss << "'" << tag_->getName() << "': ";
 
@@ -276,16 +277,23 @@ namespace
 	template<> struct traits<float> { typedef double display_type; };
 	template<> struct traits<double> { typedef double display_type; };
 
+	template<typename T> struct sign_traits { typedef T unsigned_type; typedef T signed_type; };
+	template<> struct sign_traits<BYTE> { typedef BYTE unsigned_type; typedef char signed_type; };
+	template<> struct sign_traits<WORD> { typedef WORD unsigned_type; typedef short signed_type; };
+	template<> struct sign_traits<DWORD> { typedef DWORD unsigned_type; typedef int signed_type; };
+	template<> struct sign_traits<QWORD> { typedef QWORD unsigned_type; typedef long signed_type; };
+
 	template<BYTE ID, typename T>
 	void printTag(std::shared_ptr<nbt::NBTSimple<ID, T>> tag, std::stringstream& ss)
 	{
-		ss << static_cast<typename traits<T>::display_type>(tag->get());
+		ss << static_cast<typename traits<T>::display_type>(static_cast<typename sign_traits<T>::signed_type>(tag->get()));
+		ss << "(0x" << dav::aux::to_hex(tag->get(), sizeof(T)) << ")";
 	}
 
 	template<BYTE ID, typename T1, typename T2>
 	void printTag(std::shared_ptr<nbt::NBTArray<ID, T1, T2>> tag, std::stringstream& ss)
 	{
-		ss << "{";
+		ss << "[" << (int)tag->size() << "]{";
 		
 		int c(0);
 		for(const auto& v : *tag)
@@ -297,7 +305,7 @@ namespace
 				break;
 			}
 			ss	<< static_cast<typename traits<T2>::display_type>(v)
-				<< "(0x" << lib::aux::to_hex(v) << ")";
+				<< "(0x" << dav::aux::to_hex(v) << ")";
 		}
 
 		ss << "}";
@@ -317,12 +325,6 @@ namespace
 	{
 		ss << "Contains " << tag->size() << " tags.";
 	}
-
-	template<typename T> struct sign_traits;
-	template<> struct sign_traits<BYTE> { typedef BYTE unsigned_type; typedef char signed_type; };
-	template<> struct sign_traits<WORD> { typedef WORD unsigned_type; typedef short signed_type; };
-	template<> struct sign_traits<DWORD> { typedef DWORD unsigned_type; typedef int signed_type; };
-	template<> struct sign_traits<QWORD> { typedef QWORD unsigned_type; typedef long signed_type; };
 
 	template<typename T, BYTE id>
 		void readArray(std::shared_ptr<nbt::NBTArray<id, DWORD, T>> tag, const std::string& content)

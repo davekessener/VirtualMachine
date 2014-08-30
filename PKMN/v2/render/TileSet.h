@@ -14,6 +14,7 @@ namespace pkmn
 			typedef std::map<DWORD, DWORD> tbl_t;
 
 			public:
+				TileSet( ) = default;
 				TileSet(DWORD id, int ds, tbl_t&& tbl) : id_(id), ds_(ds), tbl_(tbl) { }
 				void bind( ) const;
 				void render(int, int, DWORD) const;

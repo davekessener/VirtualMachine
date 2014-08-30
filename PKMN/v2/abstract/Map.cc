@@ -56,6 +56,7 @@ Map::Map(nbt::TAG_Compound::ptr_t tag)
 
 	std::vector<std::string> l{MXT_BOTTOM, MXT_ANIMATION, MXT_INTERMEDIATE, MXT_TOP};
 	vec_t *p = layers_;
+	bool *e = empty_;
 
 	for(const std::string& i : l)
 	{
@@ -64,8 +65,13 @@ Map::Map(nbt::TAG_Compound::ptr_t tag)
 			const auto &a = tag->getIntArray(i);
 			vec_t(a.cbegin(), a.cend()).swap(*p);
 			if(p->size() != width_ * height_)
+			{
 				throw std::string("map #" + lexical_cast<std::string>(id_) + " \"" + name_ 
 							+ "\"' " + i + " has incorrect size!");
+			}
+
+			*e = true;
+			for(const DWORD& v : *p) if(v) { *e = false; break; }
 		}
 		else
 		{
@@ -73,6 +79,7 @@ Map::Map(nbt::TAG_Compound::ptr_t tag)
 		}
 
 		++p;
+		++e;
 	}
 }
 

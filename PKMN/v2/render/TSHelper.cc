@@ -18,7 +18,7 @@ struct TSHelper::Impl
 TileSet TSHelper::generate(const std::set<DWORD>& data)
 {
 	size_t c = data.size();
-	int d = Config::instance().TILE_SIZE, d2 = d * d;
+	int d = Config::TILE_SIZE, d2 = d * d;
 	size_t ds = d;
 
 	assert(d>0);
@@ -83,7 +83,7 @@ TileSet TSHelper::generate(const std::set<DWORD>& data)
 
 TSHelper::TSHelper(void) : impl_(new Impl)
 {
-	impl_->img_.read(Config::instance().TILESET_PATH);
+	impl_->img_.read(Config::TILESET_PATH);
 }
 
 TSHelper::~TSHelper(void)

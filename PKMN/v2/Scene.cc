@@ -12,11 +12,11 @@ namespace pkmn
 	{
 		using namespace dav;
 
-		scene_ = Scene_ptr(new SceneMain(args));
+		temp_ = Scene_ptr(new SceneMain(args));
 
-		width_ = Config::instance().SCREEN_WIDTH;
-		height_ = Config::instance().SCREEN_HEIGHT;
-		int scale = Config::instance().SCREEN_SCALE;
+		width_ = Config::SCREEN_WIDTH;
+		height_ = Config::SCREEN_HEIGHT;
+		int scale = Config::SCREEN_SCALE;
 
 		sdl::set_init(&Scene::doInit);
 		sdl::set_update(&Scene::doUpdate);
@@ -48,6 +48,7 @@ namespace pkmn
 
 			scene_ = temp_;
 			temp_.reset();
+			scene_->init();
 		}
 
 		if(scene_ && !scene_->isRunning())

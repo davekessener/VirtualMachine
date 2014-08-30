@@ -12,9 +12,11 @@ void TileSet::bind(void) const
 
 void TileSet::render(int x, int y, DWORD t) const
 {
+	DWORD d = Config::TILE_SIZE;
+	
+	if(x <= -(int)d || y <= -(int)d || x >= (long)Config::SCREEN_WIDTH || y >= (long)Config::SCREEN_HEIGHT) return;
+
 	DWORD tt(tbl_.at(t));
-	DWORD d = Config::instance().TILE_SIZE,
-		  s = Config::instance().SCREEN_SCALE;
 	int c = ds_ / d;
 
 	double u = (tt % c) / (double)c;
@@ -23,7 +25,7 @@ void TileSet::render(int x, int y, DWORD t) const
 
 //	LOG("Rendering %u: %lf, %lf, %lf, %lf, %d, %d, %d, %d", id_, u, v, u + duv, v + duv, x, y, x + d, y + d);
 
-	dav::gl::draw_face2d(u, v, u + duv, v + duv, x * s, y * s, (x + d) * s, (y + d) * s);
+	dav::gl::draw_face2d(u, v, u + duv, v + duv, x, y, (x + d), (y + d));
 }
 
 }}

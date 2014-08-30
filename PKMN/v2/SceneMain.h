@@ -1,6 +1,7 @@
 #ifndef PKMN_SCENEMAIN_H
 #define PKMN_SCENEMAIN_H
 
+#include "common.h"
 #include "Scene.h"
 
 namespace pkmn

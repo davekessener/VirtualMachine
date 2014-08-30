@@ -1,7 +1,9 @@
 #ifndef PKMN_CONFIG_H
 #define PKMN_CONFIG_H
 
+#include "common.h"
 #include <string>
+#include <nbt/NBT.h>
 
 namespace pkmn
 {
@@ -10,13 +12,14 @@ namespace pkmn
 		typedef unsigned int uint;
 
 		public:
-			static const Config& instance( ) { return pInst(); }
 			static void loadConfig(const std::string&);
-			uint TILE_SIZE;
-			uint SCREEN_WIDTH, SCREEN_HEIGHT;
-			uint SCREEN_SCALE;
-			std::string TILESET_PATH;
-			std::string MAP_PATH;
+			static uint TILE_SIZE;
+			static uint SCREEN_WIDTH, SCREEN_HEIGHT;
+			static uint SCREEN_SCALE;
+			static std::string TILESET_PATH;
+			static nbt::TAG_List::ptr_t MAPS;
+			static point DEF_POS;
+			static DWORD DEF_MAP;
 		private:
 			Config( ) { }
 			~Config( );
