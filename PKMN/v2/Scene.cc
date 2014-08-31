@@ -20,7 +20,7 @@ namespace pkmn
 
 		sdl::set_init(&Scene::doInit);
 		sdl::set_update(&Scene::doUpdate);
-		sdl::set_input(&Scene::doKeyboard, &Scene::doMouse);
+		sdl::set_input(&Scene::doKeyboard);
 
 		sdl::start("Pokemon", width_ * scale, height_ * scale);
 
@@ -73,10 +73,6 @@ namespace pkmn
 	void Scene::doKeyboard(Controls key, bool pressed)
 	{
 		if(scene_ && scene_->isRunning()) scene_->input(key, pressed);
-	}
-
-	void Scene::doMouse(uint x, uint y, int dx, int dy)
-	{
 	}
 }
 

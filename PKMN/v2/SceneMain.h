@@ -9,7 +9,6 @@ namespace pkmn
 	class SceneMain : public Scene
 	{
 		using Scene::Controls;
-		using Scene::params_t;
 
 		public:
 			SceneMain(const params_t&);

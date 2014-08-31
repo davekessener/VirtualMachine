@@ -16,9 +16,10 @@ class OWSprite : public Moving
 		int getIndex( ) const { return index; }
 		int getFacing( ) const { return facing; }
 		int getSpriteOffset( ) const
-			{ return facing * SIDE_FRAMES + 
-						(((!dx && !dy) || (dx <= -8 || dx >= 8 || dy <= -8 || dy >= 8)) ? 0 : ((steps % 2) + 1)) + 
-						(speed - 1) * SIDE_COUNT * SIDE_FRAMES; }
+			{ return   facing * SIDE_FRAMES
+					 + (    ((!dx && !dy) || (dx <= -8 || dx >= 8 || dy <= -8 || dy >= 8))
+					 	  ? 0 : ((steps % 2) + 1))
+					 + (speed - 1) * SIDE_COUNT * SIDE_FRAMES; }
 		static const int WIDTH = 16;
 		static const int HEIGHT = 24;
 	protected:

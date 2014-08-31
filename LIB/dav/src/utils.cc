@@ -225,7 +225,7 @@ double toDouble(const std::string& number)
 
 	if(!num) MXT_ERR;
 
-	return lib::aux::lexical_cast<double>(number);
+	return dav::aux::lexical_cast<double>(number);
 #undef MXT_ERR
 }
 

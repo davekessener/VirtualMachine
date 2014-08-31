@@ -34,6 +34,8 @@ namespace pkmn
 #undef max
 #undef min
 
+		ts_.bind();
+
 		for(size_t l = 0 ; l < map_.size() ; ++l)
 		{
 			if(map_.isLayerEmpty(l)) continue;

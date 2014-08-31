@@ -10,6 +10,8 @@ namespace dav
 		update_t update_fn = nullptr;
 		kb_input_t kb_input_fn = nullptr;
 		m_input_t m_input_fn = nullptr;
+		mm_input_t mm_input_fn = nullptr;
+		mw_input_t mw_input_fn = nullptr;
 	
 		std::map<int, Controls> controls;
 		void init_controls( );
@@ -19,12 +21,12 @@ namespace dav
 			SDL_SetRelativeMouseMode(trapped ? SDL_TRUE : SDL_FALSE);
 		}
 	
-		void start(const char *wn, int w, int h, bool full)
+		void start(const std::string& wn, int w, int h, bool full)
 		{
 	    	SDL_Init(SDL_INIT_EVERYTHING);
 	
 			SDL_Window *win(
-				SDL_CreateWindow(wn, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, w, h, 
+				SDL_CreateWindow(wn.data(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, w, h, 
 					(full ? SDL_WINDOW_FULLSCREEN : 0) | SDL_WINDOW_OPENGL));
 			
 			SDL_GL_CreateContext(win);
@@ -75,9 +77,49 @@ namespace dav
 							}
 							break;
 						case SDL_MOUSEMOTION:
+							if(mm_input_fn)
+							{
+								mm_input_fn(e.motion.x, e.motion.y, e.motion.xrel, e.motion.yrel);
+							}
+							break;
+						case SDL_MOUSEWHEEL:
+							if(mw_input_fn)
+							{
+								mw_input_fn(e.wheel.x, e.wheel.y);
+							}
+							break;
+						case SDL_MOUSEBUTTONDOWN:
 							if(m_input_fn)
 							{
-								m_input_fn(e.motion.x, e.motion.y, e.motion.xrel, e.motion.yrel);
+								switch(e.button.button)
+								{
+									case SDL_BUTTON_LEFT:
+										m_input_fn(MouseButtons::LEFT, e.button.x, e.button.y, true);
+										break;
+									case SDL_BUTTON_RIGHT:
+										m_input_fn(MouseButtons::RIGHT, e.button.x, e.button.y, true);
+										break;
+									case SDL_BUTTON_MIDDLE:
+										m_input_fn(MouseButtons::MIDDLE, e.button.x, e.button.y, true);
+										break;
+								}
+							}
+							break;
+						case SDL_MOUSEBUTTONUP:
+							if(m_input_fn)
+							{
+								switch(e.button.button)
+								{
+									case SDL_BUTTON_LEFT:
+										m_input_fn(MouseButtons::LEFT, e.button.x, e.button.y, false);
+										break;
+									case SDL_BUTTON_RIGHT:
+										m_input_fn(MouseButtons::RIGHT, e.button.x, e.button.y, false);
+										break;
+									case SDL_BUTTON_MIDDLE:
+										m_input_fn(MouseButtons::MIDDLE, e.button.x, e.button.y, false);
+										break;
+								}
 							}
 							break;
 	    	        }
@@ -107,10 +149,16 @@ namespace dav
 			update_fn = ufn;
 		}
 	
-		void set_input(kb_input_t kfn, m_input_t mfn)
+		void set_input(kb_input_t kfn)
 		{
 			kb_input_fn = kfn;
+		}
+
+		void set_mouse(m_input_t mfn, mm_input_t mmfn, mw_input_t mwfn)
+		{
 			m_input_fn = mfn;
+			mm_input_fn = mmfn;
+			mw_input_fn = mwfn;
 		}
 	
 		void init_controls(void)

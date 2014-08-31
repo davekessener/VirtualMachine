@@ -34,6 +34,8 @@ void Scan::scan(const path& p)
 {
 	using namespace boost::filesystem;
 
+	LOG("Scanning '%s'", p.string().data());
+
 	if(is_directory(p))
 	{
 		for(directory_iterator i(p), e ; i != e ; ++i)
@@ -49,12 +51,15 @@ void Scan::scan(const path& p)
 		if(ends_with(fn, MXT_CCEXT))
 		{
 			src_.insert(fn);
+			LOG("Inserted '%s'", fn.data());
 		}
 	}
 }
 
 void Scan::generateDependencies(void)
 {
+	LOG("Generating dependencies [...]");
+
 	for(const std::string& p : src_)
 	{
 		gen(p);
@@ -66,10 +71,12 @@ void Scan::gen(const std::string& p)
 	if(scanned_.find(p) != scanned_.cend()) return;
 	scanned_.insert(p);
 
+	LOG("Process file '%s'", p.data());
+
 	file_list_t dep;
 	std::string path(getPath(p));
 
-	LOG("Process file %s in %s", p.data(), path.data());
+	LOG("> in %s", path.data());
 
 	std::ifstream in(p);
 
@@ -79,12 +86,16 @@ void Scan::gen(const std::string& p)
 
 		std::getline(in, line);
 
+		if(line.empty()) continue;
+
 		auto i = line.find_first_of('"'),
 			 j = line.find_last_of('"');
 
 		if(starts_with(line, "#include")
 			&& i != j)
 		{
+			LOG("Found include line '%s' [%lu, %lu]", line.data(), i, j);
+
 			std::string fn(simplify(path + line.substr(i + 1, j - i - 1)));
 
 			LOG("> Includes %s", fn.data());
@@ -94,6 +105,8 @@ void Scan::gen(const std::string& p)
 	}
 
 	in.close();
+
+	LOG("[DONE]");
 
 	for(const std::string& s : dep)
 	{

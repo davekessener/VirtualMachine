@@ -15,7 +15,6 @@ namespace pkmn
 		typedef std::shared_ptr<Scene> Scene_ptr;
 		typedef std::weak_ptr<Scene> Scene_wptr;
 		typedef dav::sdl::Controls Controls;
-		typedef std::vector<std::string> params_t;
 
 		public:
 			static int run(const params_t&);
@@ -23,21 +22,19 @@ namespace pkmn
 			Scene( ) : running_(true) { }
 			void quit( ) { i_doQuit(); running_ = false; }
 			bool isRunning( ) const { return running_; }
+			static void change(Scene_ptr p) { temp_ = p; }
 		private:
 			virtual void init( ) { }
 			virtual void update(int) = 0;
 			virtual void input(Controls, bool) = 0;
 			virtual void render( ) const = 0;
 			virtual void release( ) { }
-//			virtual void suspend( ) { }
-//			virtual void wake( ) { }
 		private:
 			virtual void i_doQuit( ) { }
 		private:
 			static void doInit(int, int);
 			static bool doUpdate(int);
 			static void doKeyboard(Controls, bool);
-			static void doMouse(uint, uint, int, int);
 		private:
 			bool running_;
 		private:

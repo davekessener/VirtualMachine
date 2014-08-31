@@ -12,6 +12,7 @@ namespace pkmn
 		{
 			public:
 				static DWORD getImage(const void *, size_t);
+				static void updateImage(DWORD, const void *, size_t);
 				static void deleteImage(DWORD);
 			private:
 				static GLImageBuffer& instance( );
