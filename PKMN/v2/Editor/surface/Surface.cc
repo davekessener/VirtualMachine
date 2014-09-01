@@ -18,6 +18,8 @@ namespace editor { namespace surface
 	{
 		LOG("Key %u(%c) is pressed.", static_cast<DWORD>(key), static_cast<char>(key));
 
+		KeyPress(key);
+
 		if(!Focus()) return;
 
 		if(id_ == Focus())
@@ -46,6 +48,8 @@ namespace editor { namespace surface
 		{
 			p->i_doKeyUp(key);
 		}
+
+		KeyRelease(key);
 	}
 
 	void Surface::mouseDown(MouseButtons key, int x, int y)

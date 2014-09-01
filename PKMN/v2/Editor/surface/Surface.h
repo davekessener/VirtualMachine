@@ -3,6 +3,7 @@
 
 #include "../../common.h"
 #include <deque>
+#include <set>
 #include <memory>
 #include <algorithm>
 #include <cassert>
@@ -20,6 +21,7 @@ namespace editor
 			typedef std::deque<Surface_ptr> vec_t;
 			typedef dav::sdl::Controls Controls;
 			typedef dav::sdl::MouseButtons MouseButtons;
+			typedef std::set<Controls> key_set;
 
 			public:
 				Surface( ) : id_(GetID()), dirty_(true), hidden_(false) { }
@@ -91,9 +93,13 @@ namespace editor
 			private:
 				static uint GetID( ) { static uint id(0); return ++id; }
 				static Surface_ptr KeyLock(Surface_ptr = Surface_ptr());
+				static key_set& KeySet( ) { static key_set ks; return ks; }
+				static void KeyPress(Controls key) { KeySet().insert(key); }
+				static void KeyRelease(Controls key) { KeySet().erase(KeySet().find(key)); }
 			public:
 				static uint Focus(uint i = 0) { static uint f(0); if(i) f = i; return f; }
 				static uint WFocus(uint i = 0) { static uint f(0); if(i) f = i; return f; }
+				static bool IsKeyPressed(Controls key) { return KeySet().find(key) != KeySet().end(); }
 		};
 
 		typedef Surface::Surface_ptr Surface_ptr;

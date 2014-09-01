@@ -3,6 +3,7 @@
 #include "../Text.h"
 #include "Button.h"
 #include "StringList.h"
+#include "StringInput.h"
 #include <dav/gl.h>
 #include <dav/Logger.h>
 
@@ -19,28 +20,34 @@ void FileSelect::i_doInit(void)
 			LOG("Received string '%s' from SL!", s.data());
 			if(boost::filesystem::is_directory(dir_ + s))
 			{
-				cur_ = "";
-				idx_ = 0;
+				dynamic_cast<StringInput *>(&*input_)->setInput("");
 				dir_ += s;
 				if(dir_.back() != '/') dir_.push_back('/');
 				dirty();
 			}
 			else
 			{
-				cur_ = s;
-				idx_ = s.size();
+				dynamic_cast<StringInput *>(&*input_)->setInput(s);
 			}
 		}));
 	list_->init(0, MXT_BARH, width(), height() - 2 * MXT_BARH);
 	addChild(list_);
 
+	input_.reset(new StringInput([this](void)
+		{
+			hide();
+			select_(dir_ + dynamic_cast<StringInput *>(&*input_)->getInput());
+		}));
+	input_->init(0, height() - MXT_BARH, width() - 5 * Text::C_W / 2, MXT_BARH);
+	addChild(input_);
+
 	Surface_ptr p(new Button(std::string(1, (char)255), [this](void)
 		{
-			LOG("Received 'dir up' command.");
 			auto i = dir_.find_last_of('/', dir_.length() - 2);
 			if(i && i != std::string::npos)
 			{
 				dir_ = dir_.substr(0, i) + "/";
+				dynamic_cast<StringInput *>(&*input_)->setInput("");
 				dirty();
 			}
 		}));
@@ -53,6 +60,8 @@ void FileSelect::i_doInit(void)
 
 	p.reset(new Button("OK", [this](void)
 		{
+			hide();
+			select_(dir_ + dynamic_cast<StringInput *>(&*input_)->getInput());
 		}));
 	p->init(width() - 5 * Text::C_W / 2, height() - MXT_BARH, 5 * Text::C_W / 2, MXT_BARH);
 	addChild(p);
@@ -60,6 +69,13 @@ void FileSelect::i_doInit(void)
 
 void FileSelect::i_doUpdate(int d)
 {
+	const std::string &s(dynamic_cast<StringInput *>(&*input_)->getInput());
+
+	if(s != cur_)
+	{
+		cur_ = s;
+		dirty();
+	}
 }
 
 void FileSelect::i_doPrerender(void)
@@ -75,7 +91,7 @@ void FileSelect::i_doPrerender(void)
 			std::string fn(static_cast<path>(*i).string());
 			fn = fn.substr(fn.find_last_of('/') + 1);
 
-			if(cur_.empty() || (fn.length() <= cur_.length() && fn == cur_.substr(0, fn.length())))
+			if(cur_.empty() || (fn.length() >= cur_.length() && cur_ == fn.substr(0, cur_.length())))
 			{
 				if(is_directory(*i)) fn.push_back('/');
 				files.push_back(fn);

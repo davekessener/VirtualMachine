@@ -46,7 +46,11 @@ namespace editor
 		p->addItem("Edit", "IDEK", std::bind(&Editor::quit, this));
 		root_->init(0, 0, w, h);
 
-		dialog_.reset(new FileSelect);
+		dialog_.reset(new FileSelect([this](const std::string& file)
+		{
+			LOG("Entered file '%s'", file.data());
+			quit();
+		}));
 		dialog_->init(w / 4, h / 4, w / 2, h / 2);
 	}
 

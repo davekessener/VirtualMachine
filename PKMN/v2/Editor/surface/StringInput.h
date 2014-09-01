@@ -11,12 +11,14 @@ namespace editor
 	{
 		class StringInput : public Surface
 		{
-			typedef std::function<void(const std::string&)> input_fn;
+			typedef std::function<void(void)> sig_fn;
 			using Surface::MouseButtons;
 			using Surface::Controls;
 
 			public:
-				StringInput(input_fn in) : in_(in) { }
+				StringInput(sig_fn sig = nullptr) : sig_(sig) { }
+				inline void setInput(const std::string& s) { str_ = s; idx_ = o_ = 0; dirty(); }
+				inline const std::string& getInput( ) const { return str_; }
 			private:
 				void i_doInit( );
 				void i_doUpdate(int);
@@ -24,9 +26,9 @@ namespace editor
 				void i_doMouseUp(MouseButtons, int, int);
 				void i_doKeyDown(Controls);
 			private:
-				input_fn in_;
+				sig_fn sig_;
 				std::string str_;
-				int idx_, o_;
+				int idx_, o_, ml_;
 		};
 	}
 }
