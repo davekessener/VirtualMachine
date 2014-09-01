@@ -225,11 +225,11 @@ namespace
 
 		std::string s;
 
-		if(j != std::string::npos) s = p.substr(0, j - 1);
+		if(j != std::string::npos) s = p.substr(0, j + 1);
 
 		s += p.substr(i + 3);
 
-		return s;
+		return simplify(s);
 	}
 }
 

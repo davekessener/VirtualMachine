@@ -6,6 +6,7 @@
 #include <vector>
 #include <set>
 #include <dav/sdl.h>
+#include "surface/Surface.h"
 
 namespace editor
 {
@@ -19,7 +20,7 @@ namespace editor
 		public:
 			Editor(uint, uint);
 			void init( );
-			void update( );
+			void update(int);
 			void keyboard(Controls, bool);
 			void mouseMove(uint, uint, int, int);
 			void mouseClick(MouseButtons, uint, uint, bool);
@@ -30,6 +31,7 @@ namespace editor
 		private:
 			uint width_, height_;
 			bool running_;
+			surface::Surface_ptr root_, dialog_;
 
 			struct Keys
 			{
