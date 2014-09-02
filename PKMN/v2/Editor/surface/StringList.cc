@@ -18,9 +18,9 @@ void StringList::i_doRender(void) const
 {
 	point p(getAbsCoords()), q(p.x + width(), p.y + height());
 
-	dav::gl::draw_rect(p.x, p.y, q.x, q.y, 0x333333);
-	dav::gl::draw_rect(p.x + 1, p.y + 1, q.x, q.y, 0x999999);
-	dav::gl::draw_rect(p.x + 2, p.y + 2, q.x - 1, q.y - 1, 0xcccccc);
+	dav::gl::draw_rect(p.x, p.y, q.x, q.y, 0x303030);
+	dav::gl::draw_rect(p.x + 1, p.y + 1, q.x, q.y, 0x909090);
+	dav::gl::draw_rect(p.x + 2, p.y + 2, q.x - 1, q.y - 1, 0xc0c0c0);
 
 	int x = p.x + 4, y = p.y + 2, i = o_;
 
@@ -34,7 +34,7 @@ void StringList::i_doRender(void) const
 
 		if(i == idx_ + o_)
 		{
-			dav::gl::draw_rect(x - 2, y, q.x - 2, y + MXT_H, 0x444444);
+			dav::gl::draw_rect(x - 2, y, q.x - 2, y + MXT_H, 0x404040);
 			Text::drawText(x, y + Text::C_W / 4, s, 0xffffff);
 		}
 		else
@@ -44,6 +44,15 @@ void StringList::i_doRender(void) const
 
 		++i;
 		y += MXT_H;
+	}
+}
+
+void StringList::i_doMouseOver(bool over)
+{
+	if(!over)
+	{
+		idx_ = -1;
+		dirty();
 	}
 }
 

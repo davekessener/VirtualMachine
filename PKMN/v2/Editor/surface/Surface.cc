@@ -98,6 +98,20 @@ namespace editor { namespace surface
 
 			WFocus(id_);
 
+			Surface_ptr p = MouseLock();
+
+			if(p && p->id_ != id_)
+			{
+				p->i_doMouseOver(false);
+			}
+
+			if(!p || p->id_ != id_)
+			{
+				i_doMouseOver(true);
+			}
+
+			MouseLock(shared_from_this());
+
 			i_doMouseMove(x, y);
 		}
 	}
@@ -146,7 +160,7 @@ namespace editor { namespace surface
 
 	Surface_ptr Surface::KeyLock(Surface_ptr p)
 	{
-		static Surface_ptr lock;
+		static Surface_wptr lock;
 		
 		if(p)
 		{
@@ -155,7 +169,25 @@ namespace editor { namespace surface
 		}
 		else
 		{
-			p = lock;
+			p = lock.lock();
+			lock.reset();
+		}
+
+		return p;
+	}
+
+	Surface_ptr Surface::MouseLock(Surface_ptr p)
+	{
+		static Surface_wptr lock;
+
+		if(p)
+		{
+			lock = p;
+			p.reset();
+		}
+		else
+		{
+			p = lock.lock();
 			lock.reset();
 		}
 

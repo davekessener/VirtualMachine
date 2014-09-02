@@ -22,6 +22,7 @@ namespace editor
 				void i_doInit( );
 				void i_doUpdate(int) { }
 				void i_doRender( ) const;
+				void i_doMouseOver(bool);
 				void i_doMouseMove(int, int);
 				void i_doMouseDown(MouseButtons, int, int);
 				void i_doScroll(int);

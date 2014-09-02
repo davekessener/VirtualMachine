@@ -19,6 +19,8 @@ Map::Map(nbt::TAG_Compound::ptr_t tag)
 
 	bool noid = false, noname = false, now = false, noh = false;
 
+	changed_ = false;
+
 	if(!tag->hasTag(MXT_ID)) noid = true;
 	else id_ = tag->getLong(MXT_ID);
 
@@ -54,7 +56,7 @@ Map::Map(nbt::TAG_Compound::ptr_t tag)
 	
 	tag = tag->getCompoundTag(MXT_DATA);
 
-	std::vector<std::string> l{MXT_BOTTOM, MXT_ANIMATION, MXT_INTERMEDIATE, MXT_TOP};
+	const std::vector<std::string> l{MXT_BOTTOM, MXT_ANIMATION, MXT_INTERMEDIATE, MXT_TOP};
 	vec_t *p = layers_;
 	bool *e = empty_;
 
@@ -81,6 +83,40 @@ Map::Map(nbt::TAG_Compound::ptr_t tag)
 		++p;
 		++e;
 	}
+}
+
+Map::Map(QWORD id, const std::string& name, uint w, uint h)
+	: id_(id), name_(name), width_(w), height_(h), changed_(true)
+{
+	for(int i = MXT_LC ; i ; --i)
+	{
+		layers_[i].resize(width_ * height_);
+	}
+}
+
+nbt::TAG_Compound::ptr_t Map::save(void) const
+{
+	nbt::TAG_Compound::ptr_t tag = nbt::Make<nbt::TAG_Compound>();
+
+	tag->setLong(MXT_ID, id_);
+	tag->setString(MXT_NAME, name_);
+	tag->setInt(MXT_WIDTH, width_);
+	tag->setInt(MXT_HEIGHT, height_);
+
+	nbt::TAG_Compound::ptr_t data = nbt::Make<nbt::TAG_Compound>();
+
+	const std::vector<std::string> l{MXT_BOTTOM, MXT_ANIMATION, MXT_INTERMEDIATE, MXT_TOP};
+
+	for(int i = 0 ; i < MXT_LC ; ++i)
+	{
+		data->setIntArray(l.at(i), layers_[i]);
+	}
+
+	tag->setCompoundTag(MXT_DATA, data);
+
+	changed_ = false;
+
+	return tag;
 }
 
 }}

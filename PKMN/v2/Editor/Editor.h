@@ -16,6 +16,7 @@ namespace editor
 		typedef std::vector<std::string> params_t;
 		typedef dav::sdl::Controls Controls;
 		typedef dav::sdl::MouseButtons MouseButtons;
+		typedef surface::Surface_ptr Surface_ptr;
 
 		public:
 			Editor(uint, uint);
@@ -27,11 +28,25 @@ namespace editor
 			void mouseWheel(int, int);
 			static int run(const params_t&);
 		private:
-			void quit( ) { running_ = false; }
+			void newFile( );
+			void openFile( );
+			void saveFile( );
+			void saveAs( );
+			void closeFile( );
+			void quit( );
+			bool canSave( );
+			bool canSaveAs( );
+			bool canClose( );
+		private:
+			inline void setDialog(Surface_ptr p)
+				{ dialog_ = p; p->init(width_ / 3, height_ / 3, width_ / 3, height_ / 3); }
+			inline void setFileSelect(Surface_ptr p)
+				{ dialog_ = p; p->init(width_ / 4, height_ / 4, width_ / 2, height_ / 2); }
+			void tryToCloseFile(std::function<void(void)>);
 		private:
 			uint width_, height_;
 			bool running_;
-			surface::Surface_ptr root_, dialog_;
+			Surface_ptr root_, dialog_, file_;
 
 			struct Keys
 			{

@@ -7,8 +7,9 @@ namespace editor { namespace surface {
 
 void StringInput::i_doInit(void)
 {
-	ml_ = (width() - Text::C_W / 2) / Text::C_W;
+	ml_ = width() / Text::C_W - 1;
 	Focus(ID());
+	setInput("");
 }
 
 void StringInput::i_doUpdate(int d)
@@ -27,8 +28,8 @@ void StringInput::i_doRender(void) const
 	std::string s(str_.substr(o_));
 	if((long)s.length() > ml_) s = s.substr(0, ml_);
 
-	Text::drawText(p.x + Text::C_W / 4, (p.y + q.y) / 2 - Text::C_W / 2, s);
-	Text::drawText(p.x + Text::C_W / 4 + (idx_ - o_) * Text::C_W, (p.y + q.y) / 2 - Text::C_W / 2 + 1, "_");
+	Text::drawText(p.x + Text::C_W / 2, (p.y + q.y) / 2 - Text::C_W / 2, s);
+	Text::drawText(p.x + Text::C_W / 2 + (idx_ - o_) * Text::C_W, (p.y + q.y) / 2 - Text::C_W / 2 + 1, "_");
 }
 
 void StringInput::i_doMouseUp(MouseButtons b, int x, int y)

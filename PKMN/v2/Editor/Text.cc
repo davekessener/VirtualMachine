@@ -1,16 +1,21 @@
 #include "Text.h"
 #include <vector>
+#include <cassert>
 #include <dav/gl.h>
 #include <png/png.hpp>
+
+#define MXT_CHARSETPATH "charset.png"
 
 namespace editor
 {
 	Text::Text(void)
 	{
-		png::image<png::rgba_pixel> img("charset.png");
+		png::image<png::rgba_pixel> img(MXT_CHARSETPATH);
 		int w = img.get_width(), h = img.get_height();
 		std::vector<BYTE> buf(w * h * 4);
 		BYTE *p = &buf.front();
+
+		assert(w&&w==h&&!(w&(w-1)));
 
 		for(int y = 0 ; y < h ; ++y)
 		{

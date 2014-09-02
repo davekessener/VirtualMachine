@@ -7,7 +7,7 @@
 #include <dav/gl.h>
 #include <dav/Logger.h>
 
-#define MXT_BARH (Text::C_W * 3 / 2)
+#define MXT_BARH (Text::C_W * 2)
 
 namespace editor { namespace surface { 
 
@@ -106,8 +106,8 @@ void FileSelect::i_doRender(void) const
 {
 	point p(getAbsCoords()), q(p.x + width(), p.y + height());
 
-	dav::gl::draw_rect(p.x, p.y, q.x, q.y, 0xcccccc);
-	Text::drawText(p.x + MXT_BARH + 4, p.y + Text::C_W / 4, dir_);
+	dav::gl::draw_rect(p.x, p.y, q.x, q.y, 0xc0c0c0);
+	Text::drawText(p.x + MXT_BARH + Text::C_W / 2, p.y + MXT_BARH / 2 - Text::C_W / 2, dir_);
 }
 
 void FileSelect::i_doMouseUp(MouseButtons b, int x, int y)

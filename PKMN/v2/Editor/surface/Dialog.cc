@@ -7,11 +7,30 @@
 
 namespace editor { namespace surface {
 
+Dialog::Dialog(const std::string& msg, std::initializer_list<btn_t> l) : msg_(msg)
+{
+	btns_.reserve(l.size() + 1);
+
+	for(const btn_t& b : l)
+	{
+		btns_.push_back(Surface_ptr(new Button(b.first, [this, b](void) { b.second(); hide(); })));
+	}
+
+	btns_.push_back(Surface_ptr(new Button("Cancel", std::bind(&Dialog::hide, this))));
+}
+
 void Dialog::i_doInit(void)
 {
-	Surface_ptr p(new Button("OK", std::bind(&Dialog::hide, this)));
-	p->init(width() / 3, height() * 3 / 4, width() / 3, Text::C_W * 3 / 2);
-	addChild(p);
+	int n = btns_.size(), cw = Text::C_W / 2;
+	point s(height() / n - cw, Text::C_W * 3 / 2), 
+		  o(width() / 2 - n / 2 * (s.x + cw) + (n % 2 ? -s.x / 2 : cw / 2), height() * 3 / 4);
+
+	for(Surface_ptr p : btns_)
+	{
+		p->init(o.x, o.y, s.x, s.y);
+		addChild(p);
+		o.x += s.x + cw;
+	}
 }
 
 void Dialog::i_doUpdate(int d)

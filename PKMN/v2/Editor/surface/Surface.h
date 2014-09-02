@@ -35,16 +35,13 @@ namespace editor
 				inline void addChild(Surface_ptr p) { children_.push_front(p); p->setParent(shared_from_this()); }
 				inline void removeChild(uint id)
 				{ 
-					children_.erase(
-						std::find_if(
-							children_.begin(),
-							children_.end(),
-							[id](Surface_ptr p)
-							{ 
-								return p->id_ == id;
-							}
-						)
-					);
+					auto i = std::find_if(
+						children_.begin(), children_.end(), [id](Surface_ptr p) { return p->id_ == id; });
+					if(i != children_.end())
+					{
+						(*i)->setParent(Surface_ptr());
+						children_.erase(i);
+					}
 				}
 				inline void update(int d) { i_doUpdate(d); for(auto& p : children_) p->update(d); prerender(); }
 				inline void prerender( ) { if(dirty_) { i_doPrerender(); dirty_ = false; } }
@@ -78,6 +75,7 @@ namespace editor
 				virtual void i_doKeyDown(Controls) { }
 				virtual void i_doKeyUp(Controls) { }
 				virtual void i_doMouseDown(MouseButtons, int, int) { }
+				virtual void i_doMouseOver(bool) { }
 				virtual void i_doMouseMove(int, int) { }
 				virtual void i_doMouseUp(MouseButtons, int, int) { }
 				virtual void i_doScroll(int) { }
@@ -93,6 +91,7 @@ namespace editor
 			private:
 				static uint GetID( ) { static uint id(0); return ++id; }
 				static Surface_ptr KeyLock(Surface_ptr = Surface_ptr());
+				static Surface_ptr MouseLock(Surface_ptr = Surface_ptr());
 				static key_set& KeySet( ) { static key_set ks; return ks; }
 				static void KeyPress(Controls key) { KeySet().insert(key); }
 				static void KeyRelease(Controls key) { KeySet().erase(KeySet().find(key)); }
