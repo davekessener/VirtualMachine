@@ -57,12 +57,14 @@ namespace dav
 		typedef std::function<void(uint, uint, int, int)> mm_input_t;
 		typedef std::function<void(MouseButtons, uint, uint, bool)> m_input_t;
 		typedef std::function<void(int, int)> mw_input_t;
+		typedef std::function<void(void)> qhandle_t;
 	
 		void start(const std::string&, int, int, bool = false);
 		void set_init(init_t);
 		void set_update(update_t);
 		void set_input(kb_input_t);
 		void set_mouse(m_input_t, mm_input_t = nullptr, mw_input_t = nullptr);
+		void handle_quit(qhandle_t);
 	
 		void trap_mouse(bool = true);
 	}

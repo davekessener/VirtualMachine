@@ -20,7 +20,7 @@ void StringList::i_doRender(void) const
 
 	dav::gl::draw_rect(p.x, p.y, q.x, q.y, 0x303030);
 	dav::gl::draw_rect(p.x + 1, p.y + 1, q.x, q.y, 0x909090);
-	dav::gl::draw_rect(p.x + 2, p.y + 2, q.x - 1, q.y - 1, 0xc0c0c0);
+	dav::gl::draw_rect(p.x + 2, p.y + 2, q.x - 1, q.y - 1, 0xf0f0f0);
 
 	int x = p.x + 4, y = p.y + 2, i = o_;
 

@@ -2,14 +2,15 @@
 #include "File.h"
 #include <dav/gl.h>
 #include <dav/Logger.h>
+#include <dav/Timer.h>
 #include "surface/Menu.h"
 #include "surface/FileSelect.h"
 #include "surface/Dialog.h"
 #include "surface/Manager.h"
 
 #define MXT_TITLE "Editor"
-#define MXT_MAXSCREENW (1920)
-#define MXT_MAXSCREENH (1080-48)
+#define MXT_MAXSCREENW (1920-4)
+#define MXT_MAXSCREENH (1080-54)
 
 namespace editor
 {
@@ -27,6 +28,7 @@ namespace editor
 		sdl::set_mouse([&e](MouseButtons b, uint x, uint y, bool d) { e.mouseClick(b, x, y, d); },
 					   [&e](uint x, uint y, int dx, int dy) { e.mouseMove(x, y, dx, dy); },
 					   [&e](int dx, int dy) { e.mouseWheel(dx, dy); });
+		sdl::handle_quit([&e](void) { e.quit(); });
 
 		sdl::start(MXT_TITLE, e.width_, e.height_);
 
@@ -64,7 +66,15 @@ namespace editor
 
 	void Editor::update(int d)
 	{
+		static dav::Timer timer;
+
 		bool render = false;
+
+		if(timer.elapsed() > 250)
+		{
+			render = true;
+			timer.reset();
+		}
 
 		if(dialog_ && dialog_->hidden()) { dialog_.reset(); render = true; }
 
@@ -91,8 +101,6 @@ namespace editor
 
 	void Editor::keyboard(Controls key, bool pressed)
 	{
-		modifier_.press(key, pressed);
-
 		if(pressed && key == Controls::ESCAPE) quit();
 
 		Surface_ptr t = static_cast<bool>(dialog_) ? dialog_ : root_;
@@ -208,11 +216,11 @@ namespace editor
 	{
 		if(File::isLoaded() && File::hasChanged())
 		{
-			tryToCloseFile([this](void) { running_ = false; });
+			tryToCloseFile([this](void) { doQuit(); });
 		}
 		else
 		{
-			running_ = false;
+			doQuit();
 		}
 	}
 
@@ -288,6 +296,14 @@ namespace editor
 				)
 			)
 		);
+	}
+
+	void Editor::doQuit(void)
+	{
+		setDialog(Surface_ptr(new surface::Dialog("Are you sure you want to quit?",
+			{
+				std::make_pair("Yes", [this](void) { running_ = false; })
+			}, "No")));
 	}
 }
 

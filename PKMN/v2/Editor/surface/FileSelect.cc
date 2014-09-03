@@ -82,7 +82,7 @@ void FileSelect::i_doPrerender(void)
 {
 	using namespace boost::filesystem;
 
-	svec_t files;
+	svec_t files, dirs;
 
 	for(directory_iterator i(dir_), e ; i != e ; ++i)
 	{
@@ -93,11 +93,21 @@ void FileSelect::i_doPrerender(void)
 
 			if(cur_.empty() || (fn.length() >= cur_.length() && cur_ == fn.substr(0, cur_.length())))
 			{
-				if(is_directory(*i)) fn.push_back('/');
-				files.push_back(fn);
+				if(is_directory(*i))
+				{
+					fn.push_back('/');
+					dirs.push_back(fn);
+				}
+				else
+				{
+					files.push_back(fn);
+				}
 			}
 		}
 	}
+
+	dirs.insert(dirs.end(), files.cbegin(), files.cend());
+	files.swap(dirs);
 
 	dynamic_cast<StringList *>(&*list_)->load(files.cbegin(), files.cend());
 }

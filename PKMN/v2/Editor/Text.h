@@ -13,7 +13,6 @@ namespace editor
 			static const int C_W = 8;
 		private:
 			Text( );
-			~Text( );
 			void doDrawText(int, int, const std::string&, DWORD = 0) const;
 			void doDrawChar(int, int, char, DWORD = 0) const;
 		private:

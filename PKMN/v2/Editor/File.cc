@@ -108,7 +108,18 @@ namespace editor
 
 	void File::load(const std::string& fn)
 	{
-		FileHelper::set(new File(fn));
+		close();
+
+		try
+		{
+			File *f = new File(fn);
+			FileHelper::set(f);
+		}
+		catch(...)
+		{
+			LOG("ERR: Couldn't load file '%s'", fn.data());
+			throw std::string("couldn't load file!");
+		}
 	}
 
 	void File::close(void)

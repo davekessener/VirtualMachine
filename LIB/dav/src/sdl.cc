@@ -12,6 +12,7 @@ namespace dav
 		m_input_t m_input_fn = nullptr;
 		mm_input_t mm_input_fn = nullptr;
 		mw_input_t mw_input_fn = nullptr;
+		qhandle_t qhandle_fn = nullptr;
 	
 		std::map<int, Controls> controls;
 		void init_controls( );
@@ -54,7 +55,8 @@ namespace dav
 	    	        switch(e.type)
 					{
 	    	            case SDL_QUIT:
-	    	                running = false;
+							if(qhandle_fn) qhandle_fn();
+							else running = false;
 	    	                break;
 						case SDL_KEYDOWN:
 							if(kb_input_fn)
@@ -159,6 +161,11 @@ namespace dav
 			m_input_fn = mfn;
 			mm_input_fn = mmfn;
 			mw_input_fn = mwfn;
+		}
+
+		void handle_quit(qhandle_t qht)
+		{
+			qhandle_fn = qht;
 		}
 	
 		void init_controls(void)

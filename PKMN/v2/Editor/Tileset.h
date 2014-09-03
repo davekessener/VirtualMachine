@@ -11,7 +11,6 @@ namespace editor
 			static void bind( ) { instance().doBind(); }
 		private:
 			Tileset( );
-			~Tileset( );
 			void doBind( ) const;
 			static Tileset& instance( ) { static Tileset ts; return ts; }
 		private:

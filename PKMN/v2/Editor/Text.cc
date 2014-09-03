@@ -2,39 +2,14 @@
 #include <vector>
 #include <cassert>
 #include <dav/gl.h>
-#include <png/png.hpp>
+#include "surface/PNGLoader.h"
 
 #define MXT_CHARSETPATH "charset.png"
 
 namespace editor
 {
-	Text::Text(void)
+	Text::Text(void) : id_(surface::PNGLoader::loadPNG(MXT_CHARSETPATH))
 	{
-		png::image<png::rgba_pixel> img(MXT_CHARSETPATH);
-		int w = img.get_width(), h = img.get_height();
-		std::vector<BYTE> buf(w * h * 4);
-		BYTE *p = &buf.front();
-
-		assert(w&&w==h&&!(w&(w-1)));
-
-		for(int y = 0 ; y < h ; ++y)
-		{
-			for(int x = 0 ; x < w ; ++x)
-			{
-				auto c = img.get_pixel(x, y);
-				*p++ = c.red;
-				*p++ = c.green;
-				*p++ = c.blue;
-				*p++ = c.alpha;
-			}
-		}
-
-		id_ = dav::gl::create_texture(&buf.front(), w, h, dav::gl::RGBA);
-	}
-
-	Text::~Text(void)
-	{
-		dav::gl::delete_texture(id_);
 	}
 
 	void Text::doDrawText(int x, int y, const std::string& s, DWORD c) const

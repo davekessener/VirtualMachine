@@ -43,23 +43,11 @@ namespace editor
 			inline void setFileSelect(Surface_ptr p)
 				{ dialog_ = p; p->init(width_ / 4, height_ / 4, width_ / 2, height_ / 2); }
 			void tryToCloseFile(std::function<void(void)>);
+			void doQuit( );
 		private:
 			uint width_, height_;
 			bool running_;
 			Surface_ptr root_, dialog_, file_;
-
-			struct Keys
-			{
-				public:
-					inline void press(Controls k, bool p)
-					{
-						if(p) keys_.insert(k);
-						else { auto i = keys_.find(k); if(i != keys_.end()) keys_.erase(i); }
-					}
-					inline bool isPressed(Controls k) const { return keys_.find(k) != keys_.cend(); }
-				private:
-					std::set<Controls> keys_;
-			} modifier_;
 	};
 }
 

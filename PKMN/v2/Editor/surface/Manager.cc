@@ -2,27 +2,41 @@
 #include <vector>
 #include <string>
 #include "../File.h"
+#include "../Controller.h"
 #include <aux>
 #include "StringList.h"
 #include "Viewer.h"
+#include "Tileset.h"
+#include "Scrollable.h"
 
 namespace editor { namespace surface {
 
 namespace
 {
-	StringList& toSL(Surface_ptr p) { return *dynamic_cast<StringList *>(&*p); }
-	Viewer& toV(Surface_ptr p) { return *dynamic_cast<Viewer *>(&*p); }
+	inline StringList& toSL(Surface_ptr p) { return *dynamic_cast<StringList *>(&*p); }
+	inline Viewer& toV(Surface_ptr p) { return *dynamic_cast<Viewer *>(&*p); }
+	inline Tileset& toTS(Surface_ptr p) { return *dynamic_cast<Tileset *>(&*p); }
 }
 
 void Manager::i_doInit(void)
 {
 	list_.reset(new StringList([this](const std::string& s) { updateContent(s); }));
-	list_->init(0, 0, width() / 6, height());
+	list_->init(0, 0, width() / 8, height());
 	addChild(list_);
 
+	Surface_ptr p(new Scrolling);
+	tileset_.reset(new Tileset);
+	std::dynamic_pointer_cast<Scrolling>(p)->setScrollable(std::dynamic_pointer_cast<Scrollable>(tileset_));
+	p->init(width() - width() / 4, 0, width() / 4, height());
+	addChild(p);
+
+	Surface_ptr q(new Scrolling);
 	content_.reset(new Viewer);
-	content_->init(width() / 6, 0, width() - width() / 6, height());
-	addChild(content_);
+	std::dynamic_pointer_cast<Scrolling>(q)->setScrollable(std::dynamic_pointer_cast<Scrollable>(content_));
+	q->init(list_->width(), 0, width() - list_->width() - p->width(), height());
+	addChild(q);
+
+	Controller::load(1);
 }
 
 void Manager::i_doUpdate(int d)

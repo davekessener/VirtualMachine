@@ -65,6 +65,8 @@ namespace editor
 				inline void hide( ) { i_doHide(); hidden_ = true; }
 				inline void show( ) { i_doShow(); hidden_ = false; }
 				inline bool hidden( ) const { return hidden_; }
+				inline bool isOver(int x, int y) const
+					{ return x >= 0 && x < (long)width() && y >= 0 && y < (long)height(); }
 			protected:
 				point getAbsCoords( ) const;
 			private:

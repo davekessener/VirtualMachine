@@ -8,6 +8,7 @@ class PRGM
 		entries = []
 		Dir.foreach(path) do |entry|
 			next if entry == '..' or entry.start_with?('.')
+			next if entry == 'boost'
 			full_path = File.join(path, entry)
 			if File.directory?(full_path)
 				puts "#{space}Entering '#{full_path}':"

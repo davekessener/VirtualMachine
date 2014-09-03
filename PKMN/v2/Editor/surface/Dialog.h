@@ -18,7 +18,8 @@ namespace editor
 			using Surface::MouseButtons;
 
 			public:
-				Dialog(const std::string&, std::initializer_list<btn_t> = std::initializer_list<btn_t>());
+				Dialog(const std::string&, std::initializer_list<btn_t> = std::initializer_list<btn_t>(),
+						const std::string& = "Cancel");
 			private:
 				void i_doInit( );
 				void i_doUpdate(int);
