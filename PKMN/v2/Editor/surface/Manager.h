@@ -23,6 +23,7 @@ namespace editor
 				void updateContent(const std::string&);
 			private:
 				dialog_fn dialog_;
+				long mc_;
 				Surface_ptr list_, content_, tileset_;
 		};
 	}

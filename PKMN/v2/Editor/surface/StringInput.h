@@ -23,6 +23,7 @@ namespace editor
 				void i_doInit( );
 				void i_doUpdate(int);
 				void i_doRender( ) const;
+				void i_doMouseDown(MouseButtons, int, int);
 				void i_doMouseUp(MouseButtons, int, int);
 				void i_doKeyDown(Controls);
 			private:

@@ -118,8 +118,6 @@ void Scrolling::i_doInit(void)
 	scur_ = point(0, 0);
 
 	content_->setScrollPos(0, 0);
-//
-//	mesh_ = IconBuffer::registerIcon(MXT_MESHPATH);
 }
 
 void Scrolling::i_doUpdate(int d)
@@ -145,53 +143,13 @@ void Scrolling::i_doUpdate(int d)
 
 void Scrolling::i_doPrerender(void)
 {
-//	vs_ = hs_ = 0;
-//
-//	int sx = width() - 2 * MXT_SW, sy = height() - 2 * MXT_SW;
-//
-//	if(smax_.x > 0)
-//	{
-//		hs_ = sx / (smax_.x + 1);
-//	}
-//
-//	if(smax_.y > 0)
-//	{
-//		vs_ = sy / (smax_.y + 1);
-//	}
 }
 
 void Scrolling::i_doRender(void) const
 {
 	point p(getAbsCoords()), q(p.x + width(), p.y + height());
 
-//	ButtonHelper::renderButton(q.x - MXT_SW, q.y - MXT_SW, q.x, q.y);
-	dav::gl::draw_rect(q.x - MXT_SW, q.y - MXT_SW, q.x, q.y, 0x404040);
-
-//	for(int i = 1, e = width() / MXT_SW ; i < e ; ++i)
-//	{
-//		IconBuffer::renderIcon(mesh_, p.x + i * MXT_SW, q.y - MXT_SW, p.x + (i + 1) * MXT_SW, q.y);
-//	}
-//
-//	for(int i = 1, e = height() / MXT_SW ; i < e ; ++i)
-//	{
-//		IconBuffer::renderIcon(mesh_, q.x - MXT_SW, p.y + i * MXT_SW, q.x, p.y + (i + 1) * MXT_SW);
-//	}
-//
-//	ButtonHelper::renderButton(p.x, q.y - MXT_SW, p.x + MXT_SW, q.y);
-//	ButtonHelper::renderButton(q.x - MXT_SW, p.y, q.x, p.y + MXT_SW);
-//	ButtonHelper::renderButton(q.x - MXT_SW, q.y - MXT_SW, q.x, q.y);
-//
-//	if(hs_ > 0)
-//	{
-//		int dx = MXT_SW + scur_.x * hs_;
-//		ButtonHelper::renderButton(p.x + dx, q.y - MXT_SW, p.x + dx + hs_, q.y);
-//	}
-//
-//	if(vs_ > 0)
-//	{
-//		int dy = MXT_SW + scur_.y * vs_;
-//		ButtonHelper::renderButton(q.x - MXT_SW, p.y + dy, q.x, p.y + dy + vs_);
-//	}
+	dav::gl::fill_rect(q.x - MXT_SW, q.y - MXT_SW, q.x, q.y, 0x404040);
 }
 
 }}

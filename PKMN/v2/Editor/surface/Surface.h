@@ -67,6 +67,8 @@ namespace editor
 				inline bool hidden( ) const { return hidden_; }
 				inline bool isOver(int x, int y) const
 					{ return x >= 0 && x < (long)width() && y >= 0 && y < (long)height(); }
+				template<typename T>
+					std::shared_ptr<T> to( ) { return std::dynamic_pointer_cast<T>(shared_from_this()); }
 			protected:
 				point getAbsCoords( ) const;
 			private:

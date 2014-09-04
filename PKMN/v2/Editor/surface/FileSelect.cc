@@ -116,7 +116,7 @@ void FileSelect::i_doRender(void) const
 {
 	point p(getAbsCoords()), q(p.x + width(), p.y + height());
 
-	dav::gl::draw_rect(p.x, p.y, q.x, q.y, 0xc0c0c0);
+	dav::gl::fill_rect(p.x, p.y, q.x, q.y, 0xc0c0c0);
 	Text::drawText(p.x + MXT_BARH + Text::C_W / 2, p.y + MXT_BARH / 2 - Text::C_W / 2, dir_);
 }
 

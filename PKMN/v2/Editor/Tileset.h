@@ -9,12 +9,17 @@ namespace editor
 	{
 		public:
 			static void bind( ) { instance().doBind(); }
+			static void set(DWORD id) { instance().doSet(id); }
+			static DWORD get( ) { return instance().doGet(); }
+			static bool GRID;
 		private:
 			Tileset( );
 			void doBind( ) const;
+			void doSet(DWORD);
+			DWORD doGet( ) const;
 			static Tileset& instance( ) { static Tileset ts; return ts; }
 		private:
-			DWORD id_;
+			DWORD id_, cur_;
 		private:
 			Tileset(const Tileset&) = delete;
 			Tileset& operator=(const Tileset&) = delete;

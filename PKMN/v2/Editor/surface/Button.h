@@ -15,9 +15,11 @@ namespace editor
 			using Surface::MouseButtons;
 
 			public:
-				Button(const std::string& msg, enter_fn fn) : msg_(msg), fn_(fn), down_(false), alt_(false) { }
+				Button(const std::string& msg, enter_fn fn) : msg_(msg), id_(0), fn_(fn) { }
+				Button(DWORD id, enter_fn fn) : msg_(""), id_(id), fn_(fn) { }
+				inline void force(bool f) { if(f != force_) { force_ = f; dirty(); } }
 			private:
-				void i_doInit( ) { }
+				void i_doInit( );
 				void i_doUpdate(int) { }
 				void i_doRender( ) const;
 				void i_doMouseDown(MouseButtons, int, int);
@@ -26,8 +28,9 @@ namespace editor
 				inline void changeAlt(bool f) { if(f != alt_) { alt_ = f; dirty(); } }
 			private:
 				std::string msg_;
+				DWORD id_;
 				enter_fn fn_;
-				bool down_, alt_;
+				bool down_, alt_, force_;
 		};
 	}
 }

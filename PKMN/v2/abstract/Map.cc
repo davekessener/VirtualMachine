@@ -90,7 +90,7 @@ Map::Map(QWORD id, const std::string& name, uint w, uint h)
 {
 	for(int i = MXT_LC ; i ; --i)
 	{
-		layers_[i].resize(width_ * height_);
+		layers_[i - 1].resize(width_ * height_);
 	}
 }
 

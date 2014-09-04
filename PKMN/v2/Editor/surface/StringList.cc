@@ -18,9 +18,9 @@ void StringList::i_doRender(void) const
 {
 	point p(getAbsCoords()), q(p.x + width(), p.y + height());
 
-	dav::gl::draw_rect(p.x, p.y, q.x, q.y, 0x303030);
-	dav::gl::draw_rect(p.x + 1, p.y + 1, q.x, q.y, 0x909090);
-	dav::gl::draw_rect(p.x + 2, p.y + 2, q.x - 1, q.y - 1, 0xf0f0f0);
+	dav::gl::fill_rect(p.x, p.y, q.x, q.y, 0x303030);
+	dav::gl::fill_rect(p.x + 1, p.y + 1, q.x, q.y, 0x909090);
+	dav::gl::fill_rect(p.x + 2, p.y + 2, q.x - 1, q.y - 1, 0xf0f0f0);
 
 	int x = p.x + 4, y = p.y + 2, i = o_;
 
@@ -34,7 +34,7 @@ void StringList::i_doRender(void) const
 
 		if(i == idx_ + o_)
 		{
-			dav::gl::draw_rect(x - 2, y, q.x - 2, y + MXT_H, 0x404040);
+			dav::gl::fill_rect(x - 2, y, q.x - 2, y + MXT_H, 0x404040);
 			Text::drawText(x, y + Text::C_W / 4, s, 0xffffff);
 		}
 		else

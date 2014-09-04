@@ -21,12 +21,14 @@ namespace editor
 		public:
 			static iterator begin( );
 			static iterator end( );
-			static void insert(iterator, const std::string&, uint = 1, uint = 1);
+			static DWORD insert(iterator, const std::string&, uint = 1, uint = 1);
+			static DWORD insert(DWORD, const std::string&, uint = 1, uint = 1);
 			static void erase(iterator);
 			static map_t& get(QWORD);
 			static bool hasName( );
 			static void save(const std::string& = "");
 			static bool hasChanged(bool = false);
+			static DWORD getNextID( );
 		public:
 			static void load(const std::string&);
 			static void create( ) { load(""); }

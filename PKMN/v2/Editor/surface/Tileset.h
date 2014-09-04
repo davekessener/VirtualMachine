@@ -10,14 +10,18 @@ namespace editor
 	{
 		class Tileset : public Scrollable
 		{
+			using Surface::MouseButtons;
+
 			public:
 			private:
 				void i_doInit( );
 				void i_doUpdate(int);
 				void i_doRender( ) const;
+				void i_doMouseUp(MouseButtons, int, int);
 				point getScrollSizes( ) const;
 				void setScrollPos(int, int);
 			private:
+				DWORD id_;
 				point o_, s_;
 		};
 	}

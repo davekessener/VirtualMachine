@@ -4,7 +4,7 @@
 #include <dav/Logger.h>
 #include "../Text.h"
 
-#define MXT_BARH (Text::C_W * 3 / 2)
+#define MXT_BARH (Text::C_W * 2)
 
 namespace editor { namespace surface
 {
@@ -87,8 +87,8 @@ namespace editor { namespace surface
 	{
 		point p(getAbsCoords()), q(p.x + width(), p.y + height());
 
-		dav::gl::draw_rect(p.x, p.y, q.x, q.y, 0xffffff);
-		dav::gl::draw_rect(p.x, p.y, q.x, p.y + MXT_BARH, 0xc0c0c0);
+		dav::gl::fill_rect(p.x, p.y, q.x, q.y, 0xffffff);
+		dav::gl::fill_rect(p.x, p.y, q.x, p.y + MXT_BARH, 0xc0c0c0);
 
 		int x = 0, i = 0;
 		for(const auto& m : menudata_)
@@ -97,10 +97,11 @@ namespace editor { namespace surface
 			
 			if(idx_ == i)
 			{
-				dav::gl::draw_rect(p.x + x, p.y, p.x + x + w, p.y + MXT_BARH, 0x404040);
+				dav::gl::fill_rect(p.x + x, p.y, p.x + x + w, p.y + MXT_BARH, 0x404040);
 			}
 
-			Text::drawText(p.x + x + Text::C_W / 2, p.y + Text::C_W / 4, m.first, idx_ == i ? 0xffffff : 0);
+			Text::drawText(p.x + x + Text::C_W / 2, (p.y + MXT_BARH) / 2 - Text::C_W / 2, m.first,
+				idx_ == i ? 0xffffff : 0);
 
 			x += w;
 			++i;
@@ -120,6 +121,7 @@ namespace editor { namespace surface
 	{
 		if(x < 0 || x >= (long)width() || y < 0 || y >= MXT_BARH)
 		{
+			i_doMouseOver(false);
 			removeCurMenu();
 			return;
 		}
@@ -276,7 +278,7 @@ namespace editor { namespace surface
 	{
 		point o(getAbsCoords()), q(o.x + width(), o.y + height());
 
-		dav::gl::draw_rect(o.x, o.y, q.x, q.y, 0xffffff);
+		dav::gl::fill_rect(o.x, o.y, q.x, q.y, 0xffffff);
 
 		int y = o.y, i = 0;
 		for(const auto& p : v_)
@@ -285,11 +287,11 @@ namespace editor { namespace surface
 
 			if(idx_ == i && p.enabled)
 			{
-				dav::gl::draw_rect(o.x, y, q.x, y + MXT_BARH, 0x404040);
+				dav::gl::fill_rect(o.x, y, q.x, y + MXT_BARH, 0x404040);
 				tc = 0xffffff;
 			}
 
-			Text::drawText(o.x + Text::C_W / 2, y + Text::C_W / 4, p.id, tc);
+			Text::drawText(o.x + Text::C_W / 2, y + (MXT_BARH - Text::C_W) / 2, p.id, tc);
 
 			y += MXT_BARH;
 			++i;

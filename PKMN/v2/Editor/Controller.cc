@@ -3,6 +3,9 @@
 #include <functional>
 #include <cassert>
 
+bool editor::Controller::GRID = false;
+bool editor::Controller::SPLIT = false;
+
 namespace editor
 {
 	namespace
@@ -38,14 +41,19 @@ namespace editor
 				History( ) : data_(new vec_t) { }
 				void add(uint l, uint x, uint y, uint n, uint o)
 				{
-					data_->push_back(data_t{l, x, y, std::make_pair(n, o)});
+					if(std::find_if(data_->begin(), data_->end(),
+						[x, y](const data_t& d){ return x == d.x && y == d.y; }) == data_->end())
+					{
+						data_->push_back(data_t{l, x, y, std::make_pair(n, o)});
+					}
 				}
 				void clear( ) { data_.reset(new vec_t); }
 				bftor undo(set_fn fn) const { return bftor(data_, [](const value_t& p){return p.second;}, fn); }
 				bftor redo(set_fn fn) const { return bftor(data_, [](const value_t& p){return p.first;}, fn); }
+				bool empty( ) const { return data_->empty(); }
 			private:
 				data_ptr data_;
-		} history;
+		};
 	}
 
 // # ===========================================================================
@@ -63,7 +71,8 @@ namespace editor
 			inline void undo( ) { if(!undo_.empty()) dodo(undo_, redo_); }
 			inline void redo( ) { if(!redo_.empty()) dodo(redo_, undo_); }
 			inline bool changed( ) const { return changed_; }
-			inline void save( ) { File::get(map_.ID()) = map_; changed_ = false; File::hasChanged(true); }
+			inline void save( )
+				{ if(changed_) { File::get(map_.ID()) = map_; changed_ = false; File::hasChanged(true); } }
 			void addBuffer(uint, uint, uint, DWORD);
 			void commitBuffer( );
 		private:
@@ -73,17 +82,21 @@ namespace editor
 			map_t map_;
 			dostack_t undo_, redo_;
 			bool changed_;
+			History history;
 	};
 
 // # ===========================================================================
 
 	void Controller::Impl::set(uint l, uint x, uint y, DWORD v)
 	{
+		if(!history.empty()) commitBuffer();
+
 		DWORD old = map_.get(l, x, y);
 
 		map_.set(l, x, y, v);
 
 		undo_.push(std::make_pair([=]{ map_.set(l, x, y, old); }, [=]{ map_.set(l, x, y, v); }));
+		while(!redo_.empty()) redo_.pop();
 
 		changed_ = true;
 	}
@@ -101,8 +114,10 @@ namespace editor
 
 	void Controller::Impl::commitBuffer(void)
 	{
+		if(history.empty()) return;
 		auto sfn = [this](uint l, uint x, uint y, DWORD v) { map_.set(l, x, y, v); };
 		undo_.push(std::make_pair(history.undo(sfn), history.redo(sfn)));
+		while(!redo_.empty()) redo_.pop();
 		history.clear();
 	}
 
@@ -182,14 +197,14 @@ namespace editor
 
 	void Controller::setBuffer(uint l, uint x, uint y, DWORD v)
 	{
-		assert(impl_);
-		impl_->addBuffer(l, x, y, v);
+		assert(instance().impl_);
+		instance().impl_->addBuffer(l, x, y, v);
 	}
 
 	void Controller::commitBuffer(void)
 	{
-		assert(impl_);
-		impl_->commitBuffer();
+		assert(instance().impl_);
+		instance().impl_->commitBuffer();
 	}
 }
 

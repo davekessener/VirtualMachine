@@ -1,37 +1,37 @@
 #include "Button.h"
 #include "../Text.h"
 #include "ButtonHelper.h"
+#include "IconBuffer.h"
 #include <dav/gl.h>
 #include <dav/Logger.h>
 
 namespace editor { namespace surface {
 
+void Button::i_doInit(void)
+{
+	down_ = false;
+	alt_ = false;
+	force_ = false;
+}
+
 void Button::i_doRender(void) const
 {
-	using dav::gl::draw_rect;
+	using dav::gl::fill_rect;
+
+	bool d = alt_ || force_;
 
 	point p(getAbsCoords()), q(p.x + width(), p.y + height());
-	point t((p.x + q.x) / 2 - msg_.length() * Text::C_W / 2, (p.y + q.y) / 2 - Text::C_W / 2);
+	point t((p.x + q.x) / 2 - msg_.length() * Text::C_W / 2 + d, (p.y + q.y) / 2 - Text::C_W / 2 + d);
+	point i((p.x + q.x) / 2 - 8 + d, (p.y + q.y) / 2 - 8 + d);
 
-	ButtonHelper::renderButton(p.x, p.y, q.x, q.y, alt_);
-
-	if(alt_)
+	ButtonHelper::renderButton(p.x, p.y, q.x, q.y, d);
+	
+	if(id_)
 	{
-//		draw_rect(p.x, p.y, q.x, q.y, 0xf2f2f2);
-//		draw_rect(p.x, p.y, q.x - 1, q.y - 1, 0x303030);
-//		draw_rect(p.x + 1, p.y + 1, q.x - 1, q.y - 1, 0xc0c0c0);
-//		draw_rect(p.x + 1, p.y + 1, q.x - 2, q.y - 2, 0x909090);
-//		draw_rect(p.x + 2, p.y + 2, q.x - 1, q.y - 1, 0xc0c0c0);
-
-		Text::drawText(t.x + 1, t.y + 1, msg_);
+		IconBuffer::renderIcon(id_, i.x, i.y, i.x + 16, i.y + 16);
 	}
-	else
+	else if(!msg_.empty())
 	{
-//		draw_rect(p.x, p.y, q.x, q.y, 0x303030);
-//		draw_rect(p.x, p.y, q.x - 1, q.y - 1, 0xf2f2f2);
-//		draw_rect(p.x + 1, p.y + 1, q.x - 1, q.y - 1, 0x909090);
-//		draw_rect(p.x + 1, p.y + 1, q.x - 2, q.y - 2, 0xc0c0c0);
-
 		Text::drawText(t.x, t.y, msg_);
 	}
 }

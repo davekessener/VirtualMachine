@@ -1,8 +1,10 @@
 #include "Editor.h"
-#include "File.h"
 #include <dav/gl.h>
 #include <dav/Logger.h>
 #include <dav/Timer.h>
+#include "File.h"
+#include "Tileset.h"
+#include "Controller.h"
 #include "surface/Menu.h"
 #include "surface/FileSelect.h"
 #include "surface/Dialog.h"
@@ -47,6 +49,9 @@ namespace editor
 		p->addItem("File", "Save As ...", std::bind(&Editor::saveAs,    this), std::bind(&Editor::canSaveAs, this));
 		p->addItem("File", "Close",       std::bind(&Editor::closeFile, this), std::bind(&Editor::canClose,  this));
 		p->addItem("File", "Quit",        std::bind(&Editor::quit,      this));
+		p->addItem("View", "Tileset Grid", []{Tileset::GRID=!Tileset::GRID;}, []{return Controller::isLoaded();});
+		p->addItem("View", "Map Grid", []{Controller::GRID=!Controller::GRID;}, []{return Controller::isLoaded();});
+		p->addItem("View", "Map Split", []{Controller::SPLIT=!Controller::SPLIT;}, []{return Controller::isLoaded();});
 		root_->init(0, 0, w, h);
 
 		file_.reset(new surface::Manager([this](Surface_ptr p, float wr, float hr)

@@ -60,14 +60,18 @@ DWORD IconBuffer::Impl::registerIcon(const std::string& s)
 
 	pkmn::render::GLImageBuffer::updateImage(id_, &img_.front(), MXT_S * MXT_IS);
 
-	log_[s] = next_;
+	log_[s] = ++next_;
 
-	return next_++;
+	return next_;
 }
 
 void IconBuffer::Impl::drawIcon(DWORD id, int x1, int y1, int x2, int y2) const
 {
+	assert(id>0);
+
 	dav::gl::bind_texture(id_);
+
+	--id;
 
 	float u = (id % MXT_S) / (double)MXT_S, v = (id / MXT_S) / (double)MXT_S;
 

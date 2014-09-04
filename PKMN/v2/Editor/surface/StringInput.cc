@@ -20,16 +20,36 @@ void StringInput::i_doRender(void) const
 {
 	point p(getAbsCoords()), q(p.x + width(), p.y + height());
 
-	dav::gl::draw_rect(p.x, p.y, q.x, q.y, 0x808080);
-	dav::gl::draw_rect(p.x + 1, p.y + 1, q.x, q.y, 0xd4d0c8);
-	dav::gl::draw_rect(p.x + 1, p.y + 1, q.x - 1, q.y - 1, 0x404040);
-	dav::gl::draw_rect(p.x + 2, p.y + 2, q.x - 1, q.y - 1, 0xffffff);
+	dav::gl::fill_rect(p.x, p.y, q.x, q.y, 0x808080);
+	dav::gl::fill_rect(p.x + 1, p.y + 1, q.x, q.y, 0xd4d0c8);
+	dav::gl::fill_rect(p.x + 1, p.y + 1, q.x - 1, q.y - 1, 0x404040);
+	dav::gl::fill_rect(p.x + 2, p.y + 2, q.x - 1, q.y - 1, 0xffffff);
 
 	std::string s(str_.substr(o_));
 	if((long)s.length() > ml_) s = s.substr(0, ml_);
 
 	Text::drawText(p.x + Text::C_W / 2, (p.y + q.y) / 2 - Text::C_W / 2, s);
-	Text::drawText(p.x + Text::C_W / 2 + (idx_ - o_) * Text::C_W, (p.y + q.y) / 2 - Text::C_W / 2 + 1, "_");
+
+	if(hasFocus())
+	{
+		Text::drawText(p.x + Text::C_W / 2 + (idx_ - o_) * Text::C_W, (p.y + q.y) / 2 - Text::C_W / 2 + 1, "_");
+	}
+}
+
+void StringInput::i_doMouseDown(MouseButtons b, int x, int y)
+{
+	if(b == MouseButtons::LEFT && isOver(x, y))
+	{
+		Focus(ID());
+		int i = (x - Text::C_W / 2) / Text::C_W + o_;
+		if(i > (int)str_.length()) i = str_.length();
+		if(i < 0) i = 0;
+		if(i != idx_)
+		{
+			idx_ = i;
+			dirty();
+		}
+	}
 }
 
 void StringInput::i_doMouseUp(MouseButtons b, int x, int y)

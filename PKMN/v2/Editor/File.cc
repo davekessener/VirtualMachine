@@ -37,7 +37,10 @@ namespace editor
 			Impl(const std::string&);
 			inline iterator begin( ) { return v_.begin(); }
 			inline iterator end( ) { return v_.end(); }
-			void insert(iterator, const std::string&, uint, uint);
+			DWORD insert(iterator, const std::string&, uint, uint);
+			inline DWORD insert(DWORD id, const std::string& name, uint w, uint h)
+			{ return insert(
+				std::find_if(v_.begin(), v_.end(), [id](const map_t& m) { return m.ID() == id; }), name, w, h); }
 			inline void erase(iterator i) { v_.erase(i); changed_ = true; }
 			inline map_t& get(QWORD id)
 				{ for(map_t& m : v_) if(m.ID() == id) return m; assert(!"ID doesn't exist!"); }
@@ -46,6 +49,7 @@ namespace editor
 			inline bool hasChanged( ) const
 				{ for(const map_t& m : v_) if(m.hasChanged()) return true; return changed_; }
 			inline void change( ) { changed_ = true; }
+			inline DWORD getNextID( ) const { return v_.empty() ? 0 : v_.back().ID() + 1; }
 		private:
 			std::string fn_;
 			vec_t v_;
@@ -64,9 +68,14 @@ namespace editor
 		return instance().impl_->end();
 	}
 
-	void File::insert(iterator i, const std::string& name, uint w, uint h)
+	DWORD File::insert(iterator i, const std::string& name, uint w, uint h)
 	{
-		instance().impl_->insert(i, name, w ? w : 1, h ? h : 1);
+		return instance().impl_->insert(i, name, w ? w : 1, h ? h : 1);
+	}
+
+	DWORD File::insert(DWORD id, const std::string& name, uint w, uint h)
+	{
+		return instance().impl_->insert(id, name, w ? w : 1, h ? h : 1);
 	}
 
 	void File::erase(iterator i)
@@ -102,6 +111,11 @@ namespace editor
 			return     (Controller::isLoaded() && Controller::hasChanged())
 					||  instance().impl_->hasChanged();
 		}
+	}
+
+	DWORD File::getNextID(void)
+	{
+		return instance().impl_->getNextID();
 	}
 
 // # ---------------------------------------------------------------------------
@@ -185,15 +199,17 @@ namespace editor
 		changed_ = false;
 	}
 
-	void File::Impl::insert(iterator i, const std::string& name, uint w, uint h)
+	DWORD File::Impl::insert(iterator i, const std::string& name, uint w, uint h)
 	{
+		DWORD id = 0;
+
 		if(v_.empty())
 		{
-			v_.push_back(map_t(0, name, w, h));
+			v_.push_back(map_t(id = 0, name, w, h));
 		}
 		else if(i == v_.end())
 		{
-			v_.push_back(map_t((*--i).ID() + 1, name, w, h));
+			v_.push_back(map_t(id = (*--i).ID() + 1, name, w, h));
 		}
 		else
 		{
@@ -202,8 +218,10 @@ namespace editor
 				j->setID(j->ID() + 1);
 			}
 
-			v_.insert(i, map_t(i->ID() - 1, name, w, h));
+			v_.insert(i, map_t(id = i->ID() - 1, name, w, h));
 		}
+
+		return id;
 	}
 
 	void File::Impl::save(const std::string& fn)
