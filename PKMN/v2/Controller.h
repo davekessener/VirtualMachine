@@ -18,6 +18,7 @@ namespace pkmn
 			static Controller& instance( );
 			void update(int);
 			void render( ) const;
+			Player& getPlayer( );
 			~Controller( );
 		private:
 			Controller(nbt::TAG_Compound::ptr_t);

@@ -10,7 +10,7 @@
 class Screen
 {
 	protected:
-	typedef sdl::Controls Controls;
+	typedef dav::sdl::Controls Controls;
 	typedef std::set<Controls> modifier_t;
 	typedef std::function<void(void)> render_fn;
 	typedef std::shared_ptr<Screen> screen_ptr;
@@ -23,7 +23,7 @@ class Screen
 		bool alive( ) const { return alive_; }
 		void render( ) const { assert(i_ready()); render_(); if(static_cast<bool>(sub_)) sub_->render(); }
 		void suspend(bool s = true) { i_suspend(s); }
-		void keyPress(sdl::Controls c, const std::set<sdl::Controls>& m) { i_keyPress(c, m); }
+		void keyPress(Controls c, const std::set<Controls>& m) { i_keyPress(c, m); }
 	protected:
 		void setRender(const render_fn& r) { render_ = r; }
 		void setChild(screen_ptr p) { sub_ = p; }

@@ -1,5 +1,7 @@
 #include "Map.h"
 #include "Config.h"
+#include "Controller.h"
+#include "Player.h"
 #include <dav/Logger.h>
 
 namespace pkmn
@@ -34,13 +36,15 @@ namespace pkmn
 #undef max
 #undef min
 
-		ts_.bind();
-
 		for(size_t l = 0 ; l < map_.size() ; ++l)
 		{
+			if(l == 2) renderEvents(tx, ty);
+
 			if(map_.isLayerEmpty(l)) continue;
 
 			const auto& layer(map_[l]);
+
+			ts_.bind();
 
 			for(long y = sy ; y < dh ; ++y)
 			{
@@ -55,6 +59,13 @@ namespace pkmn
 				}
 			}
 		}
+	}
+
+	void Map::renderEvents(int tx, int ty) const
+	{
+		Player &p(Controller::instance().getPlayer());
+		
+		p.render(tx, ty);
 	}
 }
 

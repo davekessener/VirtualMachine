@@ -23,7 +23,7 @@ class Randomizer
 {
 	typedef std::vector<I> ivec;
 	typedef typename ivec::const_iterator const_iterator;
-	typedef typename lib::aux::deref_trait<I>::value_type value_type;
+	typedef typename dav::aux::deref_trait<I>::value_type value_type;
 
 	public:
 		void load(I, I);

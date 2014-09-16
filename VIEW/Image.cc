@@ -1,4 +1,4 @@
-#include <gz/gzstream>
+#include <dav/gzstream.h>
 #include <vector>
 #include <cassert>
 #include "Image.h"
@@ -6,14 +6,16 @@
 #include "Manager.h"
 #include "encrypt_stream.hpp"
 
+using namespace dav;
+
 void Image::load(const std::string& fn)
 {
-	dav::imgheader_t dav;
+	imgheader_t dav;
 	gzip::igzstream in_raw(fn.c_str());
 	encrypt_stream<gzip::igzstream> in(in_raw);
 
 	in.read(reinterpret_cast<char *>(&dav), sizeof(dav));
-	assert(dav.id==dav::DAV_MAGIC);
+	assert(dav.id==DAV_MAGIC);
 	width_ = dav.width;
 	height_ = dav.height;
 	data_.resize(width_ * height_ * 3);

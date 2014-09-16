@@ -24,9 +24,12 @@
 #define MXT_STEP 16
 #define MXT_CHARSET "./charset.png"
 
+using namespace dav;
+
 struct Manager::Impl
 {
 	typedef sdl::Controls Controls;
+	typedef sdl::MouseButtons MouseButtons;
 	typedef unsigned int uint;
 
 	GLBuffer glBuf_;
@@ -39,7 +42,7 @@ struct Manager::Impl
 	void do_init(int, int);
 	bool do_update(int);
 	void do_keyboard(Controls, bool);
-	void do_mouse(uint, uint, int, int);
+	void do_click(MouseButtons, uint, uint, bool);
 
 	inline bool pressed(Controls c) { return modifier_.find(c) != modifier_.cend(); }
 	Screen& getScreen(void);
@@ -60,8 +63,8 @@ int Manager::run(const std::vector<std::string>& args)
 
 	sdl::set_init(  [this](int w, int h){ impl_->do_init(w, h); });
 	sdl::set_update([this](int d){ return impl_->do_update(d); });
-	sdl::set_input( [this](Controls c, bool p){ impl_->do_keyboard(c, p); },
-				    [this](uint x, uint y, int dx, int dy){ impl_->do_mouse(x, y, dx, dy); });
+	sdl::set_input( [this](Controls c, bool p){ impl_->do_keyboard(c, p); });
+	sdl::set_mouse( [this](sdl::MouseButtons mb, uint x, uint y, bool p){ impl_->do_click(mb, x, y, p); });
 
 	sdl::start(MXT_WINDOWNAME, MXT_WIDTH, MXT_HEIGHT, true);
 
@@ -198,7 +201,7 @@ void Manager::Impl::do_keyboard(sdl::Controls c, bool down)
 	}
 }
 
-void Manager::Impl::do_mouse(uint x, uint y, int dx, int dy)
+void Manager::Impl::do_click(MouseButtons mb, uint x, uint y, bool pressed)
 {
 }
 

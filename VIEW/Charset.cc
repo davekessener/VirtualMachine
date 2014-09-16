@@ -5,6 +5,8 @@
 #include <dav/gl.h>
 #include "png.h"
 
+using namespace dav;
+
 struct Charset::Impl
 {
 	DWORD id_;

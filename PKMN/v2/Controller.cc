@@ -72,6 +72,11 @@ namespace pkmn
 		impl_->render();
 	}
 
+	Player& Controller::getPlayer(void)
+	{
+		return impl_->player_;
+	}
+
 // # ===========================================================================
 
 	void Controller::Impl::update(int d)
@@ -100,7 +105,7 @@ namespace pkmn
 		o.y = Config::SCREEN_HEIGHT / 2 - o.y;
 
 		map_->render(o.x, o.y);
-		player_.render(o.x, o.y);
+//		player_.render(o.x, o.y);
 	}
 
 	Controller::Impl::Impl(nbt::TAG_Compound::ptr_t p) : player_(p), camera_()

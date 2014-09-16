@@ -13,6 +13,8 @@ namespace pkmn
 			Map(DWORD);
 			void render(int, int) const;
 		private:
+			void renderEvents(int, int) const;
+		private:
 			const abstract::Map &map_;
 			render::TileSet ts_;
 	};

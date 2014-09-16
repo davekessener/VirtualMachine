@@ -54,7 +54,7 @@ void Manager::i_doInit(void)
 
 	content_.reset(new Scrolling);
 	content_->to<Scrolling>()->setScrollable(std::shared_ptr<Scrollable>(new Viewer));
-	content_->init(list_->width(), 0, width() - list_->width() - p->width() - 1, height());
+	content_->init(list_->width(), 0, width() - list_->width() - tileset_->width() - 1, height());
 
 	mc_ = File::end() - File::begin();
 }

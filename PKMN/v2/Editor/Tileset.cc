@@ -8,7 +8,7 @@ bool editor::Tileset::GRID = false;
 
 namespace editor
 {
-	Tileset::Tileset(void) : id_(surface::PNGLoader::loadPNG(MXT_TILESETPATH)), cur_(0)
+	Tileset::Tileset(void) : id_(surface::PNGLoader::loadPNG(MXT_TILESETPATH)), cur_(0, 0)
 	{
 	}
 
@@ -17,12 +17,12 @@ namespace editor
 		dav::gl::bind_texture(id_);
 	}
 
-	void Tileset::doSet(DWORD id)
+	void Tileset::doSet(const TileBlock& tb)
 	{
-		cur_ = id;
+		cur_ = tb;
 	}
 
-	DWORD Tileset::doGet(void) const
+	TileBlock Tileset::doGet(void) const
 	{
 		return cur_;
 	}

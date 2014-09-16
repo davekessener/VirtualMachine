@@ -42,6 +42,7 @@ namespace editor
 				{ dialog_ = p; p->init(width_ / 3, height_ / 3, width_ / 3, height_ / 3); }
 			inline void setFileSelect(Surface_ptr p)
 				{ dialog_ = p; p->init(width_ / 4, height_ / 4, width_ / 2, height_ / 2); }
+			void setError(const std::string& e);
 			void tryToCloseFile(std::function<void(void)>);
 			void doQuit( );
 		private:

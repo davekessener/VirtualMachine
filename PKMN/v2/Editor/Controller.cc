@@ -41,10 +41,16 @@ namespace editor
 				History( ) : data_(new vec_t) { }
 				void add(uint l, uint x, uint y, uint n, uint o)
 				{
-					if(std::find_if(data_->begin(), data_->end(),
-						[x, y](const data_t& d){ return x == d.x && y == d.y; }) == data_->end())
+					auto i = std::find_if(data_->begin(), data_->end(),
+						[x, y](const data_t& d){ return x == d.x && y == d.y; });
+
+					if(i == data_->end())
 					{
 						data_->push_back(data_t{l, x, y, std::make_pair(n, o)});
+					}
+					else
+					{
+						*i = data_t{l, x, y, std::make_pair(n, i->v.second)};
 					}
 				}
 				void clear( ) { data_.reset(new vec_t); }
@@ -72,7 +78,7 @@ namespace editor
 			inline void redo( ) { if(!redo_.empty()) dodo(redo_, undo_); }
 			inline bool changed( ) const { return changed_; }
 			inline void save( )
-				{ if(changed_) { File::get(map_.ID()) = map_; changed_ = false; File::hasChanged(true); } }
+				{ if(changed_) { File::set(map_); changed_ = false; } }
 			void addBuffer(uint, uint, uint, DWORD);
 			void commitBuffer( );
 		private:
@@ -108,6 +114,8 @@ namespace editor
 			DWORD o = map_.get(l, x, y);
 			map_.set(l, x, y, v);
 			history.add(l, x, y, v, o);
+
+			changed_ = true;
 		}
 		catch(...) { }
 	}

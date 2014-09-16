@@ -173,7 +173,7 @@ void Viewer::i_doMouseMove(int x, int y)
 
 		if(x >= 0 && x < (int)m.width() && y >= 0 && y < (int)m.height())
 		{
-			Controller::setBuffer(layer_, x, y, TS::get());
+			Controller::set(layer_, x, y, TS::get());
 			dirty();
 		}
 	}
@@ -182,12 +182,12 @@ void Viewer::i_doMouseMove(int x, int y)
 void Viewer::i_doMouseUp(MouseButtons b, int x, int y)
 {
 	const auto &m(Controller::getMap());
-	DWORD id = TS::get();
+	DWORD id = TS::get().left();
 	std::vector<point> rvec;
 
 	auto isIn = [&rvec](int x, int y) { return std::find(rvec.begin(), rvec.end(), point(x, y)) != rvec.end(); };
 
-	std::function<void(int, int)> fill = [this, &m, &rvec, &isIn, id, &fill](int x, int y)
+	std::function<void(int, int)> fill = [this, &m, &rvec, &isIn, &fill](int x, int y)
 	{
 		DWORD r = Controller::get(layer_, x, y);
 
@@ -216,7 +216,7 @@ void Viewer::i_doMouseUp(MouseButtons b, int x, int y)
 			case MouseButtons::MIDDLE:
 				Controller::commitBuffer();
 				fill(x, y);
-				for(const point& p : rvec) Controller::setBuffer(layer_, p.x, p.y, TS::get());
+				for(const point& p : rvec) Controller::setBuffer(layer_, p.x, p.y, id);
 				break;
 			default:
 				break;

@@ -4,6 +4,8 @@
 #include "Manager.h"
 #include <dav/gl.h>
 
+using namespace dav;
+
 struct Input::Impl
 {
 	DWORD id_;
@@ -25,8 +27,8 @@ void Input::Impl::doRender(void)
 	std::string out(msg_.c_str() + o_, msg_.c_str() + o_ + min((int)msg_.length() - o_, m_));
 #undef min
 //	gl::bind_texture(id_);
-	gl::draw_rect(0, 0, w_, h_, MXT_BGCOLOR);
-	gl::draw_rect(x1, y1, x1 + iw_, y1 + ih_, MXT_WHITE);
+	gl::fill_rect(0, 0, w_, h_, MXT_BGCOLOR);
+	gl::fill_rect(x1, y1, x1 + iw_, y1 + ih_, MXT_WHITE);
 	mngr.renderString(prompt_, x1 + s_ / 2 + 1, y1 - s_ - 1, MXT_WHITE);
 	mngr.renderString(out, x1 + s_ / 2, y1 + s_ / 4, MXT_BLACK);
 	mngr.renderString("_", x1 + s_ / 2 + (c_ - o_) * s_, y1 + s_ / 2 - 1, MXT_BLACK);

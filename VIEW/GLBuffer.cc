@@ -3,6 +3,8 @@
 #include "GLBuffer.h"
 #include <dav/gl.h>
 
+using namespace dav;
+
 GLBuffer::GLBuffer(void) : id_(0), w_(0), h_(0), pp_(0)
 {
 }

@@ -8,6 +8,7 @@
 #include "Dialog.h"
 #include "Manager.h"
 #include "dav_header.h"
+#include <dav/Logger.h>
 
 struct HImpl
 {
@@ -25,10 +26,15 @@ struct Header::Impl
 
 void HImpl::read(std::istream& is)
 {
-	is >> lib::aux::read_from(data_);
-	assert(data_.id==dav::DAV_MAGIC);
+	is >> dav::aux::read_from(data_);
+	if(data_.id != dav::DAV_MAGIC)
+	{
+		LOG("ERR: Read magic 0x%08x instead of 0x%08x", data_.id, dav::DAV_MAGIC);
+		throw std::string("read invalid magic!");
+	}
+
 	imgs_.resize(data_.imgcount);
-	is >> lib::aux::read_from(*imgs_.begin(), data_.imgcount * sizeof(dav::data_t));
+	is >> dav::aux::read_from(*imgs_.begin(), data_.imgcount * sizeof(dav::data_t));
 }
 
 Header::Header(std::istream& is) : impl_(new Impl)
@@ -48,7 +54,7 @@ void Header::operator()(const std::string& s)
 		auto i = fns.begin();
 		for(const auto& d : impl_->fwd_->imgs_)
 		{
-			*i = lib::aux::to_hex(d.name) + ".gz"; ++i;
+			*i = dav::aux::to_hex(d.name) + ".gz"; ++i;
 		}
 		v->load(fns.cbegin(), fns.cend());
 		v->finalize();

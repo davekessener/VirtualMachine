@@ -90,8 +90,15 @@ namespace editor
 		if(root_) render = render || root_->isDirty();
 		if(dialog_) render = render || dialog_->isDirty();
 
-		if(root_) root_->update(d);
-		if(dialog_) dialog_->update(d);
+		try
+		{
+			if(root_) root_->update(d);
+			if(dialog_) dialog_->update(d);
+		}
+		catch(const std::string& e)
+		{
+			setError("ERR: " + e);
+		}
 
 		if(render)
 		{
@@ -106,17 +113,19 @@ namespace editor
 
 	void Editor::keyboard(Controls key, bool pressed)
 	{
+		using surface::Surface;
+
 		if(pressed && key == Controls::ESCAPE) quit();
 
 		Surface_ptr t = static_cast<bool>(dialog_) ? dialog_ : root_;
 		
-		if(pressed)
+		try
 		{
-			t->keyDown(key);
+			((*t).*(pressed ? &Surface::keyDown : &Surface::keyUp))(key);
 		}
-		else
+		catch(const std::string& e)
 		{
-			t->keyUp(key);
+			setError("ERR: " + e);
 		}
 	}
 
@@ -124,20 +133,29 @@ namespace editor
 	{
 		Surface_ptr t = static_cast<bool>(dialog_) ? dialog_ : root_;
 
-		t->mouseMove(x, y);
+		try
+		{
+			t->mouseMove(x, y);
+		}
+		catch(const std::string& e)
+		{
+			setError("ERR: " + e);
+		}
 	}
 
 	void Editor::mouseClick(MouseButtons b, uint x, uint y, bool pressed)
 	{
+		using surface::Surface;
+
 		Surface_ptr t = static_cast<bool>(dialog_) ? dialog_ : root_;
 
-		if(pressed)
+		try
 		{
-			t->mouseDown(b, x, y);
+			((*t).*(pressed ? &Surface::mouseDown : &Surface::mouseUp))(b, x, y);
 		}
-		else
+		catch(const std::string& e)
 		{
-			t->mouseUp(b, x, y);
+			setError("ERR: " + e);
 		}
 	}
 
@@ -145,7 +163,14 @@ namespace editor
 	{
 		Surface_ptr t = static_cast<bool>(dialog_) ? dialog_ : root_;
 
-		t->scroll(dy);
+		try
+		{
+			t->scroll(dy);
+		}
+		catch(const std::string& e)
+		{
+			setError("ERR: " + e);
+		}
 	}
 
 // # ---------------------------------------------------------------------------
@@ -309,6 +334,11 @@ namespace editor
 			{
 				std::make_pair("Yes", [this](void) { running_ = false; })
 			}, "No")));
+	}
+
+	void Editor::setError(const std::string& e)
+	{
+		setDialog(Surface_ptr(new surface::Dialog(e, {}, "OK")));
 	}
 }
 

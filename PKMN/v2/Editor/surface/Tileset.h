@@ -3,6 +3,7 @@
 
 #include "../../common.h"
 #include "Scrollable.h"
+#include "../TileBlock.h"
 
 namespace editor
 {
@@ -17,11 +18,15 @@ namespace editor
 				void i_doInit( );
 				void i_doUpdate(int);
 				void i_doRender( ) const;
+				void i_doMouseDown(MouseButtons, int, int);
+				void i_doMouseMove(int, int);
 				void i_doMouseUp(MouseButtons, int, int);
 				point getScrollSizes( ) const;
 				void setScrollPos(int, int);
 			private:
-				DWORD id_;
+				TileBlock id_;
+				DWORD did_;
+				bool down_;
 				point o_, s_;
 		};
 	}

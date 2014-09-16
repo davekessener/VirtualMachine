@@ -3,6 +3,8 @@
 #include "Manager.h"
 #include <dav/gl.h>
 
+using namespace dav;
+
 class MsgRenderer
 {
 	public:
@@ -56,8 +58,8 @@ void MsgRenderer::operator()(void) const
 {
 	Manager &mngr(Manager::instance());
 
-	gl::draw_rect(0, 0, w_, h_, MXT_BGCOLOR);
-	gl::draw_rect(w_ / 4, h_ / 4, w_ * 3 / 4, h_ * 3 / 4, MXT_WHITE);
+	gl::fill_rect(0, 0, w_, h_, MXT_BGCOLOR);
+	gl::fill_rect(w_ / 4, h_ / 4, w_ * 3 / 4, h_ * 3 / 4, MXT_WHITE);
 
 	int y = h_ / 2 - (msgs_.size() * (h_ / 16 + 1)) / 2;
 	int x = w_ / 2;

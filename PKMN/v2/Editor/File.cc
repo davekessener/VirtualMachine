@@ -42,8 +42,10 @@ namespace editor
 			{ return insert(
 				std::find_if(v_.begin(), v_.end(), [id](const map_t& m) { return m.ID() == id; }), name, w, h); }
 			inline void erase(iterator i) { v_.erase(i); changed_ = true; }
-			inline map_t& get(QWORD id)
-				{ for(map_t& m : v_) if(m.ID() == id) return m; assert(!"ID doesn't exist!"); }
+			inline const map_t& get(QWORD id) const
+				{ for(const map_t& m : v_) if(m.ID() == id) return m; assert(!"ID doesn't exist!"); }
+			inline void set(const map_t& map)
+				{ for(map_t& m : v_) if(m.ID() == map.ID()) { m = map; changed_ = true; return; } }
 			void save(const std::string&);
 			inline bool hasName( ) const { return !fn_.empty(); }
 			inline bool hasChanged( ) const
@@ -83,9 +85,14 @@ namespace editor
 		instance().impl_->erase(i);
 	}
 
-	File::map_t& File::get(QWORD id)
+	const File::map_t& File::get(QWORD id)
 	{
 		return instance().impl_->get(id);
+	}
+
+	void File::set(const map_t& map)
+	{
+		instance().impl_->set(map);
 	}
 
 	bool File::hasName(void)
@@ -99,18 +106,10 @@ namespace editor
 		instance().impl_->save(fn);
 	}
 
-	bool File::hasChanged(bool set)
+	bool File::hasChanged( )
 	{
-		if(set)
-		{
-			instance().impl_->change();
-			return true;
-		}
-		else
-		{
-			return     (Controller::isLoaded() && Controller::hasChanged())
-					||  instance().impl_->hasChanged();
-		}
+		return     (Controller::isLoaded() && Controller::hasChanged())
+				||  instance().impl_->hasChanged();
 	}
 
 	DWORD File::getNextID(void)
@@ -231,7 +230,7 @@ namespace editor
 		if(fn_.empty())
 		{
 			LOG("ERR: Cannot save file without name.");
-			throw std::string("cannot save file wothout name!");
+			throw std::string("cannot save file without name!");
 		}
 
 		nbt::TAG_Compound::ptr_t tag = nbt::Make<nbt::TAG_Compound>();
