@@ -4,10 +4,16 @@
 #include <type_traits>
 #include <string>
 
-namespace dav
-{
-	namespace lex
-	{
+//namespace dav
+//{
+//	namespace lex
+//	{
+		template<typename T>
+		struct Identity
+		{
+			typedef T type;
+		};
+
 		struct StringBase { };
 
 		template<char ... C>
@@ -94,12 +100,14 @@ namespace dav
 		template<typename T, int I>
 		struct Get
 		{
+			static_assert(!IsEqual<T, NIL>::value, "ERR: out of range!");
 			typedef typename Get<typename T::tail, I - 1>::type type;
 		};
 
 		template<typename T>
 		struct Get<T, 0>
 		{
+			static_assert(!IsEqual<T, NIL>::value, "ERR: out of range!");
 			typedef typename T::head type;
 		};
 
@@ -119,6 +127,9 @@ namespace dav
 			typedef TypeList<T, NIL> type;
 		};
 
+		template<typename ... T>
+		using MakeTypeList = typename MakeTL<T...>::type;
+
 		template<typename T, template<typename> class TT>
 		struct Transform;
 
@@ -132,6 +143,51 @@ namespace dav
 		struct Transform<NIL, F>
 		{
 			typedef NIL type;
+		};
+
+		template<typename T, template<typename> class F>
+		struct RecursiveTransform
+		{
+			typedef typename F<T>::type type;
+		};
+
+		template<typename H, typename T, template<typename> class F>
+		struct RecursiveTransform<TypeList<H, T>, F>
+		{
+			typedef TypeList<typename RecursiveTransform<H, F>::type, typename RecursiveTransform<T, F>::type> type;
+		};
+
+		template<template<typename> class F>
+		struct RecursiveTransform<NIL, F>
+		{
+			typedef NIL type;
+		};
+
+		template<int V, typename T, typename TT, template<typename, typename> class F>
+		struct IsInImpl;
+
+		template<typename T, typename TT, template<typename, typename> class F>
+		struct IsInImpl<1, T, TT, F>
+		{
+			enum { value = 1 };
+		};
+
+		template<typename H, typename T, typename TT, template<typename, typename> class F>
+		struct IsInImpl<0, TypeList<H, T>, TT, F>
+		{
+			enum { value = IsInImpl<F<H, TT>::value, T, TT, F>::value };
+		};
+
+		template<typename TT, template<typename, typename> class F>
+		struct IsInImpl<0, NIL, TT, F>
+		{
+			enum { value = 0 };
+		};
+
+		template<typename T, typename TT, template<typename, typename> class F = IsEqual>
+		struct IsIn
+		{
+			enum { value = IsInImpl<0, T, TT, F>::value };
 		};
 
 // # ===========================================================================
@@ -152,6 +208,8 @@ namespace dav
 				MXT_DEREF_CHECK(I);
 				return true;
 			}
+
+			typedef EmptyImpl<SymTable> type;
 		};
 
 		struct Empty
@@ -187,9 +245,11 @@ namespace dav
 					return false;
 				}
 			}
+
+			typedef LiteralImpl<SymTable, S> type;
 		};
 
-		struct Literalbase { };
+		struct LiteralBase { };
 
 		template<typename S>
 		struct Literal : LiteralBase
@@ -224,6 +284,8 @@ namespace dav
 					return true;
 				}
 			}
+
+			typedef IDImpl<SymTable, S> type;
 		};
 
 		struct IDBase { };
@@ -250,6 +312,8 @@ namespace dav
 
 				return true;
 			}
+
+			typedef HookImpl<SymTable, F> type;
 		};
 
 		struct HookBase { };
@@ -265,12 +329,12 @@ namespace dav
 		};
 
 		template<typename S>
-		struct PrintHook : HookBase
+		struct Print : HookBase
 		{
 			MXT_STRING_CHECK(S);
 
 			template<typename ST>
-			struct Print
+			struct DoPrint
 			{
 				static void run(ST& st)
 				{
@@ -281,11 +345,11 @@ namespace dav
 			template<typename ST>
 			struct Make
 			{
-				typedef HookImpl<ST, Print> type;
+				typedef HookImpl<ST, DoPrint> type;
 			};
 		};
 
-		typedef PrintHook<ID_DEF_S> PrintID;
+		typedef Print<ID_DEF_S> PrintID;
 
 // # ---------------------------------------------------------------------------
 
@@ -307,7 +371,7 @@ namespace dav
 				MXT_DEREF_CHECK(I);
 
 				typedef typename T::head H;
-				typedef typename If<IsDerived<H, Num>, GetTrans<SymTable, Reference, H>, H>::type head;
+				typedef typename If<IsDerived<Num, H>, GetTrans<SymTable, Reference, H>, H>::type head;
 				typedef typename T::tail rest;
 
 				if(head::matches(st, i1, i2))
@@ -318,6 +382,8 @@ namespace dav
 				{
 					return Trans<SymTable, Reference, TT>::matches(st, i1, i2);
 				}
+
+				return false;
 			}
 		};
 
@@ -325,7 +391,7 @@ namespace dav
 		struct Trans<SymTable, Reference, TypeList<NIL, FAIL>>
 		{
 			template<typename I>
-			static void matches(SymTable& st, I& i1, const I& i2)
+			static bool matches(SymTable& st, I& i1, const I& i2)
 			{
 				MXT_DEREF_CHECK(I);
 
@@ -337,7 +403,7 @@ namespace dav
 		struct Trans<SymTable, Reference, FAIL>
 		{
 			template<typename I>
-			static void matches(SymTable& st, I& i1, const I& i2)
+			static bool matches(SymTable& st, I& i1, const I& i2)
 			{
 				MXT_DEREF_CHECK(I);
 
@@ -349,7 +415,7 @@ namespace dav
 		struct Trans<SymTable, Reference, NIL>
 		{
 			template<typename I>
-			static void matches(SymTable& st, I& i1, const I& i2)
+			static bool matches(SymTable& st, I& i1, const I& i2)
 			{
 				MXT_DEREF_CHECK(I);
 
@@ -363,26 +429,26 @@ namespace dav
 			typedef MakeTypeList<Empty, LiteralBase, IDBase, HookBase> CONV_REQ;
 
 			template<typename T>
-			struct MakeTrans
+			struct Make
 			{
-				typedef Trans<SymTable, RawTransList, T> type;
+				typedef typename T::template Make<SymTable>::type type;
 			};
-
-			typedef typename Transform<RawTransList, MakeTrans>::type TransList;
 
 			template<typename T>
 			struct Convert
 			{
-				typedef typename If<IsIn<CONV_REQ, T, IsDerived>, T::template Make<SymTable>>::type;
+				typedef typename If<IsIn<CONV_REQ, T, IsDerived>, Make<T>, Identity<T>>::type type;
 			};
 
-			template<typename T, typename TT>
-			struct Convert<TypeList<T, TT>>
+			typedef typename RecursiveTransform<RawTransList, Convert>::type TransList;
+
+			template<typename T>
+			struct MakeTrans
 			{
-				typedef typename Transform<TypeList<T, TT>, Convert>::type type;
+				typedef Trans<SymTable, TransList, T> type;
 			};
 
-			typedef typename Transform<TransList, Convert>::type Reference;
+			typedef typename Transform<TransList, MakeTrans>::type Reference;
 
 			template<typename I>
 			static void parse(I&& i1, const I& i2)
@@ -400,8 +466,8 @@ namespace dav
 
 #undef MXT_STRING_CHECK
 #undef MXT_DEREF_CHECK
-	}
-}
+//	}
+//}
 
 #endif
 

@@ -3,7 +3,7 @@
 #include <map>
 #include "lex.h"
 
-using namespace dav::lex;
+//using namespace dav::lex;
 
 class ST
 {
@@ -17,58 +17,59 @@ class ST
 		std::ostream *os_;
 };
 
-//typedef Parser
-//<
-//	ST,
-//	MakeTypeList
-//	<
-//		MakeTypeList
-//		<
-//			MakeTypeList<Number<1>, Empty>
-//		>,
-//		MakeTypeList
-//		<
-//			MakeTypeList<Number<2>, Number<4>, Empty>
-//		>,
-//		MakeTypeList
-//		<
-//			MakeTypeList<Number<3>, Number<5>, Empty>
-//		>,
-//		MakeTypeList
-//		<
-//			MakeTypeList<Literal<"(">, Number<1>, Literal<")">, Empty>,
-//			MakeTypeList<ID, PrintID, Empty>
-//		>,
-//		MakeTypeList
-//		<
-//			MakeTypeList<Literal<"+">, Number<2>, Print<"+">, Number<4>, Empty>,
-//			MakeTypeList<Literal<"-">, Number<2>, Print<"-">, Number<4>, Empty>,
-//			MakeTypeList<Empty>
-//		>,
-//		MakeTypeList
-//		<
-//			MakeTypeList<Literal<"*">, Number<3>, Print<"*">, Number<5>, Empty>,
-//			MakeTypeList<Literal<"/">, Number<3>, Print<"/">, Number<5>, Empty>,
-//			MakeTypeList<Empty>
-//		>
-//	>
-//>
-//DParser;
+typedef String<'('> OPEN_PARA_S;
+typedef String<')'> CLOSE_PARA_S;
+typedef String<'+'> ADD_S;
+typedef String<'-'> SUB_S;
+typedef String<'*'> MUL_S;
+typedef String<'/'> DIV_S;
+
+typedef Parser
+<
+	ST,
+	MakeTypeList
+	<
+		MakeTypeList
+		<
+			MakeTypeList<Number<1>, Empty>
+		>,
+		MakeTypeList
+		<
+			MakeTypeList<Number<2>, Number<4>, Empty>
+		>,
+		MakeTypeList
+		<
+			MakeTypeList<Number<3>, Number<5>, Empty>
+		>,
+		MakeTypeList
+		<
+			MakeTypeList<Literal<OPEN_PARA_S>, Number<1>, Literal<CLOSE_PARA_S>, Empty>,
+			MakeTypeList<ID<>, PrintID, Empty>
+		>,
+		MakeTypeList
+		<
+			MakeTypeList<Literal<ADD_S>, Number<2>, Print<ADD_S>, Number<4>, Empty>,
+			MakeTypeList<Literal<SUB_S>, Number<2>, Print<SUB_S>, Number<4>, Empty>,
+			MakeTypeList<Empty>
+		>,
+		MakeTypeList
+		<
+			MakeTypeList<Literal<MUL_S>, Number<3>, Print<MUL_S>, Number<5>, Empty>,
+			MakeTypeList<Literal<DIV_S>, Number<3>, Print<DIV_S>, Number<5>, Empty>,
+			MakeTypeList<Empty>
+		>
+	>
+>
+DParser;
 
 int main(int argc, char *argv[])
 {
-	typedef ID<>::Make<ST>::type DID;
-	typedef PrintID::Make<ST>::type PR;
-	std::vector<std::string> args(argv, argv + argc);
-	ST st;
-	auto i1 = args.begin(), i2 = args.end();
+	std::vector<std::string> args(argv + 1, argv + argc);
 
-	while(i1 != i2)
-	{
-		DID::matches(st, i1, i2);
-		PR::matches(st, i1, i2);
-		std::cout << std::endl;
-	}
+	DParser::parse(args.cbegin(), args.cend());
+
+	std::cout << std::endl;
+
 	return 0;
 }
 
