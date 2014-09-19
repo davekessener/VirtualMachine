@@ -3,6 +3,13 @@
 
 #include <type_traits>
 #include <string>
+#ifdef GPP_REGEX_SUPPORT
+#include <regex>
+#define MXT_REGEX_SCOPE std
+#else
+#include <boost/regex.hpp>
+#define MXT_REGEX_SCOPE boost
+#endif
 
 //namespace dav
 //{
@@ -196,78 +203,60 @@
 #define MXT_STRING_CHECK(S) static_assert(IsDerived<StringBase, S>::value, "ERR: S needs to be derived from StringBase!")
 
 		typedef String<'*'> ID_DEF_S;
+		typedef String<'+'> LIT_DEF_S;
+		typedef String<'.', '*'> ID_ALL_S;
 
 		struct FAIL { };
 
-		template<typename SymTable>
+		template<typename SymTable, typename Out>
 		struct EmptyImpl
 		{
 			template<typename I>
-			static bool matches(SymTable& st, I& i1, const I& i2)
+			static bool matches(SymTable& st, I& i1, const I& i2, Out& o)
 			{
 				MXT_DEREF_CHECK(I);
 				return true;
 			}
 
-			typedef EmptyImpl<SymTable> type;
+			typedef EmptyImpl<SymTable, Out> type;
 		};
 
-		struct Empty
-		{
-			template<typename ST>
-			struct Make
-			{
-				typedef EmptyImpl<ST> type;
-			};
-		};
+//		template<typename SymTable, typename Out, typename S>
+//		struct LiteralImpl
+//		{
+//			MXT_STRING_CHECK(S);
+//
+//			template<typename I>
+//			static bool matches(SymTable& st, I& i1, const I& i2, Out& o)
+//			{
+//				MXT_DEREF_CHECK(I);
+//
+//				if(i1 == i2)
+//				{
+//					return false;
+//				}
+//				else if(*i1 == S::toString())
+//				{
+//					++i1;
+//					return true;
+//				}
+//				else
+//				{
+//					return false;
+//				}
+//			}
+//
+//			typedef LiteralImpl<SymTable, Out, S> type;
+//		};
 
-		template<typename SymTable, typename S>
-		struct LiteralImpl
-		{
-			MXT_STRING_CHECK(S);
-
-			template<typename I>
-			static bool matches(SymTable& st, I& i1, const I& i2)
-			{
-				MXT_DEREF_CHECK(I);
-
-				if(i1 == i2)
-				{
-					return false;
-				}
-				else if(*i1 == S::toString())
-				{
-					++i1;
-					return true;
-				}
-				else
-				{
-					return false;
-				}
-			}
-
-			typedef LiteralImpl<SymTable, S> type;
-		};
-
-		struct LiteralBase { };
-
-		template<typename S>
-		struct Literal : LiteralBase
-		{
-			template<typename ST>
-			struct Make
-			{
-				typedef LiteralImpl<ST, S> type;
-			};
-		};
-
-		template<typename SymTable, typename S>
+		template<typename SymTable, typename Out, typename R, typename S, bool Literal>
 		struct IDImpl
 		{
 			MXT_STRING_CHECK(S);
+			MXT_STRING_CHECK(R);
 
 			template<typename I>
-			static bool matches(SymTable& st, I& i1, const I& i2)
+			static bool matches(SymTable& st, I& i1, const I& i2, Out& o)
 			{
 				MXT_DEREF_CHECK(I);
 
@@ -275,7 +264,8 @@
 				{
 					return false;
 				}
-				else
+				else if(Literal ? *i1 == R::toString()
+								: MXT_REGEX_SCOPE::regex_match(*i1, MXT_REGEX_SCOPE::regex(R::toString())))
 				{
 					st[S::toString()] = *i1;
 
@@ -283,115 +273,154 @@
 
 					return true;
 				}
+				else
+				{
+					return false;
+				}
 			}
 
-			typedef IDImpl<SymTable, S> type;
+			typedef IDImpl<SymTable, Out, R, S, Literal> type;
 		};
 
-		struct IDBase { };
+// # ---------------------------------------------------------------------------
 
-		template<typename S = ID_DEF_S>
-		struct ID : IDBase
-		{
-			template<typename ST>
-			struct Make
-			{
-				typedef IDImpl<ST, S> type;
-			};
-		};
-
-		template<typename SymTable, template<typename> class F>
+		template<typename SymTable, typename Out, template<typename, typename> class F>
 		struct HookImpl
 		{
 			template<typename I>
-			static bool matches(SymTable& st, I& i1, const I& i2)
+			static bool matches(SymTable& st, I& i1, const I& i2, Out& o)
 			{
 				MXT_DEREF_CHECK(I);
 
-				F<SymTable>::run(st);
+				F<SymTable, Out>::run(st, o);
 
 				return true;
 			}
 
-			typedef HookImpl<SymTable, F> type;
+			typedef HookImpl<SymTable, Out, F> type;
 		};
+
+		struct Empty
+		{
+			template<typename ST, typename O>
+			struct Make
+			{
+				typedef EmptyImpl<ST, O> type;
+			};
+		};
+
+		struct IDBase { };
+
+		template<typename R = ID_ALL_S, typename S = ID_DEF_S, bool L = false>
+		struct ID : IDBase
+		{
+			template<typename ST, typename O>
+			struct Make
+			{
+				typedef IDImpl<ST, O, R, S, L> type;
+			};
+		};
+
+		template<typename R, typename S = LIT_DEF_S>
+		using Literal = ID<R, S, true>;
 
 		struct HookBase { };
 
-		template<template<typename> class F>
+		template<template<typename, typename> class F>
 		struct Hook : HookBase
 		{
-			template<typename ST>
+			template<typename ST, typename O>
 			struct Make
 			{
-				typedef HookImpl<ST, F> type;
+				typedef HookImpl<ST, O, F> type;
 			};
 		};
+
+		template<typename S>
+		struct PrintVar : HookBase
+		{
+			MXT_STRING_CHECK(S);
+
+			template<typename ST, typename O>
+			struct DoPrint
+			{
+				static void run(ST& st, O& o)
+				{
+					o << st.at(S::toString());
+				}
+			};
+
+			template<typename ST, typename O>
+			struct Make
+			{
+				typedef HookImpl<ST, O, DoPrint> type;
+			};
+		};
+
+		typedef PrintVar<ID_DEF_S> PrintID;
 
 		template<typename S>
 		struct Print : HookBase
 		{
 			MXT_STRING_CHECK(S);
 
-			template<typename ST>
+			template<typename ST, typename O>
 			struct DoPrint
 			{
-				static void run(ST& st)
+				static void run(ST& st, O& o)
 				{
-					st << st.at(S::toString());
+					o << S::toString();
 				}
 			};
 
-			template<typename ST>
+			template<typename ST, typename O>
 			struct Make
 			{
-				typedef HookImpl<ST, DoPrint> type;
+				typedef HookImpl<ST, O, DoPrint> type;
 			};
 		};
 
-		typedef Print<ID_DEF_S> PrintID;
-
 // # ---------------------------------------------------------------------------
 
-		template<typename ST, typename R, typename L>
+		template<typename ST, typename O, typename R, typename L>
 		struct Trans;
 
-		template<typename ST, typename T, typename N>
+		template<typename ST, typename O, typename T, typename N>
 		struct GetTrans
 		{
-			typedef Trans<ST, T, typename Get<T, N::value>::type> type;
+			typedef Trans<ST, O, T, typename Get<T, N::value>::type> type;
 		};
 
-		template<typename SymTable, typename Reference, typename T, typename TT>
-		struct Trans<SymTable, Reference, TypeList<T, TT>>
+		template<typename SymTable, typename Out, typename Reference, typename T, typename TT>
+		struct Trans<SymTable, Out, Reference, TypeList<T, TT>>
 		{
 			template<typename I>
-			static bool matches(SymTable& st, I& i1, const I& i2)
+			static bool matches(SymTable& st, I& i1, const I& i2, Out& o)
 			{
 				MXT_DEREF_CHECK(I);
 
 				typedef typename T::head H;
-				typedef typename If<IsDerived<Num, H>, GetTrans<SymTable, Reference, H>, H>::type head;
+				typedef typename If<IsDerived<Num, H>, GetTrans<SymTable, Out, Reference, H>, H>::type head;
 				typedef typename T::tail rest;
 
-				if(head::matches(st, i1, i2))
+				if(head::matches(st, i1, i2, o))
 				{
-					return Trans<SymTable, Reference, TypeList<rest, FAIL>>::matches(st, i1, i2);
+					return Trans<SymTable, Out, Reference, TypeList<rest, FAIL>>::matches(st, i1, i2, o);
 				}
 				else
 				{
-					return Trans<SymTable, Reference, TT>::matches(st, i1, i2);
+					return Trans<SymTable, Out, Reference, TT>::matches(st, i1, i2, o);
 				}
 
 				return false;
 			}
 		};
 
-		template<typename SymTable, typename Reference>
-		struct Trans<SymTable, Reference, TypeList<NIL, FAIL>>
+		template<typename SymTable, typename Out, typename Reference>
+		struct Trans<SymTable, Out, Reference, TypeList<NIL, FAIL>>
 		{
 			template<typename I>
-			static bool matches(SymTable& st, I& i1, const I& i2)
+			static bool matches(SymTable& st, I& i1, const I& i2, Out& o)
 			{
 				MXT_DEREF_CHECK(I);
 
@@ -399,11 +428,11 @@
 			}
 		};
 
-		template<typename SymTable, typename Reference>
-		struct Trans<SymTable, Reference, FAIL>
+		template<typename SymTable, typename Out, typename Reference>
+		struct Trans<SymTable, Out, Reference, FAIL>
 		{
 			template<typename I>
-			static bool matches(SymTable& st, I& i1, const I& i2)
+			static bool matches(SymTable& st, I& i1, const I& i2, Out& o)
 			{
 				MXT_DEREF_CHECK(I);
 
@@ -411,11 +440,11 @@
 			}
 		};
 
-		template<typename SymTable, typename Reference>
-		struct Trans<SymTable, Reference, NIL>
+		template<typename SymTable, typename Out, typename Reference>
+		struct Trans<SymTable, Out, Reference, NIL>
 		{
 			template<typename I>
-			static bool matches(SymTable& st, I& i1, const I& i2)
+			static bool matches(SymTable& st, I& i1, const I& i2, Out& o)
 			{
 				MXT_DEREF_CHECK(I);
 
@@ -423,15 +452,15 @@
 			}
 		};
 
-		template<typename SymTable, typename RawTransList>
+		template<typename RawTransList, typename Out = std::ostream, typename SymTable = std::map<std::string, std::string>>
 		struct Parser
 		{
-			typedef MakeTypeList<Empty, LiteralBase, IDBase, HookBase> CONV_REQ;
+			typedef MakeTypeList<Empty, IDBase, HookBase> CONV_REQ;
 
 			template<typename T>
 			struct Make
 			{
-				typedef typename T::template Make<SymTable>::type type;
+				typedef typename T::template Make<SymTable, Out>::type type;
 			};
 
 			template<typename T>
@@ -445,19 +474,19 @@
 			template<typename T>
 			struct MakeTrans
 			{
-				typedef Trans<SymTable, TransList, T> type;
+				typedef Trans<SymTable, Out, TransList, T> type;
 			};
 
 			typedef typename Transform<TransList, MakeTrans>::type Reference;
 
 			template<typename I>
-			static void parse(I&& i1, const I& i2)
+			static void parse(I&& i1, const I& i2, Out& o)
 			{
 				SymTable st;
 
 				typedef typename Reference::head start;
 
-				if(!start::matches(st, i1, i2))
+				if(!start::matches(st, i1, i2, o))
 				{
 					throw std::string("ERR: Failed to match. Stopped at '" + (i1 == i2 ? "#END#" : *i1) + "'");
 				}
