@@ -1,6 +1,13 @@
 #ifndef DAV_STACK_H
 #define DAV_STACK_H
 
+#include <string>
+
+/*
+ * Based on H. Sutter's exception-safe stack implementation
+ * ("Exceptional C++", 00)
+ */
+
 namespace dav
 {
 	class SingleThreaded
