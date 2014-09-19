@@ -3,12 +3,13 @@
 
 #include <type_traits>
 #include <string>
-#ifdef GPP_REGEX_SUPPORT
-#include <regex>
-#define MXT_REGEX_SCOPE std
+
+#ifdef STD_REGEX
+#	include <regex>
+#	define MXT_REGEX_SCOPE std
 #else
-#include <boost/regex.hpp>
-#define MXT_REGEX_SCOPE boost
+#	include <boost/regex.hpp>
+#	define MXT_REGEX_SCOPE boost
 #endif
 
 //namespace dav
@@ -19,6 +20,36 @@
 		struct Identity
 		{
 			typedef T type;
+		};
+
+		template<typename T>
+		struct HasName
+		{
+			struct A { char v[1]; };
+			struct B { char v[2]; };
+
+			template<typename C> static constexpr A eval(typeof(&C::toString));
+			template<typename C> static constexpr B eval(...);
+
+			enum { value = sizeof(eval<T>(nullptr)) == sizeof(A) };
+		};
+
+		template<typename T, int I>
+		struct GetNameImpl
+		{
+			static std::string toString( ) { return "#NONAME#"; }
+		};
+
+		template<typename T>
+		struct GetNameImpl<T, 1>
+		{
+			static std::string toString( ) { return T::toString(); }
+		};
+
+		template<typename T>
+		struct GetName
+		{
+			static std::string toString( ) { return GetNameImpl<T, HasName<T>::value>::toString(); }
 		};
 
 		struct StringBase { };
@@ -209,6 +240,20 @@
 		struct FAIL { };
 
 		template<typename SymTable, typename Out>
+		struct EndImpl
+		{
+			template<typename I>
+			static bool matches(SymTable& st, I& i1, const I& i2, Out& o)
+			{
+				MXT_DEREF_CHECK(I);
+				if(i1 != i2) throw std::string("ERR: Trailing characters @'" + *i1 + "'");
+				return true;
+			}
+
+			typedef EndImpl<SymTable, Out> type;
+		};
+
+		template<typename SymTable, typename Out>
 		struct EmptyImpl
 		{
 			template<typename I>
@@ -220,34 +265,6 @@
 
 			typedef EmptyImpl<SymTable, Out> type;
 		};
-
-//		template<typename SymTable, typename Out, typename S>
-//		struct LiteralImpl
-//		{
-//			MXT_STRING_CHECK(S);
-//
-//			template<typename I>
-//			static bool matches(SymTable& st, I& i1, const I& i2, Out& o)
-//			{
-//				MXT_DEREF_CHECK(I);
-//
-//				if(i1 == i2)
-//				{
-//					return false;
-//				}
-//				else if(*i1 == S::toString())
-//				{
-//					++i1;
-//					return true;
-//				}
-//				else
-//				{
-//					return false;
-//				}
-//			}
-//
-//			typedef LiteralImpl<SymTable, Out, S> type;
-//		};
 
 		template<typename SymTable, typename Out, typename R, typename S, bool Literal>
 		struct IDImpl
@@ -298,6 +315,15 @@
 			}
 
 			typedef HookImpl<SymTable, Out, F> type;
+		};
+
+		struct End
+		{
+			template<typename ST, typename O>
+			struct Make
+			{
+				typedef EndImpl<ST, O> type;
+			};
 		};
 
 		struct Empty
@@ -455,7 +481,7 @@
 		template<typename RawTransList, typename Out = std::ostream, typename SymTable = std::map<std::string, std::string>>
 		struct Parser
 		{
-			typedef MakeTypeList<Empty, IDBase, HookBase> CONV_REQ;
+			typedef MakeTypeList<End, Empty, IDBase, HookBase> CONV_REQ;
 
 			template<typename T>
 			struct Make
