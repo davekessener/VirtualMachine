@@ -4,17 +4,17 @@
 #include <memory>
 //#include <dav/stable_vector.hpp>
 
+void pr(int i)
+{
+	std::cout << i << " ";
+}
+
 int main(int argc, char *argv[])
 {
-	std::vector<std::string> args(argv, argv + argc);
+	pr(1), pr(2), pr(3), pr(4);
 
-	std::weak_ptr<int> w;
-	std::shared_ptr<int> s;
-
-	s = w.lock();
-
-	std::cout << (static_cast<bool>(s) ? "OK" : "ERR") << std::endl;
-
+	std::cout << std::endl;
+	
 	return 0;
 
 //	using namespace dav;

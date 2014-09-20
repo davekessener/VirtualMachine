@@ -3,6 +3,7 @@
 
 #include <boost/lexical_cast.hpp>
 #include "lex.h"
+#include "stack.hpp"
 
 using boost::lexical_cast;
 
@@ -25,13 +26,21 @@ namespace dav
 	typedef String<'[', '0', '-', '9', ']', '+', '(', '\\', '.', '[', '0', '-', '9', ']', '+', ')', '?', '(', '[', 'e', 'E', ']', '[', '+', '-', ']', '?', '[', '0', '-', '9', ']', '+', ')', '?'> ID_DEC_REGEX;
 	
 	typedef String<'[', '0', '-', '9', ']'> ID_DIGIT_REGEX;
+	typedef String<'\\'> BACKSLASH_S;
+	typedef String<'\''> SQUOTE_S;
+	typedef String<'"'> QUOTE_S;
 	typedef String<'.'> DOT_S;
+	typedef String<'n'> N_S;
+	typedef String<'t'> T_S;
+	typedef String<'\n'> NL_S;
+	typedef String<'\t'> TAB_S;
 	typedef String<'[', 'e', 'E', ']'> ID_EXP_REGEX;
+	typedef String<'.'> ID_ANY_REGEX;
 	
 	typedef String<'[', '\\', 't', ' ', ']'> ID_WS_REGEX;
 	typedef String<'[', 'a', '-', 'z', 'A', '-', 'Z', '_', ']'> ID_IDT_BEG_REGEX;
 	typedef String<'[', 'a', '-', 'z', 'A', '-', 'Z', '0', '-', '9', '_', ']'> ID_IDT_END_REGEX;
-	typedef String<'[', '\\', '`', '\\', '~', '\\', '!', '\\', '@', '\\', '#', '\\', '$', '\\', '%', '\\', '^', '\\', '&', '\\', '*', '\\', '(', '\\', ')', '\\', '-', '\\', '_', '\\', '=', '\\', '+', '\\', '[', '\\', ']', '\\', '{', '\\', '}', '\\', '\'', '\\', '"', '\\', '\\', '\\', '|', '\\', '/', '\\', '?', '\\', '.', '\\', '>', '\\', ',', '\\', '<', ']'> ID_OP_REGEX;
+	typedef String<'[', '\\', '`', '\\', '~', '\\', '!', '\\', '@', '\\', '#', '\\', '$', '\\', '%', '\\', '^', '\\', '&', '\\', '*', '\\', '(', '\\', ')', '\\', '-', '\\', '_', '\\', '=', '\\', '+', '\\', '[', '\\', ']', '\\', '{', '\\', '}', '\\', '\\', '\\', '|', '\\', '/', '\\', '?', '\\', '.', '\\', '>', '\\', ',', '\\', '<', '\\', ':', '\\', ';', ']'> ID_OP_REGEX;
 	
 	template<int V>
 	using Translation = Number<V>;
@@ -115,9 +124,9 @@ namespace dav
 			stack_t s_;
 	};
 	typedef StackHolderImpl<number_t> StackHolder;
-	
+
 	template<typename T>
-	struct Execute : HookBase
+	struct ExecuteImpl
 	{
 		template<typename ST, typename O>
 		struct Do
@@ -127,13 +136,10 @@ namespace dav
 				T::run(o.get());
 			}
 		};
-	
-		template<typename ST, typename O>
-		struct Make
-		{
-			typedef HookImpl<ST, O, Do> type;
-		};
 	};
+
+	template<typename T>
+	using Execute = Hook<ExecuteImpl<T>::template Do>;
 	
 	template<typename S, template<typename> class BOP, typename E = ErrorThrow<>>
 	struct SecureOP

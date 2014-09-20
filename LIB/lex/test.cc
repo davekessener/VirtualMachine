@@ -48,6 +48,8 @@ try
 
 		std::getline(std::cin, s);
 
+		if(std::cin.eof()) break;
+
 		if(s.empty()) s = old_s;
 
 		if(s.empty() || s[0] == '#') continue;

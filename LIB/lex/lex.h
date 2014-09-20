@@ -3,6 +3,16 @@
 
 #include <type_traits>
 #include <string>
+#include <boost/lexical_cast.hpp>
+
+#ifdef DEBUG_LOG
+#	include <dav/Logger.h>
+#	define MXT_LEX_LOG(...) LOG(__VA_ARGS__)
+#else
+#	define MXT_LEX_LOG(...)
+#endif
+
+using boost::lexical_cast;
 
 #ifdef STD_REGEX
 #	include <regex>
@@ -232,7 +242,8 @@ namespace dav
 // # ===========================================================================
 
 #define MXT_DEREF_CHECK(I) static_assert(DereferencesToString<I>::value, "ERR: Parser operates on std::strings only!")
-#define MXT_STRING_CHECK(S) static_assert(IsDerived<StringBase, S>::value, "ERR: S needs to be derived from StringBase!")
+#define MXT_STRING_CHECK(S) static_assert(HasName<S>::value, "ERR: S needs to be derived from StringBase!")
+#define MXT_LOGC (i1==i2?"#EOF#":i1->data())
 
 		typedef String<'*'> ID_DEF_S;
 		typedef String<'+'> LIT_DEF_S;
@@ -409,18 +420,20 @@ namespace dav
 
 // # ---------------------------------------------------------------------------
 
-		template<typename ST, typename O, typename R, typename L>
+		template<int I, typename ST, typename O, typename R, typename L>
 		struct Trans;
 
 		template<typename ST, typename O, typename T, typename N>
 		struct GetTrans
 		{
-			typedef Trans<ST, O, T, typename Get<T, N::value>::type> type;
+			typedef Trans<N::value, ST, O, T, typename Get<T, N::value>::type> type;
 		};
 
-		template<typename SymTable, typename Out, typename Reference, typename T, typename TT>
-		struct Trans<SymTable, Out, Reference, TypeList<T, TT>>
+		template<int Idx, typename SymTable, typename Out, typename Reference, typename T, typename TT>
+		struct Trans<Idx, SymTable, Out, Reference, TypeList<T, TT>>
 		{
+			enum { index = Idx };
+
 			template<typename I>
 			static bool matches(SymTable& st, I& i1, const I& i2, Out& o)
 			{
@@ -432,48 +445,64 @@ namespace dav
 
 				if(head::matches(st, i1, i2, o))
 				{
-					return Trans<SymTable, Out, Reference, TypeList<rest, FAIL>>::matches(st, i1, i2, o);
+					MXT_LEX_LOG("@'%s': Entered translation #%d", MXT_LOGC, index);
+					return Trans<Idx, SymTable, Out, Reference, TypeList<rest, FAIL>>::matches(st, i1, i2, o);
 				}
 				else
 				{
-					return Trans<SymTable, Out, Reference, TT>::matches(st, i1, i2, o);
+					MXT_LEX_LOG("@'%s': Retry translation #%d", MXT_LOGC, index);
+					return Trans<Idx, SymTable, Out, Reference, TT>::matches(st, i1, i2, o);
 				}
 
 				return false;
 			}
 		};
 
-		template<typename SymTable, typename Out, typename Reference>
-		struct Trans<SymTable, Out, Reference, TypeList<NIL, FAIL>>
+		template<int Idx, typename SymTable, typename Out, typename Reference>
+		struct Trans<Idx, SymTable, Out, Reference, TypeList<NIL, FAIL>>
 		{
+			enum { index = Idx };
+
 			template<typename I>
 			static bool matches(SymTable& st, I& i1, const I& i2, Out& o)
 			{
 				MXT_DEREF_CHECK(I);
+
+				MXT_LEX_LOG("@'%s': Successfully completed translation #%d", MXT_LOGC, index);
 
 				return true;
 			}
 		};
 
-		template<typename SymTable, typename Out, typename Reference>
-		struct Trans<SymTable, Out, Reference, FAIL>
+		template<int Idx, typename SymTable, typename Out, typename Reference>
+		struct Trans<Idx, SymTable, Out, Reference, FAIL>
 		{
+			enum { index = Idx };
+
 			template<typename I>
 			static bool matches(SymTable& st, I& i1, const I& i2, Out& o)
 			{
 				MXT_DEREF_CHECK(I);
 
-				throw std::string("ERR: Unexpected eos @'" + *i1 + "'");
+				std::string s("ERR: Unexpected token '" + (i1 == i2 ? "#EOF#" : *i1) + "' in translation #" + lexical_cast<std::string>(index));
+
+				MXT_LEX_LOG("%s", s.data());
+
+				throw s;
 			}
 		};
 
-		template<typename SymTable, typename Out, typename Reference>
-		struct Trans<SymTable, Out, Reference, NIL>
+		template<int Idx, typename SymTable, typename Out, typename Reference>
+		struct Trans<Idx, SymTable, Out, Reference, NIL>
 		{
+			enum { index = Idx };
+
 			template<typename I>
 			static bool matches(SymTable& st, I& i1, const I& i2, Out& o)
 			{
 				MXT_DEREF_CHECK(I);
+
+				MXT_LEX_LOG("@'%s': Translation #%d does not match!", MXT_LOGC, index);
 
 				return false;
 			}
@@ -498,13 +527,30 @@ namespace dav
 
 			typedef typename RecursiveTransform<RawTransList, Convert>::type TransList;
 
-			template<typename T>
-			struct MakeTrans
+			template<typename T, int I = 0>
+			struct MakeTrans;
+
+			template<typename H, typename T, int I>
+			struct MakeTrans<TypeList<H, T>, I>
 			{
-				typedef Trans<SymTable, Out, TransList, T> type;
+				typedef TypeList<Trans<I, SymTable, Out, TransList, H>, typename MakeTrans<T, I + 1>::type> type;
 			};
 
-			typedef typename Transform<TransList, MakeTrans>::type Reference;
+			template<int I>
+			struct MakeTrans<NIL, I>
+			{
+				typedef NIL type;
+			};
+
+			typedef typename MakeTrans<TransList>::type Reference;
+
+//			template<typename T>
+//			struct MakeTrans
+//			{
+//				typedef Trans<SymTable, Out, TransList, T> type;
+//			};
+//
+//			typedef typename Transform<TransList, MakeTrans>::type Reference;
 
 			template<typename I>
 			static void parse(I&& i1, const I& i2, Out& o)
@@ -520,8 +566,10 @@ namespace dav
 			}
 		};
 
+#undef MXT_LOGC
 #undef MXT_STRING_CHECK
 #undef MXT_DEREF_CHECK
+#undef MXT_LEX_LOG
 	}
 }
 

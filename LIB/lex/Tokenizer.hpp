@@ -32,6 +32,7 @@ namespace dav
 			<
 				MakeTypeList<Translation< 4>>,
 				MakeTypeList<Translation< 6>>,
+				MakeTypeList<Translation<13>>,
 				MakeTypeList<Translation<12>>
 			>,
 			MakeTypeList // 4
@@ -76,6 +77,29 @@ namespace dav
 			<
 				MakeTypeList<ID<ID_WS_REGEX>>,
 				MakeTypeList<ID<ID_OP_REGEX>, PrintID>
+			>,
+			MakeTypeList // 13
+			<
+				MakeTypeList<Literal<QUOTE_S>, Print<QUOTE_S>, Translation<14>>,
+				MakeTypeList<Literal<SQUOTE_S>, Print<SQUOTE_S>, Translation<15>, Literal<SQUOTE_S>, Print<SQUOTE_S>>
+			>,
+			MakeTypeList // 14
+			<
+				MakeTypeList<Literal<QUOTE_S>, Print<QUOTE_S>>,
+				MakeTypeList<Translation<15>, Translation<14>>
+			>,
+			MakeTypeList // 15
+			<
+				MakeTypeList<Literal<BACKSLASH_S>, Translation<16>>,
+				MakeTypeList<ID<ID_ANY_REGEX>, PrintID>
+			>,
+			MakeTypeList // 16
+			<
+				MakeTypeList<Literal<N_S>, Print<NL_S>>,
+				MakeTypeList<Literal<T_S>, Print<TAB_S>>,
+				MakeTypeList<Literal<BACKSLASH_S>, Print<BACKSLASH_S>>,
+				MakeTypeList<Literal<QUOTE_S>, Print<QUOTE_S>>,
+				MakeTypeList<Literal<SQUOTE_S>, Print<SQUOTE_S>>
 			>
 		>,
 		Printer
