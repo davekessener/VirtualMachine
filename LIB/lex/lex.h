@@ -242,7 +242,7 @@ namespace dav
 // # ===========================================================================
 
 #define MXT_DEREF_CHECK(I) static_assert(DereferencesToString<I>::value, "ERR: Parser operates on std::strings only!")
-#define MXT_STRING_CHECK(S) static_assert(HasName<S>::value, "ERR: S needs to be derived from StringBase!")
+#define MXT_STRING_CHECK(S) static_assert(HasName<S>::value, "ERR: S needs to have a public static toString() function")
 #define MXT_LOGC (i1==i2?"#EOF#":i1->data())
 
 		typedef String<'*'> ID_DEF_S;
@@ -311,8 +311,6 @@ namespace dav
 			typedef IDImpl<SymTable, Out, R, S, Literal> type;
 		};
 
-// # ---------------------------------------------------------------------------
-
 		template<typename SymTable, typename Out, template<typename, typename> class F>
 		struct HookImpl
 		{
@@ -328,6 +326,8 @@ namespace dav
 
 			typedef HookImpl<SymTable, Out, F> type;
 		};
+
+// # ---------------------------------------------------------------------------
 
 		struct End
 		{
@@ -419,6 +419,9 @@ namespace dav
 		};
 
 // # ---------------------------------------------------------------------------
+		
+		template<int V>
+		using Translation = Number<V>;
 
 		template<int I, typename ST, typename O, typename R, typename L>
 		struct Trans;
@@ -543,14 +546,6 @@ namespace dav
 			};
 
 			typedef typename MakeTrans<TransList>::type Reference;
-
-//			template<typename T>
-//			struct MakeTrans
-//			{
-//				typedef Trans<SymTable, Out, TransList, T> type;
-//			};
-//
-//			typedef typename Transform<TransList, MakeTrans>::type Reference;
 
 			template<typename I>
 			static void parse(I&& i1, const I& i2, Out& o)

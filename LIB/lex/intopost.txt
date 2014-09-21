@@ -22,10 +22,11 @@ BEGIN
 	RULE O5	= "sin" O6 PRINT("SIN")
 			= "cos" O6 PRINT("COS")
 			= "tan" O6 PRINT("TAN")
-			= "exp" O6 PRINT("EXP")
+			= "log" O6 PRINT("LG")
 			= "lg" O6 PRINT("LG")
 			= "ln" O6 PRINT("LN")
 			= "sqrt" O6 PRINT("SQRT")
+			= "exp" PRINT($E) O4 PRINT("^")
 			= O6
 	RULE O6	= "-" O7 PRINT("NEG")
 			= O7

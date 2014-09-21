@@ -1,0 +1,14 @@
+PARSER EvalPostfix
+VAR NUM		= "[0-9]+(\\.[0-9]+)?([eE][+-]?[0-9]+)?"
+VAR OP		= "(\\+|\\-|\\*|\\/|\\^|SIN|COS|TAN|LG|LN|SQRT|NEG)"
+VAR CURTOK	= "symtable.at(\"*\")"
+VAR PUSHNUM	= "MyStack::push(lexical_cast<double>("$CURTOK"));"
+VAR EOP		= "MyStack::eval("$CURTOK");"
+BEGIN
+	RULE E	= O1 FINAL
+	RULE O1	= F1 O1
+			= EMPTY
+	RULE F1	= ID($NUM) HOOK($PUSHNUM)
+			= ID($OP) HOOK($EOP)
+END
+

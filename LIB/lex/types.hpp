@@ -14,6 +14,7 @@ namespace dav
 	using lex::HookImpl;
 	using lex::PrintID;
 	using lex::Literal;
+	using lex::Translation;
 
 	typedef double number_t;
 
@@ -41,9 +42,6 @@ namespace dav
 	typedef String<'[', 'a', '-', 'z', 'A', '-', 'Z', '_', ']'> ID_IDT_BEG_REGEX;
 	typedef String<'[', 'a', '-', 'z', 'A', '-', 'Z', '0', '-', '9', '_', ']'> ID_IDT_END_REGEX;
 	typedef String<'[', '\\', '`', '\\', '~', '\\', '!', '\\', '@', '\\', '#', '\\', '$', '\\', '%', '\\', '^', '\\', '&', '\\', '*', '\\', '(', '\\', ')', '\\', '-', '\\', '_', '\\', '=', '\\', '+', '\\', '[', '\\', ']', '\\', '{', '\\', '}', '\\', '\\', '\\', '|', '\\', '/', '\\', '?', '\\', '.', '\\', '>', '\\', ',', '\\', '<', '\\', ':', '\\', ';', ']'> ID_OP_REGEX;
-	
-	template<int V>
-	using Translation = Number<V>;
 	
 	typedef PrintID Push;
 

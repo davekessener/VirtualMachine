@@ -12,7 +12,7 @@
 //using namespace dav;
 //using namespace dav::lex;
 
-using dav::Number;
+using dav::Translation;
 using dav::String;
 using dav::lex::Parser;
 using dav::lex::Hook;
@@ -21,9 +21,6 @@ using dav::lex::ID;
 using dav::lex::Empty;
 using dav::lex::End;
 using dav::MakeTypeList;
-
-template<int V>
-using Translation = Number<V>;
 	
 typedef String<'P', 'A', 'R', 'S', 'E', 'R'> PARSER_S;
 typedef String<'V', 'A', 'R'> VARD_S;
@@ -99,7 +96,7 @@ class ElemID : public Elem
 		explicit inline ElemID(const std::string& c, bool l = false) : Elem(), c_(c), l_(l) { }
 	private:
 		inline std::string i_doEval(Rules& rules) const
-			{ return "ID<" + c_ + ", lex::ID_DEF_S, " + (l_ ? "true" : "false") + ">"; }
+			{ return (l_ ? "Literal<" : "ID<") + c_ + ">"; }
 	private:
 		std::string c_;
 		bool l_;
@@ -112,9 +109,10 @@ class ElemHook : public Elem
 			: Elem(), id_(lexical_cast<std::string>(id)), c_(c), raw_(raw) { }
 		inline const std::string& content( ) const { return c_; }
 		inline bool raw( ) const { return raw_; }
+		inline std::string name( ) const { return "CustomHook" + id_; }
 	private:
 		inline std::string i_doEval(Rules& rules) const
-			{ return "Hook<CustomHook" + id_ + ">"; }
+			{ return "Hook<" + name() + ">"; }
 	private:
 		std::string id_, c_;
 		bool raw_;
@@ -126,7 +124,7 @@ class ElemTranslation : public Elem
 		inline explicit ElemTranslation(const std::string& name) : Elem(), name_(name) { }
 	private:
 		inline std::string i_doEval(Rules& rules) const
-			{ return "Number<" + lexical_cast<std::string>(rules.getID(name_)) + ">"; }
+			{ return "Translation<" + lexical_cast<std::string>(rules.getID(name_)) + ">"; }
 	private:
 		std::string name_;
 };
@@ -158,15 +156,15 @@ class Data
 		void finalize(std::ostream&);
 		inline void selectRule(const std::string& s) { addRule(); curRule_.reset(new Rule(s)); }
 		inline void nextRule( ) { assert(static_cast<bool>(curRule_)); curRule_->next(); }
-		inline void selectVar(const std::string& s) { curVar_ = s; }
-		inline void assignVar(const std::string& s) { assert(!curVar_.empty()); vars_[curVar_] = s; }
-		inline void pollVar( ) { assert(!curVar_.empty()&&vars_.count(curVar_)); strbuf_ << vars_.at(curVar_); }
+		inline void selectVar(const std::string& s) { curVar_ = s; LOG("Selected variable '%s'", s.data()); }
+		inline void assignVar(const std::string& s) { assert(!curVar_.empty()); vars_[curVar_] = s; LOG("Set current var '%s' to '%s'", curVar_.data(), s.data()); }
+		inline void pollVar(const std::string& s) { assert(!s.empty()&&vars_.count(s)); strbuf_ << vars_.at(s); }
 		inline void addString(const std::string& s) { strbuf_ << s.substr(1, s.length() - 2); }
-		inline void commit( ) { input_ = strbuf_.str(); strbuf_.str(std::string()); strbuf_.clear(); }
+		inline void commit( ) { input_ = strbuf_.str(); strbuf_.clear(); strbuf_.str(std::string()); }
 		inline void addStatic(const std::string& s) { addElement(Elem_ptr(new ElemStatic(s))); }
-		inline void addID(const std::string& s) { addElement(Elem_ptr(new ElemID(createString(s), literal_))); }
+		inline void addID(const std::string& s) { std::string t; addElement(Elem_ptr(new ElemID(t = createString(s), literal_))); LOG("Added %s('%s' => '%s')", (literal_ ? "Literal" : "ID"), s.data(), t.data()); }
 		inline void setLiteral(bool f) { literal_ = f; }
-		inline void addPrint(const std::string& s) { addElement(Elem_ptr(new ElemPrint(createString(s)))); }
+		inline void addPrint(const std::string& s) { std::string t; addElement(Elem_ptr(new ElemPrint(t = createString(s)))); LOG("Added Print('%s' => '%s')", s.data(), t.data()); }
 		inline void setHook(bool f) { raw_ = !f; }
 		inline void addHook(const std::string& s) { Elem_ptr p(new ElemHook(hids_++, s, raw_)); addElement(p); hooks_.push_back(p); }
 		inline void addTranslation(const std::string& s) { addElement(Elem_ptr(new ElemTranslation(s))); }
@@ -174,10 +172,19 @@ class Data
 	public:
 		static Data& Instance( ) { static Data d; return d; }
 	private:
-		inline Data( ) : literal_(true), raw_(false), sids_(0), hids_(0) { }
+		inline Data( ) : literal_(true), raw_(false), hids_(0) { }
 		~Data( ) = default;
-		std::string createString(const std::string& s)
-			{ return strings_.count(s) ? strings_.at(s) : (strings_[s] = "var" + lexical_cast<std::string>(sids_++)); }
+		std::string createString(const std::string& str)
+		{
+			int i = 0;
+			for(const std::string& s : strings_)
+			{
+				if(s == str) break;
+				++i;
+			}
+			if(i == (long)strings_.size()) strings_.push_back(str);
+			return "Var" + lexical_cast<std::string>(i);
+		}
 		void addElement(Elem_ptr p) { assert(static_cast<bool>(curRule_)); curRule_->addElem(p); }
 		void addRule( ) { if(static_cast<bool>(curRule_)) rules_.push_back(curRule_); }
 	private:
@@ -187,10 +194,11 @@ class Data
 		std::stringstream strbuf_;
 		std::string input_;
 		vec<Elem_ptr> hooks_;
-		std::map<std::string, std::string> vars_, strings_;
+		std::map<std::string, std::string> vars_;
+		vec<std::string> strings_;
 		std::string curVar_;
 		bool literal_, raw_;
-		int sids_, hids_;
+		int hids_;
 	private:
 		Data(const Data&) = delete;
 		Data& operator=(const Data&) = delete;
@@ -224,36 +232,39 @@ void Data::finalize(std::ostream& os)
 	      "namespace dav { namespace " << lcname << " {\n";
 
 	// strings
-	for(const auto& p : strings_)
 	{
-		os << "typedef String<";
-
-		bool first = true;
-		for(const char& c : p.first)
+		int i = 0;
+		for(const auto& s : strings_)
 		{
-			if(!first) os << ", ";
-			os << '\'';
-			switch(c)
-			{
-				case '\n':
-					os << "\\n";
-					break;
-				case '\t':
-					os << "\\t";
-					break;
-				case '\\':
-				case '\'':
-					os << '\\';
-				default:
-					os << c;
-			}
-			os << '\'';
-			first = false;
-		}
+			os << "typedef String<";
 
-		os << "> " << p.second << ";\n";
+			bool first = true;
+			for(const char& c : s)
+			{
+				if(!first) os << ", ";
+				os << '\'';
+				switch(c)
+				{
+					case '\n':
+						os << "\\n";
+						break;
+					case '\t':
+						os << "\\t";
+						break;
+					case '\\':
+					case '\'':
+						os << '\\';
+					default:
+						os << c;
+				}
+				os << '\'';
+				first = false;
+			}
+
+			os << "> Var" << lexical_cast<std::string>(i++) << ";\n";
+		}
+		os << "\n";
 	}
-	os << "\n";
 
 	// hooks
 	for(const auto& p : hooks_)
@@ -263,7 +274,7 @@ void Data::finalize(std::ostream& os)
 		if(!hook.raw())
 		{
 			os << "template<typename SymTable, typename Output>\n"
-			      "struct " << hook.eval(rules_) << "\n{\n"
+			      "struct " << hook.name() << "\n{\n"
 			      "\tstatic void run(SymTable& symtable, Output& output)\n\t{\n";
 		}
 
@@ -403,7 +414,7 @@ MXT_HOOK_END
 
 MXT_HOOK_BEGIN(PollVariable)
 {
-	Data::Instance().pollVar();
+	Data::Instance().pollVar(MXT_CURTOK);
 }
 MXT_HOOK_END
 
