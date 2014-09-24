@@ -2,6 +2,7 @@
 #define DAV_LEX_H
 
 #include <aux>
+#include <functional>
 #include "lib.hpp"
 
 #ifdef DEBUG_LOG
@@ -32,7 +33,21 @@ namespace dav
 			static const std::string& get( ) { return str(); }
 		};
 
+		struct StringQueue
+		{
+			typedef std::function<void(const std::string&)> out_fn;
+			typedef std::vector<std::string> queue_t;
+
+			public:
+				static void push(const std::string& s) { internal().push_back(s); }
+				static void flush(out_fn fn) { for(const auto& s : internal()) fn(s); internal().clear(); }
+			private:
+				static queue_t& internal( ) { static queue_t q; return q; }
+		};
+
 // # ---------------------------------------------------------------------------
+
+#define MXT_CHECK_STRING(S) static_assert(HasName<S>::value, "'S' needs to provide a static 'toString' function!");
 
 		struct End
 		{
@@ -67,10 +82,35 @@ namespace dav
 			}
 		};
 
+		template<typename S, typename SQ = StringQueue>
+		struct PrintStatic
+		{
+			MXT_CHECK_STRING(S);
+
+			static void run(void)
+			{
+				SQ::push(S::toString());
+			}
+		};
+
+		template<typename S, typename SQ = StringQueue>
+		using Print = Hook<PrintStatic<S>>;
+
+		template<typename SQ = StringQueue, typename SS = StringStore>
+		struct PrintMatch
+		{
+			static void run(void)
+			{
+				SQ::push(SS::get());
+			}
+		};
+
+		typedef Hook<PrintMatch<>> PrintID;
+
 		template<typename S = ID_ALL_REGEX, typename SS = StringStore, bool Literal = false>
 		struct Match
 		{
-			static_assert(HasName<S>::value, "'S' needs to provide a static 'toString' function!");
+			MXT_CHECK_STRING(S);
 
 			template<typename I>
 			static bool matches(I& input)
@@ -95,6 +135,8 @@ namespace dav
 
 		template<typename S, typename SS = StringStore>
 		using Literal = Match<S, SS, true>;
+
+#undef MXT_CHECK_STRING
 
 // # ---------------------------------------------------------------------------
 		

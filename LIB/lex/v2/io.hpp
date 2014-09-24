@@ -60,6 +60,8 @@ namespace dav
 				size_t p_;
 		};
 
+// # ===========================================================================
+
 		template<typename T>
 		class WriteContainer
 		{
@@ -70,6 +72,23 @@ namespace dav
 				virtual size_t size( ) const = 0;
 			private:
 		};
+
+		template<typename T, void (T::*push_f)(const typename T::value_type&) = &T::push_back>
+		class WriteSTLContainer : public WriteContainer<typename T::value_type>
+		{
+			public:
+			typedef typename T::value_type value_type;
+
+			public:
+				WriteSTLContainer(T& t) : t_(t) { }
+				void push(const value_type& t) { (t_.*push_f)(t); }
+				size_t size( ) const { return t_.size(); }
+			private:
+				T &t_;
+		};
+
+		template<typename T>
+		using DefWriteSTLContainer = WriteSTLContainer<T>;
 
 		template<typename T>
 		class OStreamContainer : public WriteContainer<T>

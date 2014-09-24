@@ -1,5 +1,5 @@
 CC=g++-4.7
-CFLAGS=-Wall -std=c++0x -O0 -Wl,--no-as-needed -ggdb -DDEBUG
+CFLAGS=-Wall -std=c++0x -O0 -Wl,--no-as-needed -ggdb -I/home/dave/include -DDEBUG
 LIBS=
 SRC=$(wildcard *.cc)
 OBJ=$(SRC:.cc=.o)

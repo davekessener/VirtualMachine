@@ -13,6 +13,9 @@ namespace dav
 		using lex::Hook;
 		using lex::Match;
 
+		using io::Reader;
+		using io::Writer;
+
 		typedef String<'[', '0', '-', '9', ']'> ID_DIGIT_REGEX;
 		typedef String<'[', '0', '-', '9', ']'> ID_DIGIT_REGEX;
 		typedef String<'+'> ADD_S;

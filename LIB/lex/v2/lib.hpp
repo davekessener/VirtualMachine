@@ -4,6 +4,7 @@
 #include <iosfwd>
 #include <iterator>
 #include <string>
+#include <type_traits>
 
 namespace dav
 {
@@ -12,6 +13,20 @@ namespace dav
 	{
 		typedef T type;
 	};
+
+	template<int I, typename T = void>
+	struct EnableIf
+	{
+		typedef T type;
+	};
+
+	template<typename T>
+	struct EnableIf<0, T>
+	{
+	};
+
+	template<typename I, typename T = void>
+	using DoEnableIf = typename EnableIf<I::value, T>::type;
 
 	template<typename T>
 	struct HasName
@@ -54,12 +69,20 @@ namespace dav
 	template<typename T, typename TT>
 	struct IsDerived
 	{
+		typedef typename std::decay<T>::type base_type;
+		typedef typename std::decay<TT>::type derived_type;
 		struct A { char v[1]; };
 		struct B { char v[2]; };
-		static constexpr A eval(T*) { return A(); }
-		static constexpr B eval(...) { return B(); }
-		enum { value = sizeof(eval(static_cast<TT *>(nullptr))) == sizeof(A) };
+		static constexpr A eval(base_type*);
+		static constexpr B eval(...);
+		enum { value = sizeof(eval(static_cast<derived_type *>(nullptr))) == sizeof(A) };
 	};
+
+	template<typename Base, typename Derived>
+	inline constexpr bool DoIsDerived( ) { return IsDerived<Base, Derived>::value; }
+
+	template<typename T>
+	using DoDecay = typename std::decay<T>::type;
 
 	template<typename I>
 	struct deref_traits

@@ -1,23 +1,23 @@
 #include <iostream>
 #include "Tokenizer.h"
+#include "Parser.h"
 
 int main(int argc, char *argv[])
 try
 {
-	dav::io::OStreamContainer<std::string> out(std::ostream_iterator<std::string>(std::cout, "\n"));
+	std::vector<std::string> args(argv + 1, argv + argc);
 
-	while(1)
+	std::vector<std::string> buf;
+	std::string in;
+
 	{
-		std::string s("");
-
-		std::getline(std::cin, s);
-
-		if(std::cin.eof()) break;
-
-		if(s.empty()) continue;
-
-		dav::tokenizer::parse(s.cbegin(), s.cend(), out);
+		std::ostringstream oss;
+		for(std::istream_iterator<std::string> i(std::cin), e ; i != e ; ++i) oss << *i << " ";
+		in = oss.str();
 	}
+
+	dav::tokenizer::parse(in.cbegin(), in.cend(), buf);
+	dav::parser::parse(buf.cbegin(), buf.cend(), std::cout);
 
 	return 0;
 }
