@@ -1,13 +1,14 @@
 #include <iostream>
 #include "Tokenizer.h"
-#include "Parser.h"
+#include "InfToPost.h"
+#include "Evaluator.h"
 
 int main(int argc, char *argv[])
 try
 {
 	std::vector<std::string> args(argv + 1, argv + argc);
 
-	std::vector<std::string> buf;
+	std::vector<std::string> tokens, postbuf;
 	std::string in;
 
 	{
@@ -16,8 +17,11 @@ try
 		in = oss.str();
 	}
 
-	dav::tokenizer::parse(in.cbegin(), in.cend(), buf);
-	dav::parser::parse(buf.cbegin(), buf.cend(), std::cout);
+	dav::tokenizer::parse(in.cbegin(), in.cend(), tokens);
+	dav::infixtopostfix::parse(tokens.cbegin(), tokens.cend(), postbuf);
+	double v = dav::evaluator::parse(postbuf.cbegin(), postbuf.cend());
+
+	td::cout << "= " << v << std::endl;
 
 	return 0;
 }

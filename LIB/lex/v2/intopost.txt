@@ -31,8 +31,8 @@ BEGIN
 	RULE O6	= "-" O7 PRINT("NEG")
 			= O7
 	RULE O7	= "(" O1 ")"
-			= "PI" PRINT($PI)
-			= "E"  PRINT($E)
+			= "pi" PRINT($PI)
+			= "e"  PRINT($E)
 			= ID(R$NUM) PRINT
 END
 

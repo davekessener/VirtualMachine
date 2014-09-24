@@ -1,6 +1,3 @@
-#ifndef DAV_PARSER_INFIXTOPOSTFIX_H
-#define DAV_PARSER_INFIXTOPOSTFIX_H
-
 #include <iostream>
 #include <sstream>
 #include <vector>
@@ -8,6 +5,7 @@
 #include "lib.hpp"
 #include "Tokenizer.h"
 #include "analysis_io.hpp"
+#include "InfToPost.h"
 
 namespace dav { namespace infixtopostfix {
 
@@ -21,23 +19,6 @@ using lex::End;
 using lex::Empty;
 using io::Reader;
 using io::Writer;
-
-void parse(Reader&, Writer&);
-
-template<typename O, typename C = io::WriteSTLContainer<DoDecay<O>>>
-typename std::enable_if<!IsDerived<io::Writer, DoDecay<O>>::value>::type
-	parse(io::Reader& in, O&& o)
-{
-	C out(o);
-	parse(in, out);
-}
-
-template<typename I, typename O>
-inline void parse(I i1, I i2, O&& out)
-{
-	io::StringIterator<I> in(i1, i2);
-	parse(in, out);
-}
 
 typedef String<'+'> Var0;
 typedef String<'-'> Var1;
@@ -150,30 +131,29 @@ void parse(Reader& in, Writer& out)
 
 } }
 
-int main(int argc, char *argv[])
-try
-{
-	std::vector<std::string> buf, post;
-	std::string in;
+//int main(int argc, char *argv[])
+//try
+//{
+//	std::vector<std::string> buf, post;
+//	std::string in;
+//
+//	{
+//		std::ostringstream oss;
+//		for(std::istream_iterator<std::string> i(std::cin), e ; i != e ; ++i) oss << *i << " ";
+//		in = oss.str();
+//	}
+//
+//	dav::tokenizer::parse(in.cbegin(), in.cend(), buf);
+//	dav::infixtopostfix::parse(buf.cbegin(), buf.cend(), post);
+//
+//	for(const std::string& s : post) std::cout << s << " ";
+//
+//	std::cout << std::endl;
+//
+//	return 0;
+//}
+//catch(const std::string& e)
+//{
+//	std::cerr << std::endl << "ERR: " << e << std::endl;
+//}
 
-	{
-		std::ostringstream oss;
-		for(std::istream_iterator<std::string> i(std::cin), e ; i != e ; ++i) oss << *i << " ";
-		in = oss.str();
-	}
-
-	dav::tokenizer::parse(in.cbegin(), in.cend(), buf);
-	dav::infixtopostfix::parse(buf.cbegin(), buf.cend(), post);
-
-	for(const std::string& s : post) std::cout << s << " ";
-
-	std::cout << std::endl;
-
-	return 0;
-}
-catch(const std::string& e)
-{
-	std::cerr << std::endl << "ERR: " << e << std::endl;
-}
-
-#endif
