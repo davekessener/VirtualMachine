@@ -18,6 +18,13 @@ namespace dav
 
 			return parse(in);
 		}
+
+		template<typename I>
+		inline typename std::enable_if<IsIterable<DoDecay<I>>::value, number_t>::type
+			parse(I&& in)
+		{
+			return parse(in.cbegin(), in.cend());
+		}
 	}
 }
 

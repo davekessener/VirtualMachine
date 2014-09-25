@@ -4,7 +4,8 @@
 #include "lib.hpp"
 #include "Stack.hpp"
 
-#define MXT_E 2.76
+#define MXT_PI 3.14159265358979323846264338327950288419716939937510
+#define MXT_E 2.71828182845904523536028747135266249775724709369995
 
 using boost::lexical_cast;
 
@@ -31,6 +32,9 @@ namespace dav { namespace evaluator {
 	typedef String<'L', 'G'> LG_S;
 	typedef String<'L', 'N'> LN_S;
 	typedef String<'S', 'Q', 'R', 'T'> SQRT_S;
+	typedef String<'N', 'E', 'G'> NEG_S;
+	typedef String<'E'> E_S;
+	typedef String<'P', 'I'> PI_S;
 
 	typedef Stack<number_t> stack_t;
 
@@ -53,39 +57,39 @@ namespace dav { namespace evaluator {
 	template<>
 	struct NOP<0>
 	{
-		template<typename OP, typename S>
-		void run(S& st)
+		template<typename S, typename OP>
+		static void run(S& st, OP&& op)
 		{
-			st.push(OP::run());
+			st.push(op());
 		}
 	};
 
 	template<>
 	struct NOP<1>
 	{
-		template<typename OP, typename S>
-		void run(S& st)
+		template<typename S, typename OP>
+		static void run(S& st, OP&& op)
 		{
 			typedef typename S::value_type value_type;
 
 			value_type v(st.top()); st.pop();
 
-			st.push(OP::run(v));
+			st.push(op(v));
 		}
 	};
 
 	template<>
 	struct NOP<2>
 	{
-		template<typename OP, typename S>
-		void run(S& st)
+		template<typename S, typename OP>
+		static void run(S& st, OP&& op)
 		{
 			typedef typename S::value_type value_type;
 
 			value_type v1(st.top()); st.pop();
 			value_type v2(st.top()); st.pop();
 
-			st.push(OP::run(v1, v2));
+			st.push(op(v2, v1));
 		}
 	};
 
@@ -109,22 +113,23 @@ namespace dav { namespace evaluator {
 					+ " (" + lexical_cast<std::string>(st.size()) + ")");
 			}
 
-			NOperator::run<op_type>(st);
+			NOperator::run(st, op_type());
 		}
 	};
 	
 	template<int C> struct OPN { enum { operand_count = C }; };
-	template<typename T> struct Addition         : OPN<2> { static constexpr T run(const T& t1, const T& t2) { return t1 + t2; } };
-	template<typename T> struct Subtraction      : OPN<2> { static constexpr T run(const T& t1, const T& t2) { return t1 - t2; } };
-	template<typename T> struct Multiplication   : OPN<2> { static constexpr T run(const T& t1, const T& t2) { return t1 * t2; } };
-	template<typename T> struct Division         : OPN<2> { static constexpr T run(const T& t1, const T& t2) { return t1 / t2; } };
-	template<typename T> struct Exponentiation   : OPN<2> { static constexpr T run(const T& t1, const T& t2) { return t1 ^ t2; } };
-	template<typename T> struct Sine		     : OPN<1> { static T run(const T& v) { return std::sin(v); } };
-	template<typename T> struct Cosine           : OPN<1> { static T run(const T& v) { return std::cos(v); } };
-	template<typename T> struct Tangent          : OPN<1> { static T run(const T& v) { return std::tan(v); } };
-	template<typename T> struct Logarithm        : OPN<1> { static T run(const T& v) { return std::log(v) / log(MXT_E); } };
-	template<typename T> struct NaturalLogarithm : OPN<1> { static T run(const T& v) { return std::log(v); } };
-	template<typename T> struct Squareroot       : OPN<1> { static T run(const T& v) { return std::sqrt(v); } };
+	template<typename T> struct Addition         : OPN<2> { constexpr T operator()(const T& t1, const T& t2) const { return t1 + t2; } };
+	template<typename T> struct Subtraction      : OPN<2> { constexpr T operator()(const T& t1, const T& t2) const { return t1 - t2; } };
+	template<typename T> struct Multiplication   : OPN<2> { constexpr T operator()(const T& t1, const T& t2) const { return t1 * t2; } };
+	template<typename T> struct Division         : OPN<2> { constexpr T operator()(const T& t1, const T& t2) const { return t1 / t2; } };
+	template<typename T> struct Exponentiation   : OPN<2> { constexpr T operator()(const T& t1, const T& t2) const { return std::pow(t1, t2); } };
+	template<typename T> struct Sine		     : OPN<1> { T operator()(const T& v) const { return std::sin(v); } };
+	template<typename T> struct Cosine           : OPN<1> { T operator()(const T& v) const { return std::cos(v); } };
+	template<typename T> struct Tangent          : OPN<1> { T operator()(const T& v) const { return std::tan(v); } };
+	template<typename T> struct Logarithm        : OPN<1> { T operator()(const T& v) const { return std::log(v) / log(MXT_E); } };
+	template<typename T> struct NaturalLogarithm : OPN<1> { T operator()(const T& v) const { return std::log(v); } };
+	template<typename T> struct Squareroot       : OPN<1> { T operator()(const T& v) const { return std::sqrt(v); } };
+	template<typename T> struct Negation         : OPN<1> { T operator()(const T& v) const { return -v; } };
 	
 	typedef SecureOP<GStack, Addition> Add;
 	typedef SecureOP<GStack, Subtraction> Sub;
@@ -137,6 +142,7 @@ namespace dav { namespace evaluator {
 	typedef SecureOP<GStack, Logarithm> Lg;
 	typedef SecureOP<GStack, NaturalLogarithm> Ln;
 	typedef SecureOP<GStack, Squareroot> Sqrt;
+	typedef SecureOP<GStack, Negation> Neg;
 
 	struct Push
 	{
@@ -145,6 +151,9 @@ namespace dav { namespace evaluator {
 			GStack::Instance().push((boost::lexical_cast<number_t>(StringStore::get())));
 		}
 	};
+
+	struct PushE  { static void run() { GStack::Instance().push(MXT_E);  } };
+	struct PushPI { static void run() { GStack::Instance().push(MXT_PI); } };
 
 	typedef Analysis
 	<
@@ -166,6 +175,8 @@ namespace dav { namespace evaluator {
 			MakeTypeList // 3
 			<
 				MakeTypeList<Match<ID_DEC_REGEX>, Hook<Push>>,
+				MakeTypeList<Literal<E_S>, Hook<PushE>>,
+				MakeTypeList<Literal<PI_S>, Hook<PushPI>>,
 				MakeTypeList<Literal<ADD_S>, Hook<Add>>,
 				MakeTypeList<Literal<SUB_S>, Hook<Sub>>,
 				MakeTypeList<Literal<MUL_S>, Hook<Mul>>,
@@ -176,7 +187,8 @@ namespace dav { namespace evaluator {
 				MakeTypeList<Literal<TAN_S>, Hook<Tan>>,
 				MakeTypeList<Literal<LG_S>, Hook<Lg>>,
 				MakeTypeList<Literal<LN_S>, Hook<Ln>>,
-				MakeTypeList<Literal<SQRT_S>, Hook<Sqrt>>
+				MakeTypeList<Literal<SQRT_S>, Hook<Sqrt>>,
+				MakeTypeList<Literal<NEG_S>, Hook<Neg>>
 			>
 		>
 	>

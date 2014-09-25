@@ -247,7 +247,7 @@ namespace dav
 				  "using io::Writer;\n\n"
 				  "void parse(Reader&, Writer&);\n\n"
 				  "template<typename O, typename C = io::WriteSTLContainer<DoDecay<O>>>\n"
-				  "typename std::enable_if<!IsDerived<io::Writer, DoDecay<O>>::value>::type\n"
+				  "inline typename std::enable_if<!IsDerived<io::Writer, DoDecay<O>>::value>::type\n"
 				  "\tparse(io::Reader& in, O&& o)\n"
 				  "{\n"
 				  "\tC out(o);\n"
@@ -258,6 +258,12 @@ namespace dav
 				  "{\n"
 				  "\tio::StringIterator<I> in(i1, i2);\n"
 				  "\tparse(in, out);\n"
+				  "}\n\n"
+				  "template<typename I, typename O>\n"
+				  "inline typename std::enable_if<IsIterable<DoDecay<I>>::value>::type\n"
+				  "\tparse(I&& i, O&& o)\n"
+				  "{\n"
+				  "\tparse(i.cbegin(), i.cend(), o);\n"
 				  "}\n\n"
 				  ;
 		

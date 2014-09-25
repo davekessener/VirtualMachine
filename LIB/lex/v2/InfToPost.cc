@@ -1,3 +1,6 @@
+#ifndef DAV_PARSER_INFIXTOPOSTFIX_H
+#define DAV_PARSER_INFIXTOPOSTFIX_H
+
 #include <iostream>
 #include <sstream>
 #include <vector>
@@ -5,7 +8,6 @@
 #include "lib.hpp"
 #include "Tokenizer.h"
 #include "analysis_io.hpp"
-#include "InfToPost.h"
 
 namespace dav { namespace infixtopostfix {
 
@@ -19,6 +21,23 @@ using lex::End;
 using lex::Empty;
 using io::Reader;
 using io::Writer;
+
+void parse(Reader&, Writer&);
+
+template<typename O, typename C = io::WriteSTLContainer<DoDecay<O>>>
+typename std::enable_if<!IsDerived<io::Writer, DoDecay<O>>::value>::type
+	parse(io::Reader& in, O&& o)
+{
+	C out(o);
+	parse(in, out);
+}
+
+template<typename I, typename O>
+inline void parse(I i1, I i2, O&& out)
+{
+	io::StringIterator<I> in(i1, i2);
+	parse(in, out);
+}
 
 typedef String<'+'> Var0;
 typedef String<'-'> Var1;
@@ -39,13 +58,13 @@ typedef String<'L', 'N'> Var15;
 typedef String<'s', 'q', 'r', 't'> Var16;
 typedef String<'S', 'Q', 'R', 'T'> Var17;
 typedef String<'e', 'x', 'p'> Var18;
-typedef String<'2', '.', '7', '6'> Var19;
+typedef String<'E'> Var19;
 typedef String<'N', 'E', 'G'> Var20;
 typedef String<'('> Var21;
 typedef String<')'> Var22;
-typedef String<'P', 'I'> Var23;
-typedef String<'3', '.', '1', '4', '1'> Var24;
-typedef String<'E'> Var25;
+typedef String<'p', 'i', '|', 'P', 'I'> Var23;
+typedef String<'P', 'I'> Var24;
+typedef String<'[', 'e', 'E', ']'> Var25;
 typedef String<'[', '0', '-', '9', ']', '+', '(', '\\', '.', '[', '0', '-', '9', ']', '+', ')', '?', '(', '[', 'e', 'E', ']', '[', '+', '-', ']', '?', '[', '0', '-', '9', ']', '+', ')', '?'> Var26;
 
 typedef Analysis
@@ -114,8 +133,8 @@ typedef Analysis
 		MakeTypeList
 		<
 			MakeTypeList<Literal<Var21>, Production<1>, Literal<Var22>>,
-			MakeTypeList<Literal<Var23>, Print<Var24>>,
-			MakeTypeList<Literal<Var25>, Print<Var19>>,
+			MakeTypeList<Match<Var23>, Print<Var24>>,
+			MakeTypeList<Match<Var25>, Print<Var19>>,
 			MakeTypeList<Match<Var26>, PrintID>
 		>
 	>
@@ -157,3 +176,4 @@ void parse(Reader& in, Writer& out)
 //	std::cerr << std::endl << "ERR: " << e << std::endl;
 //}
 
+#endif

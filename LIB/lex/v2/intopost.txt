@@ -1,8 +1,6 @@
 PARSER InfixToPostfix
 VAR NAME = "[a-zA-Z_][a-zA-Z0-9_]*"
 VAR NUM  = "[0-9]+(\\.[0-9]+)?([eE][+-]?[0-9]+)?"
-VAR PI   = "3.141"
-VAR E    = "2.76"
 BEGIN
 	RULE E	= O1 FINAL
 	RULE O1	= O2 F1
@@ -26,13 +24,13 @@ BEGIN
 			= "lg" O6 PRINT("LG")
 			= "ln" O6 PRINT("LN")
 			= "sqrt" O6 PRINT("SQRT")
-			= "exp" PRINT($E) O4 PRINT("^")
+			= "exp" PRINT("E") O4 PRINT("^")
 			= O6
 	RULE O6	= "-" O7 PRINT("NEG")
 			= O7
 	RULE O7	= "(" O1 ")"
-			= "pi" PRINT($PI)
-			= "e"  PRINT($E)
+			= ID(R"pi|PI") PRINT("PI")
+			= ID(R"[eE]")  PRINT("E")
 			= ID(R$NUM) PRINT
 END
 

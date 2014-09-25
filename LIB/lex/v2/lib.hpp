@@ -138,6 +138,50 @@ namespace dav
 		enum { value = V };
 	};
 
+	template<int I, typename T = double>
+	struct Round
+	{
+		typedef T value_type;
+		enum { displacement = 10 * Round<I - 1, T>::displacement };
+	
+		value_type operator()(const value_type& v) const
+		{
+			return static_cast<value_type>(static_cast<long>(v * displacement)) / displacement;
+		}
+	};
+	
+	template<typename T>
+	struct Round<0, T>
+	{
+		enum { displacement = 1 };
+	};
+
+	template<typename T>
+	struct IsIterable
+	{
+		struct A { char v[1]; };
+		struct B { char v[2]; };
+
+		template<typename C> static constexpr A eval(typename C::iterator *);
+		template<typename C> static constexpr B eval(...);
+
+		enum { value = sizeof(eval<T>(nullptr)) == sizeof(A) };
+	};
+
+//	template<typename T>
+//		typename std::enable_if<IsIterable<T>::value>::type
+//			operator<<(std::ostream& os, const T& t)
+//	{
+//		std::transform
+//		(
+//			t.cbegin(),
+//			t.cend(),
+//			std::ostream_iterator<std::string>(std::cout, " "),
+//			[](const typename T::value_type& v) 
+//				{ return boost::lexical_cast<std::string>(v); }
+//		);
+//	}
+
 // #========================================================================
 
 	typedef decltype(nullptr) NIL;

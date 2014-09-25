@@ -10,7 +10,7 @@ namespace dav
 		void parse(io::Reader&, io::Writer&);
 		
 		template<typename O, typename C = io::WriteSTLContainer<DoDecay<O>>>
-		typename std::enable_if<!IsDerived<io::Writer, DoDecay<O>>::value>::type
+		inline typename std::enable_if<!IsDerived<io::Writer, DoDecay<O>>::value>::type
 			parse(io::Reader& in, O&& o)
 		{
 			C out(o);
@@ -22,6 +22,13 @@ namespace dav
 		{
 			io::StringIterator<I> in(i1, i2);
 			parse(in, out);
+		}
+		
+		template<typename I, typename O>
+		inline typename std::enable_if<IsIterable<DoDecay<I>>::value>::type
+			parse(I&& i, O&& o)
+		{
+			parse(i.cbegin(), i.cend(), o);
 		}
 	}
 }
