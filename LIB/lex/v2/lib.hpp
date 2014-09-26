@@ -146,7 +146,7 @@ namespace dav
 	
 		value_type operator()(const value_type& v) const
 		{
-			return static_cast<value_type>(static_cast<long>(v * displacement)) / displacement;
+			return static_cast<value_type>(static_cast<long>(v * displacement + (v < 0 ? -0.5 : 0.5))) / displacement;
 		}
 	};
 	

@@ -22,23 +22,6 @@ using lex::Empty;
 using io::Reader;
 using io::Writer;
 
-void parse(Reader&, Writer&);
-
-template<typename O, typename C = io::WriteSTLContainer<DoDecay<O>>>
-typename std::enable_if<!IsDerived<io::Writer, DoDecay<O>>::value>::type
-	parse(io::Reader& in, O&& o)
-{
-	C out(o);
-	parse(in, out);
-}
-
-template<typename I, typename O>
-inline void parse(I i1, I i2, O&& out)
-{
-	io::StringIterator<I> in(i1, i2);
-	parse(in, out);
-}
-
 typedef String<'+'> Var0;
 typedef String<'-'> Var1;
 typedef String<'*'> Var2;
