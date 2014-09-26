@@ -2,5 +2,5 @@
 git rm -r --cached . > /dev/null
 git add .
 git commit -m "Regular update."
-git push origin
+git push -u origin
 
