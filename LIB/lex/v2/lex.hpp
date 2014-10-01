@@ -40,14 +40,16 @@ namespace dav
 
 			public:
 				static void push(const std::string& s) { internal().push_back(s); }
-				static void flush(out_fn fn) { for(const auto& s : internal()) fn(s); internal().clear(); }
+				static void flush(out_fn fn)
+					{ for(const auto& s : internal()) fn(s); internal().clear(); }
 			private:
 				static queue_t& internal( ) { static queue_t q; return q; }
 		};
 
 // # ---------------------------------------------------------------------------
 
-#define MXT_CHECK_STRING(S) static_assert(HasName<S>::value, "'S' needs to provide a static 'toString' function!");
+#define MXT_CHECK_STRING(S) \
+	static_assert(HasName<S>::value, "'S' needs to provide a static 'toString' function!");
 
 		struct End
 		{

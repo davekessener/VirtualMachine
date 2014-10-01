@@ -6,6 +6,9 @@
 #include <string>
 #include <type_traits>
 
+// TypeList facilities are based on A. Alexandrescu's
+// typelists in "Modern C++ Design" 01
+
 namespace dav
 {
 	template<typename T>
@@ -146,7 +149,10 @@ namespace dav
 	
 		value_type operator()(const value_type& v) const
 		{
-			return static_cast<value_type>(static_cast<long>(v * displacement + (v < 0 ? -0.5 : 0.5))) / displacement;
+#define ROUND_NEAR(v) ((v) < 0 ? -0.5 : 0.5)
+			return   static_cast<value_type>(static_cast<long>(v * displacement + ROUND_NEAR(v)))
+				   / displacement;
+#undef ROUND_NEAR
 		}
 	};
 	
@@ -250,7 +256,12 @@ namespace dav
 	template<typename H, typename T, template<typename> class F>
 	struct RecursiveTransform<TypeList<H, T>, F>
 	{
-		typedef TypeList<typename RecursiveTransform<H, F>::type, typename RecursiveTransform<T, F>::type> type;
+		typedef TypeList
+		<
+			typename RecursiveTransform<H, F>::type,
+			typename RecursiveTransform<T, F>::type
+		>
+		type;
 	};
 
 	template<template<typename> class F>
@@ -285,9 +296,6 @@ namespace dav
 	{
 		enum { value = IsInImpl<0, T, TT, F>::value };
 	};
-
-// # ===========================================================================
-
 
 // # ===========================================================================
 

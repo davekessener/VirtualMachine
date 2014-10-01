@@ -118,18 +118,67 @@ namespace dav { namespace evaluator {
 	};
 	
 	template<int C> struct OPN { enum { operand_count = C }; };
-	template<typename T> struct Addition         : OPN<2> { constexpr T operator()(const T& t1, const T& t2) const { return t1 + t2; } };
-	template<typename T> struct Subtraction      : OPN<2> { constexpr T operator()(const T& t1, const T& t2) const { return t1 - t2; } };
-	template<typename T> struct Multiplication   : OPN<2> { constexpr T operator()(const T& t1, const T& t2) const { return t1 * t2; } };
-	template<typename T> struct Division         : OPN<2> { constexpr T operator()(const T& t1, const T& t2) const { return t1 / t2; } };
-	template<typename T> struct Exponentiation   : OPN<2> { constexpr T operator()(const T& t1, const T& t2) const { return std::pow(t1, t2); } };
-	template<typename T> struct Sine		     : OPN<1> { T operator()(const T& v) const { return std::sin(v); } };
-	template<typename T> struct Cosine           : OPN<1> { T operator()(const T& v) const { return std::cos(v); } };
-	template<typename T> struct Tangent          : OPN<1> { T operator()(const T& v) const { return std::tan(v); } };
-	template<typename T> struct Logarithm        : OPN<1> { T operator()(const T& v) const { return std::log(v) / log(MXT_E); } };
-	template<typename T> struct NaturalLogarithm : OPN<1> { T operator()(const T& v) const { return std::log(v); } };
-	template<typename T> struct Squareroot       : OPN<1> { T operator()(const T& v) const { return std::sqrt(v); } };
-	template<typename T> struct Negation         : OPN<1> { T operator()(const T& v) const { return -v; } };
+
+	template<typename T> struct Addition         : OPN<2> 
+	{
+		constexpr T operator()(const T& t1, const T& t2) const { return t1 + t2; }
+	};
+
+	template<typename T> struct Subtraction      : OPN<2> 
+	{
+		 constexpr T operator()(const T& t1, const T& t2) const { return t1 - t2; } 
+	};
+
+	template<typename T> struct Multiplication   : OPN<2> 
+	{
+		 constexpr T operator()(const T& t1, const T& t2) const { return t1 * t2; } 
+	};
+
+	template<typename T> struct Division         : OPN<2> 
+	{
+		 constexpr T operator()(const T& t1, const T& t2) const { return t1 / t2; } 
+	};
+
+	template<typename T> struct Exponentiation   : OPN<2> 
+	{
+		 constexpr T operator()(const T& t1, const T& t2) const { return std::pow(t1, t2); } 
+	};
+
+	template<typename T> struct Sine		     : OPN<1> 
+	{
+		 T operator()(const T& v) const { return std::sin(v); } 
+	};
+
+	template<typename T> struct Cosine           : OPN<1> 
+	{
+		 T operator()(const T& v) const { return std::cos(v); } 
+	};
+
+	template<typename T> struct Tangent          : OPN<1> 
+	{
+		 T operator()(const T& v) const { return std::tan(v); } 
+	};
+
+	template<typename T> struct Logarithm        : OPN<1> 
+	{
+		 T operator()(const T& v) const { return std::log(v) / log(MXT_E); } 
+	};
+
+	template<typename T> struct NaturalLogarithm : OPN<1> 
+	{
+		 T operator()(const T& v) const { return std::log(v); } 
+	};
+
+	template<typename T> struct Squareroot       : OPN<1> 
+	{
+		 T operator()(const T& v) const { return std::sqrt(v); } 
+	};
+
+	template<typename T> struct Negation         : OPN<1> 
+	{
+		 constexpr T operator()(const T& v) const { return -v; } 
+	};
+
 	
 	typedef SecureOP<GStack, Addition> Add;
 	typedef SecureOP<GStack, Subtraction> Sub;
@@ -200,7 +249,13 @@ namespace dav { namespace evaluator {
 
 		Evaluator::parse(in);
 
-		if(st.size() != 1) throw aux::stringify("expected stack-size to be 1 instead of ", st.size(), " after execution!");
+		if(st.size() != 1) 
+			throw aux::stringify
+			(
+				"expected stack-size to be 1 instead of ",
+				st.size(),
+				" after execution!"
+			);
 
 		number_t v(st.top()); st.pop();
 
