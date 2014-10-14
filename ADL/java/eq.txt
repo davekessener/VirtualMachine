@@ -1,0 +1,15 @@
+### some complex equation
+-2*sin(4*exp(pi*0.125)/e)-3*(4/0.2)
+#= -61.64103421
+
+### rounding behavior
+2 /3
+#= 0.66666...
+
+### misc
+e^0
+#= 1
+sqrt(3^2 + 4^2)
+#= 5
+
+

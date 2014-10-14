@@ -66,6 +66,7 @@ public class Evaluator
 		OPS.put("TAN", new OP() { @Override public void act(Stack<Double> st) throws Empty { double v = st.top(); st.pop(); st.push(Math.tan(v)); } });
 		OPS.put("LG", new OP() { @Override public void act(Stack<Double> st) throws Empty { double v = st.top(); st.pop(); st.push(Math.log10(v)); } });
 		OPS.put("LN", new OP() { @Override public void act(Stack<Double> st) throws Empty { double v = st.top(); st.pop(); st.push(Math.log(v)); } });
+		OPS.put("NEG", new OP() { @Override public void act(Stack<Double> st) throws Empty { double v = st.top(); st.pop(); st.push(-v); } });
 	}
 	private static final Pattern NUM = Pattern.compile("[0-9]+(\\.[0-9]+)?([eE][+-]?[0-9]+)?");
 }

@@ -1,0 +1,18 @@
+PARSER TTable
+VAR NAME = "[A-Z][A-Za-z0-9_]*"
+BEGIN
+	RULE E  = O1 PRINT("$") FINAL
+	RULE O1 = ID(R$NAME) PRINT "=" F1 O2
+	RULE F1 = ID(R$NAME) PRINT E1
+	RULE E1 = "," F1
+			= "=" PRINT("#")
+	RULE O2 = O3 F2
+	RULE F2 = "^" O3 PRINT("&") F2
+			= "v" O3 PRINT("|") F2
+			= EMPTY
+	RULE O3 = "!" O4 PRINT("!")
+			= O4
+	RULE O4 = "(" O2 ")"
+			= ID(R$NAME) PRINT
+END
+

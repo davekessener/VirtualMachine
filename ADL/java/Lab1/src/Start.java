@@ -11,42 +11,55 @@ import postfix.error.EvaluationException;
 
 public class Start
 {
-	public static void main(String[] args)
+	private static void eval(String s) throws ParseException, EvaluationException
+	{
+		if(s.isEmpty()) return;
+		
+		System.out.println(s);
+		
+		if(s.charAt(0) == '#') return;
+		
+		InfixToPostfix itop = new InfixToPostfix();
+		Tokenizer tokens = new Tokenizer();
+		tokens.load(s);
+		
+		Queue<String> buf = itop.parse(tokens);
+		
+		printQ(buf.clone());
+		
+		System.out.println("\n= " + Evaluator.eval(buf));
+	}
+	
+	private static void printQ(Queue<String> q)
 	{
 		try
 		{
-			StringBuilder sb = new StringBuilder();
-			Scanner sc = new Scanner(System.in);
-			Tokenizer tokens = new Tokenizer();	
-			InfixToPostfix itop = new InfixToPostfix();
-			
-			while(sc.hasNext()) sb.append(sc.next()).append(' ');
-			
-			tokens.load(sb.toString());
-			
-			Queue<String> buf = itop.parse(tokens);
-			
+			while(!q.empty()) { System.out.print(q.top() + " "); q.poll(); }
+		}
+		catch(Empty e)
+		{
+			e.printStackTrace();
+		}
+	}
+	
+	public static void main(String[] args)
+	{
+		Scanner sc = new Scanner(System.in);
+		
+		while(sc.hasNext())
+		{
 			try
 			{
-				Queue<String> tmp = (Queue<String>) buf.clone();
-				while(!tmp.empty()) { System.out.print(tmp.top() + " "); tmp.poll(); }
+				eval(sc.nextLine());
 			}
-			catch(Empty e)
+			catch(ParseException e)
 			{
 				e.printStackTrace();
 			}
-			
-			double value = Evaluator.eval(buf);
-
-			System.out.println("\n= " + value);
-		}
-		catch(ParseException e)
-		{
-			e.printStackTrace();
-		}
-		catch(EvaluationException e)
-		{
-			e.printStackTrace();
+			catch(EvaluationException e)
+			{
+				e.printStackTrace();
+			}
 		}
 	}
 }
