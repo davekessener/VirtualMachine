@@ -1,0 +1,15 @@
+Sorted (Select) 1 after 1ms
+Sorted (Select) 2 after 2ms
+Sorted (Select) 3 after 7ms
+Sorted (Select) 4 after 18ms
+Sorted (Select) 5 after 38ms
+Sorted (Select) 6 after 148ms
+Sorted (Select) 7 after 570ms
+Sorted (Select) 8 after 2239ms
+Sorted (Select) 9 after 8907ms
+Sorted (Select) 10 after 9089ms
+Sorted (Select) 11 after 17422ms
+Sorted (Select) 12 after 35802ms
+Sorted (Select) 13 after 69986ms
+Sorted (Select) 14 after 144226ms
+Sorted (Select) 15 after 286103ms
