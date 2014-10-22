@@ -41,9 +41,9 @@ data_t checksort(uint k, uint min, uint max, S sort)
 	sort.reset();
 
 	// sort presorted stack (best case)
-	sort(s.begin(), s.end());
-	d.best = sort.getOPCount();
-	sort.reset();
+//	sort(s.begin(), s.end());
+//	d.best = sort.getOPCount();
+//	sort.reset();
 
 	// sort presorted stack in reverse order (worst case)
 	sort(s.rbegin(), s.rend());
@@ -123,7 +123,7 @@ void runcheck(std::ostream& os, int k, int m, int min, int max, S sort)
 template<typename S>
 void run(const std::string& s)
 {
-	const int MIN(2), MAX(1000000000), N(20), M[] = {1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 256, 128, 64, 32, 16, 8, 4, 4, 4, 4, 4, 4, 4} ;
+	const int MIN(2), MAX(1000000000), N(20), M[] = {1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 256, 128, 64, 32, 16, 8, 4, 4, 4, 4, 4, 4, 4} ;
 
 	S sort;
 	dav::Timer t1, t2;
@@ -133,7 +133,7 @@ void run(const std::string& s)
 
 	for(int i = 1 ; i <= N ; ++i)
 	{
-		runcheck(out, i, M[i-1], MIN, MAX, sort);
+		runcheck(out, i, 1, MIN, MAX, sort);
 		std::cout << "Sorted (" << s << ") " << i << " after " << t1.getDelta() << "ms" << std::endl;
 	}
 
@@ -145,11 +145,17 @@ void run(const std::string& s)
 int main(int argc, char *argv[])
 {
 	std::vector<std::string> args(argv, argv + argc);
+	std::vector<std::thread> mt;
 
-	run<dav::sorting::Selection<uint>>("select");
-	run<dav::sorting::Insertion<uint>>("insert");
-	run<dav::sorting::Merge<uint>>("merge");
-	run<dav::sorting::MergeInplace<uint>>("inplace");
+	mt.push_back(std::thread(run<dav::sorting::Merge<uint>>, std::string("merge")));
+	mt.push_back(std::thread(run<dav::sorting::Selection<uint>>, std::string("select")));
+	mt.push_back(std::thread(run<dav::sorting::Insertion<uint>>, std::string("insert")));
+//	mt.push_back(std::thread(run<dav::sorting::MergeInplace<uint>>, std::string("inplace")));
+
+	for(auto& t : mt)
+	{
+		t.join();
+	}
 
 	return 0;
 }

@@ -4,11 +4,13 @@
 #include <vector>
 #include <random>
 #include <future>
+#include <functional>
 #include <cassert>
 #include "Stack.hpp"
 #include "Selection.hpp"
 #include "Insertion.hpp"
 #include "Merge.hpp"
+#include "Quick.hpp"
 #include "Timer.h"
 
 typedef unsigned int uint;
@@ -18,22 +20,30 @@ typedef long double frac_t;
 struct data_t { size_t best, worst, avg; };
 
 template<typename S>
-data_t checksort(uint k, uint min, uint max, S sort)
+void fill_random(S& st, int N, uint min, uint max, std::function<void(uint)> f = nullptr)
 {
 	static std::mt19937_64 generator(std::random_device{}());
 
+	if(!f) f = [&st](uint i){ st.push(i); };
+
+	std::uniform_int_distribution<uint> distribution(min, max);
+
+	// fill stack with 2^k random numbers
+	for(uint i = N ; i ; --i) f(distribution(generator));
+}
+
+template<typename S>
+data_t checksort(uint k, uint min, uint max, S sort)
+{
 	assert(k<8*sizeof(uint));
 
 	const uint N(1 << k);
 	typedef dav::stack::Stack<uint> stack_t;
 
-	std::uniform_int_distribution<uint> distribution(min, max);
-
 	stack_t s(N);
 	data_t d{0, 0, 0};
 
-	// fill stack with 2^k random numbers
-	for(uint i = N ; i ; --i) s.push(distribution(generator));
+	fill_random(s, N, min, max);
 
 	// sort stack (average case)
 	sort(s.begin(), s.end());
@@ -146,10 +156,18 @@ int main(int argc, char *argv[])
 {
 	std::vector<std::string> args(argv, argv + argc);
 
-	run<dav::sorting::Selection<uint>>("select");
-	run<dav::sorting::Insertion<uint>>("insert");
-	run<dav::sorting::Merge<uint>>("merge");
-	run<dav::sorting::MergeInplace<uint>>("inplace");
+	dav::stack::Stack<uint> s;
+	for(int i = 0 ; i < 10 ; ++i) s.push(i);
+
+	dav::sorting::do_shuffle(s.begin(), s.end());
+
+	for(const auto& v : s) std::cout << v << ' ';
+	std::cout << std::endl;
+
+//	run<dav::sorting::Selection<uint>>("select");
+//	run<dav::sorting::Insertion<uint>>("insert");
+//	run<dav::sorting::Merge<uint>>("merge");
+//	run<dav::sorting::MergeInplace<uint>>("inplace");
 
 	return 0;
 }

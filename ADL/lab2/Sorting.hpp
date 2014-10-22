@@ -45,7 +45,7 @@
 				{ \
 					std::advance(i, span >> 1); \
 					++*opc_; \
-					if(!op(v,*i)) \
+					if(op(v,*i)) \
 					{ \
 						i1 = ++i; \
 						span = (span - 1) >> 1; \

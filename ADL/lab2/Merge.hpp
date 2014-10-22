@@ -50,8 +50,14 @@ namespace dav
 
 					while(i != mid || j != end)
 					{
-						if(i == mid) *k = *j++;
-						else if(j == end) *k = *i++;
+						if(i == mid)
+						{
+							while(j != end) { *k = *j; ++j; ++k; MXT_SORTING_INCOP; } break;
+						}
+						else if(j == end)
+						{
+							while(i != mid) { *k = *i; ++i; ++k; MXT_SORTING_INCOP; } break;
+						}
 						else
 						{
 							if(!op(*i, *j)) *k = *i++;
