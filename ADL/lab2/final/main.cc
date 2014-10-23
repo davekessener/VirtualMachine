@@ -157,12 +157,16 @@ int main(int argc, char *argv[])
 	std::vector<std::string> args(argv, argv + argc);
 
 	dav::stack::Stack<uint> s;
-	for(int i = 0 ; i < 10 ; ++i) s.push(i);
+	fill_random(s, 10, 0, 10);
 
-	dav::sorting::do_shuffle(s.begin(), s.end());
+	auto print = [&s]() { for(const auto& v : s) std::cout << v << ' '; std::cout << std::endl; };
 
-	for(const auto& v : s) std::cout << v << ' ';
-	std::cout << std::endl;
+	print();
+
+	dav::sorting::Quick<uint> sort;
+	sort(s.begin(), s.end());
+
+	print();
 
 //	run<dav::sorting::Selection<uint>>("select");
 //	run<dav::sorting::Insertion<uint>>("insert");
