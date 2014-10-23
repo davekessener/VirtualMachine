@@ -21,7 +21,7 @@ struct shuffle
 		std::vector<I> v(len);
 		
 		{
-			I j(i1); for(auto i = v.begin(), e = v.end() ; i != e ; ++i) { *i = j; ++j; }
+			I j(i1); for(auto i = v.begin(), e = v.end() ; i != e ; ++i, ++j) *i = j;
 		}
 
 		std::shuffle(v.begin(), v.end(), std::mt19937_64(std::random_device()()));
@@ -59,8 +59,11 @@ class Quick
 		void operator()(I i1, I i2)
 		{
 			do_shuffle(i1, i2);
+
 			sort(i1, i2);
 		}
+		template<typename I>
+		void print(I i1, I i2) { while(i1 != i2) std::cout << *i1++ << ' '; std::cout << std::endl; };
 	private:
 		template<typename I>
 		void sort(I i1, I i2)
@@ -69,8 +72,10 @@ class Quick
 
 			I i(partition(i1, i2));
 
+			print(i1, i2);
+
 			sort(i1, i);
-			sort(i, i2);
+			sort(++i, i2);
 		}
 
 		template<typename I>
@@ -81,6 +86,8 @@ class Quick
 			auto &e(*pivot);
 
 			if(++i1 == --i2) return pivot;
+
+			std::cout << "p: " << e << ' ';
 
 			while(true)
 			{

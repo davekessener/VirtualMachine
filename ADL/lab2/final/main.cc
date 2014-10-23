@@ -156,8 +156,10 @@ int main(int argc, char *argv[])
 {
 	std::vector<std::string> args(argv, argv + argc);
 
-	dav::stack::Stack<uint> s;
-	fill_random(s, 10, 0, 10);
+//	dav::stack::Stack<uint> s;
+//	fill_random(s, 10, 0, 10);
+	std::vector<uint> s;
+	for(int i = 0 ; i < 10 ; ++i) s.push_back(i);
 
 	auto print = [&s]() { for(const auto& v : s) std::cout << v << ' '; std::cout << std::endl; };
 
