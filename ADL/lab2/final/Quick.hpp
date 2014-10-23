@@ -60,6 +60,8 @@ class Quick
 		{
 			do_shuffle(i1, i2);
 
+			print(i1, i2);
+
 			sort(i1, i2);
 		}
 		template<typename I>
@@ -70,9 +72,12 @@ class Quick
 		{
 			if(std::distance(i1, i2) < 2) return;
 
+			std::cout << "#"; print(i1, i2);
+
 			I i(partition(i1, i2));
 
-			print(i1, i2);
+			std::cout << "done: "; print(i1, i2);
+			std::cout << "chose: " << *i << std::endl;
 
 			sort(i1, i);
 			sort(++i, i2);
@@ -85,9 +90,11 @@ class Quick
 			S op;
 			auto &e(*pivot);
 
-			if(++i1 == --i2) return pivot;
-
-			std::cout << "p: " << e << ' ';
+			if(++i1 == --i2)
+			{
+				if(op(e, *i2)) MXT_SORTING_SWAP(*pivot, *i2);
+				return i2;
+			}
 
 			while(true)
 			{
@@ -96,12 +103,20 @@ class Quick
 
 				if(i1 == i2) break;
 
+				std::cout << "swap " << *i1 << ", " << *i2 << std::endl;
 				MXT_SORTING_SWAP(*i1, *i2);
+				if(++i1 == i2) --i1;
+				if(i1 == --i2) break;
 			}
 
+			std::cout << "pivot swap (" << op(*pivot, *i2) << ") " << *pivot << ", " << *i2 << std::endl;
+			if(op(*pivot, *i2))
+			{
 			MXT_SORTING_SWAP(*pivot, *i2);
+			pivot = i2;
+			}
 
-			return i2;
+			return pivot;
 		}
 };
 

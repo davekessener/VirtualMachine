@@ -156,19 +156,31 @@ int main(int argc, char *argv[])
 {
 	std::vector<std::string> args(argv, argv + argc);
 
+	auto test = [](uint *i1, uint *i2) -> bool { uint v(-1); while(i1 != i2) if(*i1 > v) return false; else v = *i1++; return true; };
+
 //	dav::stack::Stack<uint> s;
 //	fill_random(s, 10, 0, 10);
+	bool f(true);
+
+	for(int j = 0 ; j < 100 ; ++j)
+	{
 	std::vector<uint> s;
 	for(int i = 0 ; i < 10 ; ++i) s.push_back(i);
 
 	auto print = [&s]() { for(const auto& v : s) std::cout << v << ' '; std::cout << std::endl; };
 
+	std::cout << "-------------\n";
 	print();
 
 	dav::sorting::Quick<uint> sort;
 	sort(s.begin(), s.end());
+	f = f && test(&s.front(), &s.front() + s.size());
 
 	print();
+	if(!f) break;
+	}
+
+	std::cout << (f ? "SUCESS" : "FAILURE") << std::endl;
 
 //	run<dav::sorting::Selection<uint>>("select");
 //	run<dav::sorting::Insertion<uint>>("insert");
