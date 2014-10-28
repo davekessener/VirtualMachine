@@ -3,6 +3,38 @@
 
 #include <algorithm>
 
+namespace dav
+{
+	namespace sorting
+	{
+		template<typename T>
+		struct do_islt2
+		{
+			template<typename I>
+			static bool run(I i1, I i2)
+			{
+				return i1 == i2 ? true : ++i1 == i2;
+			}
+		};
+
+		template<>
+		struct do_islt2<std::random_access_iterator_tag>
+		{
+			template<typename I>
+			static bool run(I i1, I i2)
+			{
+				return i2 - i1 < 2;
+			}
+		};
+
+		template<typename I, typename T = typename std::iterator_traits<I>::iterator_category>
+		bool islt2(I i1, I i2)
+		{
+			return do_islt2<T>::run(i1, i2);
+		}
+	}
+}
+
 #ifndef NDEBUG
 #	include <memory>
 #	define MXT_SORTING_SWAP(a,b) swap((a),(b))

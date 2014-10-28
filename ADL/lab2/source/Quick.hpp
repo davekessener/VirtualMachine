@@ -58,26 +58,17 @@ class Quick
 		template<typename I>
 		void operator()(I i1, I i2)
 		{
-			do_shuffle(i1, i2);
-
-			print(i1, i2);
+			//do_shuffle(i1, i2);
 
 			sort(i1, i2);
 		}
-		template<typename I>
-		void print(I i1, I i2) { while(i1 != i2) std::cout << *i1++ << ' '; std::cout << std::endl; };
 	private:
 		template<typename I>
 		void sort(I i1, I i2)
 		{
-			if(std::distance(i1, i2) < 2) return;
-
-			std::cout << "#"; print(i1, i2);
+			if(islt2(i1, i2)) return;
 
 			I i(partition(i1, i2));
-
-			std::cout << "done: "; print(i1, i2);
-			std::cout << "chose: " << *i << std::endl;
 
 			sort(i1, i);
 			sort(++i, i2);
@@ -86,34 +77,28 @@ class Quick
 		template<typename I>
 		I partition(I i1, I i2)
 		{
+			typedef typename std::iterator_traits<I>::value_type value_type;
+
 			I pivot(i1);
-			S op;
+			S cmp;
 			auto &e(*pivot);
 
-			if(++i1 == --i2)
+			auto op = [&cmp, this](value_type& v1, value_type& v2) -> bool { MXT_SORTING_INCOP; return cmp(v1, v2); };
+
+			if(++i1 == --i2) pivot = i2;
+
+			while(i1 != i2)
 			{
-				if(op(e, *i2)) MXT_SORTING_SWAP(*pivot, *i2);
-				return i2;
+				while(!op(e, *i2)) { if(i1 == i2) break; --i2; }
+				while( op(e, *i1)) { if(i1 == i2) break; ++i1; }
+
+				if(i1 != i2) MXT_SORTING_SWAP(*i1, *i2);
 			}
 
-			while(true)
+			if(op(e, *i2))
 			{
-				while(op(*i2, e)) { if(i1 == i2) break; --i2; }
-				while(op(e, *i1)) { if(i1 == i2) break; ++i1; }
-
-				if(i1 == i2) break;
-
-				std::cout << "swap " << *i1 << ", " << *i2 << std::endl;
-				MXT_SORTING_SWAP(*i1, *i2);
-				if(++i1 == i2) --i1;
-				if(i1 == --i2) break;
-			}
-
-			std::cout << "pivot swap (" << op(*pivot, *i2) << ") " << *pivot << ", " << *i2 << std::endl;
-			if(op(*pivot, *i2))
-			{
-			MXT_SORTING_SWAP(*pivot, *i2);
-			pivot = i2;
+				MXT_SORTING_SWAP(e, *i2);
+				pivot = i2;
 			}
 
 			return pivot;

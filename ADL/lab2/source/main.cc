@@ -17,8 +17,6 @@ typedef unsigned int uint;
 typedef unsigned long long int_t;
 typedef long double frac_t;
 
-struct data_t { size_t best, worst, avg; };
-
 template<typename S>
 void fill_random(S& st, int N, uint min, uint max, std::function<void(uint)> f = nullptr)
 {
@@ -33,32 +31,55 @@ void fill_random(S& st, int N, uint min, uint max, std::function<void(uint)> f =
 }
 
 template<typename S>
-data_t checksort(uint k, uint min, uint max, S sort)
+int_t checksort(uint k, uint min, uint max, S proto)
 {
 	assert(k<8*sizeof(uint));
+
+	S sort;
 
 	const uint N(1 << k);
 	typedef dav::stack::Stack<uint> stack_t;
 
 	stack_t s(N);
-	data_t d{0, 0, 0};
+	int_t d(0);
 
 	fill_random(s, N, min, max);
 
+	// worst-case for merge-sort:
+//	{
+//		std::vector<uint> tv;
+//		int j(0);
+//
+//		tv.reserve(N + 1);
+//		tv.push_back(0);
+//		while(tv.size() < N)
+//		{
+//			std::vector<uint> ttv(tv.size() << 1);
+//			auto ii(tv.begin());
+//			for(auto i(ttv.begin()), e(ttv.end()) ; i != e ; ++i)
+//			{
+//				*i = *ii; ++ii; ++i;
+//				*i = ++j;
+//			}
+//			tv.swap(ttv);
+//		}
+//		for(auto i(tv.begin()), e(tv.end()) ; i != e ; ++i) { auto t(*i); s.push(*++i); s.push(t); }
+//	}
+
 	// sort stack (average case)
 	sort(s.begin(), s.end());
-	d.avg = sort.getOPCount();
+	d = sort.getOPCount();
 	sort.reset();
 
 	// sort presorted stack (best case)
-	sort(s.begin(), s.end());
-	d.best = sort.getOPCount();
-	sort.reset();
+//	sort(s.begin(), s.end());
+//	d.best = sort.getOPCount();
+//	sort.reset();
 
 	// sort presorted stack in reverse order (worst case)
-	sort(s.rbegin(), s.rend());
-	d.worst = sort.getOPCount();
-	sort.reset();
+//	sort(s.rbegin(), s.rend());
+//	d.worst = sort.getOPCount();
+//	sort.reset();
 
 	return d;
 }
@@ -80,15 +101,15 @@ void runcheck(std::ostream& os, int k, int m, int min, int max, S sort)
 	if(!CORES) CORES = 4;
 
 	// run 'm' sorts in 'CORES' threads
-	std::vector<data_t> vec(m);
+	std::vector<int_t> vec(m);
 	std::vector<std::thread> mt;
 
-	auto dorc = [k, min, max, &sort] (data_t *i1, data_t *i2)
+	auto dorc = [k, min, max, &sort] (int_t *i1, int_t *i2)
 		{
 			do_runcheck(i1, i2, k, min, max, sort);
 		};
 
-	data_t *i0 = &vec.front(), *e = i0 + m;
+	int_t *i0 = &vec.front(), *e = i0 + m;
 	for(int i = CORES - 1, n(m / CORES) ; i >= 0 ; --i)
 	{
 		mt.push_back(std::thread(dorc, i0, i && n ? i0 + n : e));
@@ -101,39 +122,36 @@ void runcheck(std::ostream& os, int k, int m, int min, int max, S sort)
 		f.join();
 	}
 
-	// average out the results
-	int_t   best = 0,    worst = 0,    avg = 0;
-	frac_t fbest = 0.0, fworst = 0.0, favg = 0.0;
+	int_t avg(0); frac_t favg(0);
 	for(const auto& d : vec)
 	{
-		best   += d.best  / m;
-		avg    += d.avg   / m;
-		worst  += d.worst / m;
-		fbest  += (d.best  % m) / (frac_t)m;
-		favg   += (d.avg   % m) / (frac_t)m;
-		fworst += (d.worst % m) / (frac_t)m;
+		avg += d / m;
+		favg += (d % m) / (frac_t)m;
+		if(favg >= 1)
+		{
+			avg += (int_t)favg;
+			favg -= (int_t)favg;
+		}
 	}
-	best  += (int_t) fbest;  fbest  -= (int_t) fbest;
-	avg   += (int_t) favg;   favg   -= (int_t) favg;
-	worst += (int_t) fworst; fworst -= (int_t) fworst;
 
 	auto outp = [](int_t i, frac_t f) -> std::string
-		{
-			std::stringstream ss; ss << f;
-			std::string frac(ss.str().substr(1));
-			ss.clear(); ss.str(""); ss << i;
+	{
+		std::stringstream ss;
+		ss << f;
+		std::string sf(ss.str().substr(1));
+		ss.clear(); ss.str("");
+		ss << i;
+		return ss.str() + (f < 0 ? "" : sf);
+	};
 
-			return ss.str() + frac;
-		};
-	
 	// k	best	average		worst
-	os	<< k << '\t' << outp(best, fbest) << '\t' << outp(avg, favg) << '\t' << outp(worst, fworst) << std::endl;
+	os	<< k << '\t' << outp(avg, favg) << std::endl;
 }
 
 template<typename S>
 void run(const std::string& s)
 {
-	const int MIN(2), MAX(1000000000), N(20), M[] = {1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 256, 128, 64, 32, 16, 8, 4, 4, 4, 4, 4, 4, 4} ;
+	const int MIN(2), MAX(1000000000), N(20), M(1024);
 
 	S sort;
 	dav::Timer t1, t2;
@@ -143,7 +161,7 @@ void run(const std::string& s)
 
 	for(int i = 1 ; i <= N ; ++i)
 	{
-		runcheck(out, i, M[i-1], MIN, MAX, sort);
+		runcheck(out, i, M, MIN, MAX, sort);
 		std::cout << "Sorted (" << s << ") " << i << " after " << t1.getDelta() << "ms" << std::endl;
 	}
 
@@ -156,36 +174,10 @@ int main(int argc, char *argv[])
 {
 	std::vector<std::string> args(argv, argv + argc);
 
-	auto test = [](uint *i1, uint *i2) -> bool { uint v(-1); while(i1 != i2) if(*i1 > v) return false; else v = *i1++; return true; };
-
-//	dav::stack::Stack<uint> s;
-//	fill_random(s, 10, 0, 10);
-	bool f(true);
-
-	for(int j = 0 ; j < 100 ; ++j)
-	{
-	std::vector<uint> s;
-	for(int i = 0 ; i < 10 ; ++i) s.push_back(i);
-
-	auto print = [&s]() { for(const auto& v : s) std::cout << v << ' '; std::cout << std::endl; };
-
-	std::cout << "-------------\n";
-	print();
-
-	dav::sorting::Quick<uint> sort;
-	sort(s.begin(), s.end());
-	f = f && test(&s.front(), &s.front() + s.size());
-
-	print();
-	if(!f) break;
-	}
-
-	std::cout << (f ? "SUCESS" : "FAILURE") << std::endl;
-
-//	run<dav::sorting::Selection<uint>>("select");
-//	run<dav::sorting::Insertion<uint>>("insert");
-//	run<dav::sorting::Merge<uint>>("merge");
-//	run<dav::sorting::MergeInplace<uint>>("inplace");
+	run<dav::sorting::Selection<uint>>("select");
+	run<dav::sorting::Insertion<uint>>("insert");
+	run<dav::sorting::Merge<uint>>("merge");
+	run<dav::sorting::Quick<uint>>("quick");
 
 	return 0;
 }

@@ -23,7 +23,7 @@ namespace dav
 				template<typename I>
 				void operator()(I i1, I i2)
 				{
-					std::vector<typename std::decay<decltype(*i1)>::type> buf(std::distance(i1, i2));
+					std::vector<typename std::iterator_traits<I>::value_type> buf(std::distance(i1, i2));
 
 					sort(i1, i2, buf.begin());
 				}
@@ -32,12 +32,14 @@ namespace dav
 				void sort(I1 begin, I1 end, I2 buf)
 				{
 					auto d(std::distance(begin, end));
+
 					if(d < 2) return;
 
 					I1 i(begin); advance(i, d / 2);
 
 					sort(begin, i, buf);
 					sort(i, end, buf);
+
 					merge(begin, i, end, buf);
 				}
 
@@ -48,13 +50,38 @@ namespace dav
 					I2 k(buf);
 					S op;
 
+					//if(op(*--j, *mid)) return;
+					//++j;
+
 					while(i != mid || j != end)
 					{
-						if(i == mid) *k = *j++;
-						else if(j == end) *k = *i++;
+						if(i == mid)
+						{
+							while(j != end)
+							{
+								*k = *j;
+								++j;
+								++k;
+								MXT_SORTING_INCOP;
+							}
+
+							break;
+						}
+						else if(j == end)
+						{
+							while(i != mid)
+							{
+								*k = *i;
+								++i;
+								++k;
+								MXT_SORTING_INCOP;
+							}
+
+							break;
+						}
 						else
 						{
-							if(!op(*i, *j)) *k = *i++;
+							if(op(*j, *i)) *k = *i++;
 							else *k = *j++;
 							MXT_SORTING_INCOP;
 						}
@@ -84,6 +111,7 @@ namespace dav
 
 					(*this)(i1, i);
 					(*this)(i, i2);
+
 					merge(i1, i, i2);
 				}
 			private:
@@ -91,6 +119,7 @@ namespace dav
 				void merge(I begin, I mid, I end)
 				{
 					typedef std::reverse_iterator<I> riter;
+					
 					I i(begin), j(mid);
 					S op;
 
