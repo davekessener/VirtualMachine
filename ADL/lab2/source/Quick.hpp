@@ -58,7 +58,7 @@ class Quick
 		template<typename I>
 		void operator()(I i1, I i2)
 		{
-			//do_shuffle(i1, i2);
+			do_shuffle(i1, i2);
 
 			sort(i1, i2);
 		}
