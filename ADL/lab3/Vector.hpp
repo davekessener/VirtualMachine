@@ -1,5 +1,5 @@
 #ifndef DAV_VECTOR_H
-#ifndef DAV_VECTOR_H
+#define DAV_VECTOR_H
 
 #define MXT_VEC_STD_SIZE 16
 
@@ -39,7 +39,19 @@ namespace dav
 	template<typename T, typename Alloc = std::allocator<T>, typename MT = dav::SingleThreaded>
 	class Vector : protected MT
 	{
-		typedef vector_aux::impl impl;
+		typedef vector_aux::impl<T, Alloc> impl;
+		typedef typename impl::value_type value_type;
+		typedef typename impl::pointer pointer;
+		typedef typename impl::const_pointer const_pointer;
+		typedef typename impl::reference reference;
+		typedef typename impl::const_reference const_reference;
+		typedef typename impl::size_type size_type;
+		typedef typename impl::difference_type difference_type;
+		typedef pointer iterator;
+		typedef const_pointer const_iterator;
+		typedef std::reverse_iterator<iterator> reverse_iterator;
+		typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
+		typedef Vector<T, Alloc, MT> self;
 
 		public:
 			explicit Vector(size_type = MXT_VEC_STD_SIZE);
