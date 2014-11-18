@@ -1,4 +1,4 @@
-CC=g++-4.7
+CC=g++
 DAVCFLAGS=
 GLIBS=
 DAVLIBS=-ldav_Logger
