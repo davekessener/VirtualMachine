@@ -21,7 +21,8 @@ static const float FOV(45.0), ZNEAR(1.0), ZFAR(100.0);
 bool do_update(int);
 void do_init(int, int);
 void do_input(sdl::Controls, bool);
-void mmotion(unsigned int, unsigned int, int, int);
+//void mmotion(unsigned int, unsigned int, int, int);
+void mmotion(int, int);
 
 void set_look(float, float);
 
@@ -49,7 +50,8 @@ int main(int argc, char *argv[])
 
 	sdl::set_init(&do_init);
 	sdl::set_update(&do_update);
-	sdl::set_input(&do_input, &mmotion);
+	sdl::set_input(&do_input);
+	sdl::set_mouse(nullptr, nullptr, &mmotion);
 	sdl::start("4D", SCREEN_WIDTH, SCREEN_HEIGHT);
 
 	return 0;
@@ -229,7 +231,8 @@ void do_input(sdl::Controls key, bool pressed)
 	if(key == sdl::Controls::SHIFT) set_look(pitch_, yaw_);
 }
 
-void mmotion(unsigned int x, unsigned int y, int dx, int dy)
+//void mmotion(unsigned int x, unsigned int y, int dx, int dy)
+void mmotion(int dx, int dy)
 {
 	set_look(pitch_ + dx * 90.0 / 1000.0, yaw_ - dy * 90.0 / 1000.0);
 }
