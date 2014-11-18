@@ -138,7 +138,7 @@ void Scan::getDepList(const std::string& p, file_list_t& list) const
 
 void Scan::write(std::ostream& is) const
 {
-	is << "CC=g++-4.7\n";
+	is << "CC=g++\n";
 	is << "SRC=";
 	for(const std::string& s : src_) is << s << " ";
 	is << "\n";

@@ -13,6 +13,7 @@ using dav::evaluator::number_t;
 
 void eval(bool = false);
 void parse( );
+void param(const std::string&, bool);
 
 template<typename I, typename O> void tokenize(I&&, O&&);
 template<typename I, typename O> void convert(I&&, O&&);
@@ -27,15 +28,18 @@ int main(int argc, char *argv[])
 
 	std::vector<std::string> args(argv + 1, argv + argc);
 	std::map<std::string, exec_fn> modes;
+	std::string input("");
 	bool verbose = false;
-	exec_fn run = [&verbose]() { eval(verbose); };
+	exec_fn run = [&verbose, &input]() { param(input, verbose); };
 
 	modes["-p"] = [&run]() { run = &parse; };
 	modes["-v"] = [&verbose]() { verbose = true; };
+	modes["-i"] = [&run, &verbose]() { run = [&verbose]() { eval(verbose); }; };
 
 	for(const std::string& arg : args)
 	{
 		if(modes.count(arg)) modes.at(arg)();
+		else input += arg + " ";
 	}
 
 	run();
@@ -81,6 +85,37 @@ void eval(bool verbose)
 		{
 			std::cerr << e << std::endl;
 		}
+	}
+}
+
+// # ---------------------------------------------------------------------------
+
+void param(const std::string& expr, bool v)
+{
+	dav::Round<MXT_ROUND> round;
+
+	try
+	{
+		std::vector<std::string> tokens, postfix;
+		number_t result;
+
+		if(expr.empty()) throw std::string("ERR: No input!");
+
+		tokenize(expr, tokens);
+
+		std::cout << tokens << std::endl;
+
+		convert(tokens, postfix);
+
+		if(v) std::cout << postfix << std::endl;
+
+		result = evaluate(postfix);
+
+		std::cout << "= " << round(result) << std::endl;
+	}
+	catch(const std::string& e)
+	{
+		std::cerr << e << std::endl;
 	}
 }
 
