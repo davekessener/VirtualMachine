@@ -54,6 +54,53 @@ namespace dav
 			return n;
 		}
 
+		template<typename P>
+		P rotate(P p, std::function<P&(P)> left, std::function<P&(P)> right)
+		{
+			P n(right(p));
+			right(p) = left(n);
+			if(static_cast<bool>(left(n))) left(n)->parent() = p;
+			left(n) = p;
+			n->parent() = p->parent();
+			p->parent() = n;
+
+			return n;
+		}
+
+		template<typename P, typename K, typename V, typename H, typename S, typename C>
+		P insertRoot(P n, K k, const V& v, H&& hash, S&& op, C&& create, P p = nullptr)
+		{
+			static std::function<P&(P)> left = [](P p) -> P& { return p->left(); };
+			static std::function<P&(P)> right = [](P p) -> P& { return p->right(); };
+
+			if(!static_cast<bool>(n))
+			{
+				return create(k, v, p);
+			}
+			else
+			{
+				bool f;
+				auto key(hash(k));
+
+				if(!(f = op(n->key(), key)) && !op(key, n->key()))
+				{
+					n->value() = v;
+				}
+				else if(!f)
+				{
+					n->left() = insertRoot(n->left(), k, v, hash, op, create, n);
+					n = rotate(n, right, left);
+				}
+				else
+				{
+					n->right() = insertRoot(n->right(), k, v, hash, op, create, n);
+					n = rotate(n, left, right);
+				}
+
+				return n;
+			}
+		}
+
 //		template<typename P, typename K, typename V, typename S, typename C>
 //		P insert_recursive(P n, K k, const V& v, S&& op, C&& create, P p = nullptr)
 //		{
@@ -287,7 +334,7 @@ namespace dav
 	void BinarySearchTree<K, V, R, S>::insert(key_type k, const V& v)
 	{
 		depth_ = 0;
-		root_ = bst::insert(root_, k, v, op_, S(), 
+		root_ = bst::insertRoot(root_, k, v, op_, S(), 
 			[](key_type k, const V& v, node_ptr p) { return new node_t(k, v, p); });
 	}
 

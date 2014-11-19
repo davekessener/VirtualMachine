@@ -41,7 +41,7 @@ try
 		++idx;
 	}
 
-	for(auto i(bst.cbegin()), e(bst.cend()) ; i != e ; ++i)
+	for(auto i(bst.begin()), e(bst.end()) ; i != e ; ++i)
 	{
 		std::cout << i->first << ": " << i->second << std::endl;
 	}
@@ -50,21 +50,21 @@ try
 
 	bst.clear();
 
-	BinarySearchTree<size_t, int> tree;
-	std::mt19937_64 gen(std::random_device{}());
-	std::uniform_int_distribution<size_t> dist(0, static_cast<size_t>(-1));
-	idx = 0;
-	for(size_t n = 1 ; n <= 20 ; ++n)
-	{
-		for(size_t i = 0, e = idx + 1 ; i < e ; ++i)
-		{
-			tree.insert(dist(gen), 0); ++idx;
-		}
-
-		std::cout << "\nSize: 2^" << n << "-1=" << idx << "\nDepth: " << tree.depth() << std::endl;
-	}
-
-	std::cout << std::endl;
+//	BinarySearchTree<size_t, int> tree;
+//	std::mt19937_64 gen(std::random_device{}());
+//	std::uniform_int_distribution<size_t> dist(0, static_cast<size_t>(-1));
+//	idx = 0;
+//	for(size_t n = 1 ; n <= 20 ; ++n)
+//	{
+//		for(size_t i = 0, e = idx + 1 ; i < e ; ++i)
+//		{
+//			tree.insert(dist(gen), 0); ++idx;
+//		}
+//
+//		std::cout << "\nSize: 2^" << n << "-1=" << idx << "\nDepth: " << tree.depth() << std::endl;
+//	}
+//
+//	std::cout << std::endl;
 
 	return 0;
 }
