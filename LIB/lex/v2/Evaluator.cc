@@ -4,8 +4,9 @@
 #include "lib.hpp"
 #include "Stack.hpp"
 
-#define MXT_PI 3.14159265358979323846264338327950288419716939937510
-#define MXT_E 2.71828182845904523536028747135266249775724709369995
+#define MXT_PI   3.14159265358979323846264338327950288419716939937510
+#define MXT_E    2.71828182845904523536028747135266249775724709369995
+#define MXT_LN10 2.30258509299404568401799145468436420760110148862877
 
 using boost::lexical_cast;
 
@@ -161,7 +162,7 @@ namespace dav { namespace evaluator {
 
 	template<typename T> struct Logarithm        : OPN<1> 
 	{
-		 T operator()(const T& v) const { return std::log(v) / log(MXT_E); } 
+		 T operator()(const T& v) const { return std::log(v) / MXT_LN10; } 
 	};
 
 	template<typename T> struct NaturalLogarithm : OPN<1> 

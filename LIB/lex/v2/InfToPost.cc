@@ -1,13 +1,13 @@
-#ifndef DAV_PARSER_INFIXTOPOSTFIX_H
-#define DAV_PARSER_INFIXTOPOSTFIX_H
-
 #include <iostream>
 #include <sstream>
 #include <vector>
 #include "lex.hpp"
 #include "lib.hpp"
 #include "Tokenizer.h"
-#include "analysis_io.hpp"
+
+// # HEADER # ==================================================================
+
+// # ===========================================================================
 
 namespace dav { namespace infixtopostfix {
 
@@ -27,42 +27,28 @@ typedef String<'-'> Var1;
 typedef String<'*'> Var2;
 typedef String<'/'> Var3;
 typedef String<'^'> Var4;
-typedef String<'s', 'i', 'n'> Var5;
-typedef String<'S', 'I', 'N'> Var6;
-typedef String<'c', 'o', 's'> Var7;
-typedef String<'C', 'O', 'S'> Var8;
-typedef String<'t', 'a', 'n'> Var9;
-typedef String<'T', 'A', 'N'> Var10;
-typedef String<'l', 'o', 'g'> Var11;
-typedef String<'L', 'G'> Var12;
-typedef String<'l', 'g'> Var13;
-typedef String<'l', 'n'> Var14;
-typedef String<'L', 'N'> Var15;
-typedef String<'s', 'q', 'r', 't'> Var16;
-typedef String<'S', 'Q', 'R', 'T'> Var17;
-typedef String<'e', 'x', 'p'> Var18;
-typedef String<'E'> Var19;
-typedef String<'N', 'E', 'G'> Var20;
+typedef String<'N', 'E', 'G'> Var5;
+typedef String<'s', 'i', 'n'> Var6;
+typedef String<'S', 'I', 'N'> Var7;
+typedef String<'c', 'o', 's'> Var8;
+typedef String<'C', 'O', 'S'> Var9;
+typedef String<'t', 'a', 'n'> Var10;
+typedef String<'T', 'A', 'N'> Var11;
+typedef String<'l', 'o', 'g'> Var12;
+typedef String<'L', 'G'> Var13;
+typedef String<'l', 'g'> Var14;
+typedef String<'l', 'n'> Var15;
+typedef String<'L', 'N'> Var16;
+typedef String<'s', 'q', 'r', 't'> Var17;
+typedef String<'S', 'Q', 'R', 'T'> Var18;
+typedef String<'e', 'x', 'p'> Var19;
+typedef String<'E'> Var20;
 typedef String<'('> Var21;
 typedef String<')'> Var22;
 typedef String<'p', 'i', '|', 'P', 'I'> Var23;
 typedef String<'P', 'I'> Var24;
 typedef String<'[', 'e', 'E', ']'> Var25;
 typedef String<'[', '0', '-', '9', ']', '+', '(', '\\', '.', '[', '0', '-', '9', ']', '+', ')', '?', '(', '[', 'e', 'E', ']', '[', '+', '-', ']', '?', '[', '0', '-', '9', ']', '+', ')', '?'> Var26;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 typedef Analysis
 <
@@ -112,26 +98,26 @@ typedef Analysis
 		>,
 		MakeTypeList
 		<
-			MakeTypeList<Literal<Var5>, Production<10>, Print<Var6>>,
-			MakeTypeList<Literal<Var7>, Production<10>, Print<Var8>>,
-			MakeTypeList<Literal<Var9>, Production<10>, Print<Var10>>,
-			MakeTypeList<Literal<Var11>, Production<10>, Print<Var12>>,
-			MakeTypeList<Literal<Var13>, Production<10>, Print<Var12>>,
-			MakeTypeList<Literal<Var14>, Production<10>, Print<Var15>>,
-			MakeTypeList<Literal<Var16>, Production<10>, Print<Var17>>,
-			MakeTypeList<Literal<Var18>, Print<Var19>, Production<7>, Print<Var4>>,
+			MakeTypeList<Literal<Var1>, Production<10>, Print<Var5>>,
 			MakeTypeList<Production<10>>
 		>,
 		MakeTypeList
 		<
-			MakeTypeList<Literal<Var1>, Production<11>, Print<Var20>>,
+			MakeTypeList<Literal<Var6>, Production<11>, Print<Var7>>,
+			MakeTypeList<Literal<Var8>, Production<11>, Print<Var9>>,
+			MakeTypeList<Literal<Var10>, Production<11>, Print<Var11>>,
+			MakeTypeList<Literal<Var12>, Production<11>, Print<Var13>>,
+			MakeTypeList<Literal<Var14>, Production<11>, Print<Var13>>,
+			MakeTypeList<Literal<Var15>, Production<11>, Print<Var16>>,
+			MakeTypeList<Literal<Var17>, Production<11>, Print<Var18>>,
+			MakeTypeList<Literal<Var19>, Print<Var20>, Production<7>, Print<Var4>>,
 			MakeTypeList<Production<11>>
 		>,
 		MakeTypeList
 		<
 			MakeTypeList<Literal<Var21>, Production<1>, Literal<Var22>>,
 			MakeTypeList<Match<Var23>, Print<Var24>>,
-			MakeTypeList<Match<Var25>, Print<Var19>>,
+			MakeTypeList<Match<Var25>, Print<Var20>>,
 			MakeTypeList<Match<Var26>, PrintID>
 		>
 	>
@@ -152,20 +138,20 @@ void parse(Reader& in, Writer& out)
 //{
 //	std::vector<std::string> buf, post;
 //	std::string in;
-//
+
 //	{
 //		std::ostringstream oss;
 //		for(std::istream_iterator<std::string> i(std::cin), e ; i != e ; ++i) oss << *i << " ";
 //		in = oss.str();
 //	}
-//
+
 //	dav::tokenizer::parse(in.cbegin(), in.cend(), buf);
 //	dav::infixtopostfix::parse(buf.cbegin(), buf.cend(), post);
-//
+
 //	for(const std::string& s : post) std::cout << s << " ";
-//
+
 //	std::cout << std::endl;
-//
+
 //	return 0;
 //}
 //catch(const std::string& e)
@@ -173,4 +159,3 @@ void parse(Reader& in, Writer& out)
 //	std::cerr << std::endl << "ERR: " << e << std::endl;
 //}
 
-#endif
