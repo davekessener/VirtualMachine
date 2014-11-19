@@ -328,13 +328,13 @@ namespace dav
 	};
 
 	template<typename K, typename V>
-	using UnorderedBinarySearchTree = BinarySearchTree<K, V, std::hash<K>>;
+	using RandomizedBinarySearchTree = BinarySearchTree<K, V, std::hash<K>>;
 
 	template<typename K, typename V, typename R, typename S>
 	void BinarySearchTree<K, V, R, S>::insert(key_type k, const V& v)
 	{
 		depth_ = 0;
-		root_ = bst::insertRoot(root_, k, v, op_, S(), 
+		root_ = bst::insert(root_, k, v, op_, S(), 
 			[](key_type k, const V& v, node_ptr p) { return new node_t(k, v, p); });
 	}
 
