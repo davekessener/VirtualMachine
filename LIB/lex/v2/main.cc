@@ -14,6 +14,7 @@ using dav::evaluator::number_t;
 void eval(bool = false);
 void parse( );
 void param(const std::string&, bool);
+void env(bool = false);
 
 template<typename I, typename O> void tokenize(I&&, O&&);
 template<typename I, typename O> void convert(I&&, O&&);
@@ -31,10 +32,12 @@ int main(int argc, char *argv[])
 	std::string input("");
 	bool verbose = false;
 	exec_fn run = [&verbose, &input]() { param(input, verbose); };
+	auto make_run = [&run, &verbose](void (*fn)(bool)) { return [&run, &verbose, fn]() { run = [&verbose, fn]() { fn(verbose); }; }; };
 
 	modes["-p"] = [&run]() { run = &parse; };
 	modes["-v"] = [&verbose]() { verbose = true; };
-	modes["-i"] = [&run, &verbose]() { run = [&verbose]() { eval(verbose); }; };
+	modes["-i"] = make_run(eval);
+	modes["-r"] = make_run(env);
 
 	for(const std::string& arg : args)
 	{
@@ -45,6 +48,33 @@ int main(int argc, char *argv[])
 	run();
 
 	return 0;
+}
+
+// # --------------------------------------------------------------------------
+
+void env(bool v)
+{
+	std::string input("");
+
+	while(static_cast<bool>(std::cin) && !std::cin.eof())
+	{
+		std::string s("");
+
+		std::cout << ">>> ";
+		std::getline(std::cin, s);
+
+		if(s == "q") break;
+		else if(!s.empty()) input = s;
+
+		try
+		{
+			if(!input.empty()) param(input, v);
+		}
+		catch(const std::string& e)
+		{
+			std::cerr << e << std::endl;
+		}
+	}
 }
 
 // # --------------------------------------------------------------------------
