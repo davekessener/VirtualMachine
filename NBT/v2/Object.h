@@ -12,7 +12,7 @@ class Object
 		~Object( );
 		Node_ptr get( ) { return node_; }
 		void load(const std::string&);
-		void save(const std::string& = "");
+		void save(const std::string& = "", bool = false);
 		const std::string& filename( ) const { return fn_; }
 		void restore( );
 		void deleteBackup( );

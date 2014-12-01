@@ -18,7 +18,7 @@ struct Editor::Impl
 	public:
 		void init( );
 		void edit(const params_t&);
-		void write(const params_t&);
+		void write(const params_t&, bool = false);
 		void close(bool = false);
 		void erase(bool = false);
 		void insert(const params_t&);
@@ -49,14 +49,14 @@ void Editor::Impl::edit(const params_t& args)
 	tv_.reset(new TreeView(s_.x, s_.y, s_.w, s_.h - 1, o));
 }
 
-void Editor::Impl::write(const params_t& args)
+void Editor::Impl::write(const params_t& args, bool gz)
 {
 	if(args.size() > 2) throw std::string("too many arguments! :save [filename]");
 	if(!static_cast<bool>(tv_)) throw std::string("no savable buffer open!");
 
 	std::string fn(args.size() == 2 ? args.at(1) : "");
 	
-	tv_->getObject()->save(fn);
+	tv_->getObject()->save(fn, gz);
 	tv_->modify(false);
 }
 
@@ -177,6 +177,14 @@ Editor::Editor(void) : impl_(new Impl)
 {
 }
 
+Editor::Editor(const std::vector<std::string>& args) : Editor()
+{
+	if(args.size() >= 1)
+	{
+		queueCommand("edit " + args.at(0));
+	}
+}
+
 Editor::~Editor(void)
 {
 	delete impl_;
@@ -190,6 +198,8 @@ void Editor::registerCommands(void)
 //	CMD("echo")   { for(const std::string& s : args) LOG("echoed '%s'", s.data()); } CEND;
 	CMD("edit")   { impl_->close(force); impl_->edit(args); } CEND;
 	CMD("write")  { impl_->write(args);  } CEND;
+	CMD("w")  { impl_->write(args);  } CEND;
+	CMD("we")  { impl_->write(args, true);  } CEND;
 	CMD("close")  { impl_->close(force); } CEND;
 	CMD("delete") { impl_->erase(force); } CEND;
 	CMD("insert") { impl_->insert(args); } CEND;
@@ -202,8 +212,8 @@ void Editor::registerCommands(void)
 
 void Editor::init(void)
 {
-	CommandableScene::init();
 	impl_->init();
+	CommandableScene::init();
 }
 
 void Editor::suspend(void)

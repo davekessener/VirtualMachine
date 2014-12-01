@@ -9,6 +9,7 @@ class Editor : public CommandableScene
 
 	public:
 		Editor( );
+		Editor(const std::vector<std::string>&);
 		~Editor( );
 	private:
 		void registerCommands( );

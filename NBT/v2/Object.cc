@@ -30,14 +30,14 @@ void Object::load(const std::string& fn)
 	nbt->load(tag);
 }
 
-void Object::save(const std::string& fn)
+void Object::save(const std::string& fn, bool gz)
 {
 	if(!fn.empty()) fn_ = fn;
 	if(fn_.empty()) throw std::string("no filename for buffer!");
 
 	NBTNode &node(*dynamic_cast<NBTNode *>(&*node_));
 
-	nbt::writeFile(fn_, std::dynamic_pointer_cast<nbt::TAG_Compound>(node.getTag()));
+	nbt::writeFile(fn_, std::dynamic_pointer_cast<nbt::TAG_Compound>(node.getTag()), gz);
 }
 
 void Object::restore(void)

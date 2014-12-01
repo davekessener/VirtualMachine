@@ -22,6 +22,12 @@ CommandableScene::~CommandableScene(void)
 void CommandableScene::init(void)
 {
 	registerCommands();
+
+	while(!cmdQueue.empty())
+	{
+		command(cmdQueue.front(), false);
+		cmdQueue.pop();
+	}
 }
 
 void CommandableScene::refresh(void)
@@ -276,6 +282,11 @@ std::vector<std::string> CommandableScene::processCommand(const std::string& cmd
 	if(ready()) push();
 
 	return args;
+}
+
+void CommandableScene::queueCommand(const std::string& cmd)
+{
+	cmdQueue.push(cmd);
 }
 
 void CommandableScene::command(const std::string& cmd, bool doHistory)

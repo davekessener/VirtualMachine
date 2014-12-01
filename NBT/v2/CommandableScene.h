@@ -6,6 +6,7 @@
 #include <functional>
 #include <map>
 #include <vector>
+#include <queue>
 #include "Scene.h"
 
 class CommandableScene : public Scene
@@ -24,6 +25,8 @@ class CommandableScene : public Scene
 		void registerCommand(const std::string&, commandFn_t);
 		void assignKeys(const std::string&, std::initializer_list<int>, bool = false);
 		void setErrorMsg(const std::string&);
+		void command(const std::string&, bool = true);
+		void queueCommand(const std::string&);
 	private:
 		void startInput(const char * = NULL);
 		void endInput( );
@@ -32,12 +35,12 @@ class CommandableScene : public Scene
 		void resize( );
 		bool isSuitable(int);
 		std::vector<std::string> processCommand(const std::string&);
-		void command(const std::string&, bool = true);
 	private:
 		std::map<int, std::pair<std::string, bool>> keymap;
 		std::map<std::string, commandFn_t> cmdmap;
 		std::stack<std::string> history;
 		std::stack<std::string> undostory, redostory;
+		std::queue<std::string> cmdQueue;
 		char *_buf;
 		int _i, _l, _idx;
 		std::string errMsg;
