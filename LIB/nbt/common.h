@@ -1,6 +1,8 @@
 #ifndef NBT_COMMON_H
 #define NBT_COMMON_H
 
+#define NBT_NO_GZ
+
 #include <memory>
 #include <dav/inc.h>
 

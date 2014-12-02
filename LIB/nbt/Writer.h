@@ -3,8 +3,10 @@
 
 #include <iostream>
 #include <algorithm>
-#include <dav/gzstream.h>
 #include "common.h"
+#ifndef NBT_NO_GZ
+#	include <dav/gzstream.h>
+#endif
 
 namespace nbt
 {
@@ -48,11 +50,15 @@ namespace nbt
 
 #ifndef WRITER_IMP
 	extern template class nbt_writer<std::ostream>;
-	extern template class nbt_writer<dav::gzip::ogzstream>;
+#	ifndef NBT_NO_GZ
+		extern template class nbt_writer<dav::gzip::ogzstream>;
+#	endif
 #endif
 
 	typedef nbt_writer<std::ostream> nbt_std_writer;
+#ifndef NBT_NO_GZ
 	typedef nbt_writer<dav::gzip::ogzstream> nbt_gzip_writer;
+#endif
 
 	typedef basic_nbt_writer nbtostream;
 }

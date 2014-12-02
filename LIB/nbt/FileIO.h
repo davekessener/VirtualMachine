@@ -2,7 +2,9 @@
 #define NBT_FILEIO_H
 
 #include <string>
+#include "common.h"
 #include "NBTMain.h"
+#include "JSON.h"
 
 namespace nbt
 {

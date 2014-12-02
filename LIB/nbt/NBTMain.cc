@@ -2,7 +2,9 @@
 #include "NBTMain.h"
 #undef NBT_IMP
 
+#ifndef NBT_NO_GZ
 using namespace dav;
+#endif
 
 namespace nbt
 {
@@ -13,10 +15,12 @@ namespace nbt
 		write(nbt_std_writer(os));
 	}
 
+#ifndef NBT_NO_GZ
 	void NBTBase::write(gzip::ogzstream& os) const
 	{
 		write(nbt_gzip_writer(os));
 	}
+#endif
 
 	void NBTBase::write(const nbtostream& os) const
 	{
@@ -36,10 +40,12 @@ namespace nbt
 		read(nbt_std_reader(is));
 	}
 
+#ifndef NBT_NO_GZ
 	void NBTBase::read(gzip::igzstream& is)
 	{
 		read(nbt_gzip_reader(is));
 	}
+#endif
 
 	void NBTBase::read(const nbtistream& is)
 	{
@@ -199,7 +205,7 @@ namespace nbt
 
 			assert(b->getName().length());
 
-			map_t::operator[](b->getName()) = NBT_ptr_t(b);
+			setTag(NBT_ptr_t(b));
 		}
 	}
 
@@ -216,7 +222,7 @@ namespace nbt
 
 			assert(s.length());
 
-			map_t::operator[](s) = nbt;
+			setTag(nbt);
 		}
 	}
 
@@ -240,6 +246,7 @@ namespace nbt
 		return NBT_ptr_t(nbt);
 	}
 
+#ifndef NBT_NO_GZ
 	NBT_ptr_t NBTHelper::Read(gzip::igzstream& is)
 	{
 		NBTBase *nbt = Read(nbt_gzip_reader(is));
@@ -248,6 +255,7 @@ namespace nbt
 
 		return NBT_ptr_t(nbt);
 	}
+#endif
 
 	NBTBase *NBTHelper::Read(const nbtistream& is)
 	{

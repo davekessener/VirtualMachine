@@ -1,8 +1,11 @@
+#include <fstream>
 #include "FileIO.h"
 #include "Reader.h"
 #include "Writer.h"
 
+#ifndef NBT_NO_GZ
 using namespace dav;
+#endif
 
 namespace nbt
 {
@@ -10,7 +13,9 @@ namespace nbt
 	{
 		TAG_Compound::ptr_t ptr;
 		std::ifstream *in = new std::ifstream(path, std::ios::in | std::ios::binary);
+#ifndef NBT_NO_GZ
 		gzip::igzstream *gzin = NULL;
+#endif
 
 		if(in->good())
 		{
@@ -29,8 +34,13 @@ namespace nbt
 			
 				if(c == 0x1f)
 				{
+#ifndef NBT_NO_GZ
 					gzin = new gzip::igzstream(path.c_str());
 					ptr = Read(*gzin);
+#else
+					throw NBTException(
+						std::string("ERR: GZ compression not supported!"));
+#endif
 				}
 				else
 				{
@@ -41,7 +51,9 @@ namespace nbt
 		}
 
 		if(in) { in->close(); delete in; }
+#ifndef NBT_NO_GZ
 		if(gzin) { gzin->close(); delete gzin; }
+#endif
 
 		return ptr;
 	}
@@ -60,6 +72,7 @@ namespace nbt
 		}
 		else
 		{
+#ifndef NBT_NO_GZ
 			gzip::ogzstream out(path.c_str());
 
 			assert(out.good());
@@ -67,6 +80,9 @@ namespace nbt
 			nbt->write(out);
 
 			out.close();
+#else
+			throw NBTException(std::string("ERR: GZ compression not supported!"));
+#endif
 		}
 	}
 

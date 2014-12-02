@@ -10,11 +10,13 @@
 #include <algorithm>
 #include <cassert>
 #include <cstring>
-#include <dav/gzstream.h>
 #include "common.h"
 #include "Reader.h"
 #include "Writer.h"
 #include "NBTException.h"
+#ifndef NBT_NO_GZ
+#	include <dav/gzstream.h>
+#endif
 
 namespace nbt
 {
@@ -29,10 +31,14 @@ namespace nbt
 				free(name);
 			}
 			void write(std::ostream&) const;
+#ifndef NBT_NO_GZ
 			void write(dav::gzip::ogzstream&) const;
+#endif
   			void write(const nbtostream&) const;
 			void read(std::istream&);
+#ifndef NBT_NO_GZ
 			void read(dav::gzip::igzstream&);
+#endif
 			void read(const nbtistream&);
 			void setName(const std::string&);
 			std::string getName(void) { return std::string(reinterpret_cast<const char *>(name)); }
@@ -197,9 +203,9 @@ namespace nbt
 // # ---------------------------------------------------------------------------
 
 	template<BYTE ID>
-	class NBTTagCompound : public _NBTBase<ID>, protected std::map<std::string, NBT_ptr_t>
+	class NBTTagCompound : public _NBTBase<ID>, protected std::vector<std::pair<std::string, NBT_ptr_t>>
 	{
-		typedef std::map<std::string, NBT_ptr_t> map_t;
+		typedef std::vector<std::pair<std::string, NBT_ptr_t>> map_t;
 		public:
 			typedef std::shared_ptr<NBTTagCompound<ID>> ptr_t;
 
@@ -208,6 +214,7 @@ namespace nbt
 				public:
 					class iterator
 					{
+						typedef std::vector<std::pair<std::string, NBT_ptr_t>> map_t;
 						public:
 							std::string operator*() { return _i->first; }
 							const std::string *operator->() { return &_i->first; }
@@ -216,8 +223,8 @@ namespace nbt
 							bool operator!=(const iterator& i) { return !operator==(i); }
 						private:
 							friend class Names;
-							iterator(std::map<std::string, NBT_ptr_t>::iterator i) : _i(i) { }
-							std::map<std::string, NBT_ptr_t>::iterator _i;
+							iterator(map_t::iterator i) : _i(i) { }
+							map_t::iterator _i;
 					};
 					iterator begin() { return iterator(_tc.begin()); }
 					iterator end() { return iterator(_tc.end()); }
@@ -231,6 +238,7 @@ namespace nbt
 				public:
 					class iterator
 					{
+						typedef std::vector<std::pair<std::string, NBT_ptr_t>> map_t;
 						public:
 							NBT_ptr_t operator*() { return _i->second; }
 							NBT_ptr_t operator->() { return _i->second; }
@@ -239,8 +247,8 @@ namespace nbt
 							bool operator!=(const iterator& i) { return !operator==(i); }
 						private:
 							friend class Tags;
-							iterator(std::map<std::string, NBT_ptr_t>::iterator i) : _i(i) { }
-							std::map<std::string, NBT_ptr_t>::iterator _i;
+							iterator(map_t::iterator i) : _i(i) { }
+							map_t::iterator _i;
 					};
 					iterator begin() { return iterator(_tc.begin()); }
 					iterator end() { return iterator(_tc.end()); }
@@ -261,24 +269,24 @@ namespace nbt
 			template<template<typename T, typename = std::allocator<T>> class C>
 				NBTTagCompound(C<NBT_ptr_t>& c) : Names(*this), Tags(*this) { init("", c.begin(), c.end()); }
 			NBTTagCompound(std::initializer_list<NBT_ptr_t> v) : Names(*this), Tags(*this) { init("", v); }
-			bool hasTag(const std::string& s) { return map_t::count(s) > 0; }
+			bool hasTag(const std::string& s) { return find(s) != end(); }
 			bool empty( ) { return map_t::empty(); }
 			size_t size( ) { return map_t::size(); }
-			NBT_ptr_t getTag(const std::string& s) { return hasTag(s) ? map_t::operator[](s) : NBT_ptr_t(NULL); }
+			NBT_ptr_t getTag(const std::string& s) { auto i(find(s)); return i == end() ? NBT_ptr_t(nullptr) : i->second; }
 			template<typename T>
 				std::shared_ptr<T> getTag(const std::string& s) { return std::dynamic_pointer_cast<T>(getTag(s)); }
-			void setTag(const std::string& s, NBT_ptr_t p) { p->setName(s); map_t::operator[](s) = p; }
-			void setTag(NBT_ptr_t p) { map_t::operator[](p->getName()) = p; }
+			void setTag(const std::string& s, NBT_ptr_t p) { p->setName(s); setTag(p); }
+			void setTag(NBT_ptr_t p) { auto i(find(p->getName())); if(i == end()) push_back(std::make_pair(p->getName(), p)); else i->second = p; }
 			template<typename T>
-				void setTag(const std::string& name, std::shared_ptr<T> p)
-					{ p->setName(name); map_t::operator[](name) = std::dynamic_pointer_cast<NBTBase>(p); }
+				void setTag(const std::string& s, std::shared_ptr<T> p)
+					{ setTag(s, std::dynamic_pointer_cast<NBTBase>(p)); }
 			template<typename T>
 				void setTag(std::shared_ptr<T> p)
-					{ map_t::operator[](p->getName()) = std::dynamic_pointer_cast<NBTBase>(p); }
-			bool removeTag(const std::string& s) { return hasTag(s) ? map_t::erase(s) : false; }
+					{ setTag(std::dynamic_pointer_cast<NBTBase>(p)); }
+			bool removeTag(const std::string& s) { return hasTag(s) ? (map_t::erase(find(s)), true) : false; }
 			template<typename T>
 				void set(const std::string& name, T t)
-					{ map_t::operator[](name) = NBT_ptr_t(new NBTSimple<BasicTypeIDs<T>::ID, T>(name, t)); }
+					{ setTag(NBT_ptr_t(new NBTSimple<BasicTypeIDs<T>::ID, T>(name, t))); }
 			void setByte(const std::string& s, BYTE v) { set<BYTE>(s, v); }
 			void setShort(const std::string& s, WORD v) { set<WORD>(s, v); }
 			void setInt(const std::string& s, DWORD v) { set<DWORD>(s, v); }
@@ -318,11 +326,12 @@ namespace nbt
 			std::string getString(const std::string& s) { return getTag<TAG_String>(s)->get(); }
 			TAG_List::ptr_t getTagList(const std::string& s) { return getTag<TAG_List>(s); }
 			ptr_t getCompoundTag(const std::string& s) { return getTag<TAG_Compound>(s); }
-			std::vector<DWORD> getIntArray(const std::string& s) { return std::dynamic_pointer_cast<TAG_Int_Array>(map_t::operator[](s))->get(); }
+			std::vector<DWORD> getIntArray(const std::string& s) { return getTag<TAG_Int_Array>(s)->get(); }
 		protected:
 			void _write(const nbtostream&) const;
 			void _read(const nbtistream&);
 		private:
+			typename map_t::iterator find(const std::string& s) { return std::find_if(map_t::begin(), map_t::end(), [&s](const std::pair<std::string, NBT_ptr_t>& p) { return p.first == s; }); }
 			void init(const std::string&);
 			void init(const std::string&, std::initializer_list<NBT_ptr_t>);
 			template<typename T> void init(const std::string&, T, T);
@@ -334,7 +343,9 @@ namespace nbt
 	{
 		public:
 			NBT_ptr_t Read(std::istream&);
+#ifndef NBT_NO_GZ
 			NBT_ptr_t Read(dav::gzip::igzstream&);
+#endif
 			NBTBase *Default(BYTE, const std::string& = "");
 			NBTBase *Read(const nbtistream&);
 			static NBTHelper& Instance( );

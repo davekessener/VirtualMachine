@@ -6,7 +6,9 @@
 #include <cstdio>
 #include <cstring>
 
+#ifndef NBT_NO_GZ
 using namespace dav;
+#endif
 
 namespace nbt
 {
@@ -27,29 +29,33 @@ namespace nbt
 #endif
 	}
 
+#ifndef NBT_NO_GZ
 	template<>
 	void nbt_reader<gzip::igzstream>::do_read(char *d, size_t n) const
 	{
 		assert(d);
 
-#ifdef DEBUG
+#	ifdef DEBUG
 		char *_d = d;
 		int _n = (int) n;
-#endif
+#	endif
 
 		while(n--) is.get(*d++);
 
-#ifdef DEBUG
+#	ifdef DEBUG
 		BYTE *_b = new BYTE[_n];
 		memcpy(_b, _d, _n); 
 		fprintf(stderr, "%% Read (%d): ", _n);
 		for(int i = 0 ; i < _n ; ++i) fprintf(stderr, "%02hhx ", _b[i]);
 		delete[] _b;
 		std::cerr << std::endl;
-#endif
+#	endif
 	}
+#endif
 	
 	template class nbt_reader<std::istream>;
+#ifndef NBT_NO_GZ
 	template class nbt_reader<gzip::igzstream>;
+#endif
 }
 

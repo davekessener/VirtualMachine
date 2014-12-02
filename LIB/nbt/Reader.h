@@ -3,8 +3,10 @@
 
 #include <iostream>
 #include <algorithm>
-#include <dav/gzstream.h>
 #include "common.h"
+#ifndef NBT_NO_GZ
+#	include <dav/gzstream.h>
+#endif
 
 namespace nbt
 {
@@ -51,11 +53,15 @@ namespace nbt
 
 #ifndef READER_IMP
 	extern template class nbt_reader<std::istream>;
-	extern template class nbt_reader<dav::gzip::igzstream>;
+#	ifndef NBT_NO_GZ
+		extern template class nbt_reader<dav::gzip::igzstream>;
+#	endif
 #endif
 
 	typedef nbt_reader<std::istream> nbt_std_reader;
+#ifndef NBT_NO_GZ
 	typedef nbt_reader<dav::gzip::igzstream> nbt_gzip_reader;
+#endif
 
 	typedef basic_nbt_reader nbtistream;
 }
