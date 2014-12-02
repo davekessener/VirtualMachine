@@ -1,11 +1,15 @@
 #include "JSON.h"
+#undef NDEBUG
+#include <cassert>
+#include <sstream>
 
 namespace nbt { namespace json {
 
 class JSON
 {
 	public:
-		JSON(std::ostream& o) : os_(o), ws_(0) { }
+		JSON(std::ostream& os) : os_(&os), is_(nullptr), ws_(0), look_(0) { }
+		JSON(std::istream& is) : os_(nullptr), is_(&is), ws_(0), look_(0) { next(); }
 #define DEF_WRITE(t) void write(t&);
 		void write(NBTBase&, bool = true);
 		DEF_WRITE(TAG_Byte);
@@ -20,34 +24,76 @@ class JSON
 		void write(TAG_Compound&, bool = true);
 		DEF_WRITE(TAG_Int_Array);
 #undef DEF_WRITE
+#define DEF_READ(v,t) TAG_##v##_ptr_t read##t( );
+		DEF_READ(Byte, Boolean);
+		DEF_READ(Long, Number);
+		DEF_READ(String, String);
+		DEF_READ(Compound, Object);
+		DEF_READ(List, Array);
+#undef DEF_READ
+	private:
+		NBT_ptr_t readAny( );
+		std::string readName( ) { std::string n(readRawString()); assertNext(':'); return n; }
+		std::string readRawString( )
+		{
+			assertNext('"');
+			std::vector<char> s;
+			while(look_ != '"')
+			{
+				s.push_back(look_);
+				look_ = is_->get();
+			}
+			next();
+			return std::string(s.begin(), s.end());
+		}
+		template<typename T> T readRawNumber( )
+		{
+			long sign(look_ == '-' ? -1 : 1);
+
+			if(look_ != '-') is_->unget();
+
+			std::string s(""); long v;
+			while((look_ = is_->get()) >= '0' && look_ <= '9') s.push_back((char)look_);
+			std::stringstream ss(s); ss >> v;
+
+			return v * sign;
+		}
+		void next( ) { while((look_ = is_->get()) == ' ' || look_ == '\t' || look_ == '\n'); }
+		void assertNext(int v) { if(v != look_) throw std::string("ERR: Expected " + (char)v); next(); }
 	private:
 		void newLine( )
-			{ if(ws_ >= 0) { os_ << '\n'; for(int i(ws_) ; i ; --i) os_ << '\t'; } }
+			{ if(ws_ >= 0) { (*os_) << '\n'; for(int i(ws_) ; i ; --i) (*os_) << '\t'; } }
 		void writeName(const std::string& s)
-			{ os_ << '"' << s << "\" : "; }
+			{ (*os_) << '"' << s << "\" : "; }
 		template<typename T> void writeNumber(BYTE id, const T& v)
-			{ os_ << "{ \"type\" : " << id << ", \"value\" : " << v << " }"; }
+			{ (*os_) << "{ \"type\" : " << id << ", \"value\" : " << v << " }"; }
 		template<typename T> void writeArray(const T& a)
 		{
 			bool f = true;
-			os_ << "{ \"type\" : " << T::ID << ", "
+			(*os_) << "{ \"type\" : " << T::ID << ", "
 				<< "\"value\" : [ ";
 			
 			for(const auto& v : a)
 			{
-				if(!f) os_ << ", ";
-				os_ << v;
+				if(!f) (*os_) << ", ";
+				(*os_) << v;
 			}
 
-			os_ << " }";
+			(*os_) << " }";
 		}
 	private:
-		std::ostream &os_;
-		int ws_ = 0;
+		std::ostream *os_;
+		std::istream *is_;
+		int ws_, look_;
 };
+
+// # ===========================================================================
 
 TAG_Compound_ptr_t read(std::istream& is)
 {
+	JSON reader(is);
+
+	return reader.readObject();
 }
 
 void write(std::ostream& os, TAG_Compound_ptr_t nbt)
@@ -58,6 +104,128 @@ void write(std::ostream& os, TAG_Compound_ptr_t nbt)
 
 	os << '\n' << std::endl;
 }
+
+// # ===========================================================================
+
+TAG_Byte_ptr_t JSON::readBoolean(void)
+{
+	std::string s;
+	bool v;
+
+	(*is_) >> s;
+
+	if(s == "true") v = true;
+	else if(s == "false") v = false;
+	else throw std::string("ERR: Excpected boolean '" + s + "'!");
+
+	return Make<TAG_Byte>("", v);
+}
+
+TAG_Long_ptr_t JSON::readNumber(void)
+{
+	std::string s;
+
+	(*is_) >> s;
+
+	std::stringstream ss(s);
+
+	long v;
+
+	ss >> v;
+
+	return Make<TAG_Long>("", v);
+}
+
+TAG_String_ptr_t JSON::readString(void)
+{
+	return Make<TAG_String>("", readRawString());
+}
+
+NBT_ptr_t JSON::readAny(void)
+{
+	NBT_ptr_t p;
+
+	std::cerr << "READING ANYTHING!" << std::endl << "LOOKAHEAD IS " << look_ << std::flush << " '" << (char)look_ << "'" << std::endl;
+
+	if(look_ == '-' || (look_ >= '0' && look_ <= '9'))
+	{
+		p = std::dynamic_pointer_cast<NBTBase>(readNumber());
+	}
+	else switch(look_)
+	{
+		case '"':
+			p = std::dynamic_pointer_cast<NBTBase>(readString());
+			break;
+		case 't':
+		case 'f':
+			p = std::dynamic_pointer_cast<NBTBase>(readBoolean());
+			break;
+		case '{':
+			p = std::dynamic_pointer_cast<NBTBase>(readObject());
+			break;
+		case '[':
+			p = std::dynamic_pointer_cast<NBTBase>(readArray());
+			break;
+		default:
+			std::cerr << "THERES AN INVALID LOOKAHAEAD!" << std::endl << "ITS " << look_ << std::endl;
+			std::cerr << "THAT'S IN ASCII '" << (char)look_ << "'" << std::endl;
+			assert(false);
+	}
+
+	return p;
+}
+
+TAG_Compound_ptr_t JSON::readObject(void)
+{
+	assertNext('{');
+
+	TAG_Compound_ptr_t nbt = Make<TAG_Compound>();
+
+	while(true)
+	{
+		std::string name(readName());
+
+		nbt->setTag(name, readAny());
+
+		if(look_ != ',')
+		{
+			assertNext('}');
+			break;
+		}
+		else
+		{
+			next();
+		}
+	}
+
+	return nbt;
+}
+
+TAG_List_ptr_t JSON::readArray(void)
+{
+	assertNext('[');
+
+	TAG_List_ptr_t nbt = Make<TAG_List>();
+
+	while(true)
+	{
+		nbt->addTag(readAny());
+
+		if(look_ != ',')
+		{
+			assertNext(']');
+			break;
+		}
+		else
+		{
+			next();
+		}
+	}
+
+	return nbt;
+}
+
+// # ---------------------------------------------------------------------------
 
 void JSON::write(NBTBase& nbt, bool nl)
 {
@@ -103,7 +271,7 @@ void JSON::write(NBTBase& nbt, bool nl)
 
 void JSON::write(TAG_Byte& nbt)
 {
-	os_ << (nbt.get() ? "true" : "false");
+	(*os_) << (nbt.get() ? "true" : "false");
 }
 
 void JSON::write(TAG_Short& nbt)
@@ -118,7 +286,7 @@ void JSON::write(TAG_Int& nbt)
 
 void JSON::write(TAG_Long& nbt)
 {
-	os_ << nbt.get();
+	(*os_) << nbt.get();
 }
 
 void JSON::write(TAG_Float& nbt)
@@ -138,7 +306,7 @@ void JSON::write(TAG_Byte_Array& nbt)
 
 void JSON::write(TAG_String& nbt)
 {
-	os_ << '"' << nbt.get() << '"';
+	(*os_) << '"' << nbt.get() << '"';
 }
 
 void JSON::write(TAG_List& nbt)
@@ -147,13 +315,13 @@ void JSON::write(TAG_List& nbt)
 
 	newLine();
 
-	os_ << '[';
+	(*os_) << '[';
 
 	++ws_;
 
 	for(auto p : nbt)
 	{
-		if(!f) os_ << ", ";
+		if(!f) (*os_) << ", ";
 
 		newLine();
 
@@ -166,7 +334,7 @@ void JSON::write(TAG_List& nbt)
 	
 	newLine();
 
-	os_ << ']';
+	(*os_) << ']';
 }
 
 void JSON::write(TAG_Compound& nbt, bool nl)
@@ -175,13 +343,13 @@ void JSON::write(TAG_Compound& nbt, bool nl)
 
 	if(nl) newLine();
 
-	os_ << '{';
+	(*os_) << '{';
 
 	++ws_;
 
 	for(auto p : nbt.Tags)
 	{
-		if(!f) os_ << ", ";
+		if(!f) (*os_) << ", ";
 
 		newLine();
 
@@ -196,7 +364,7 @@ void JSON::write(TAG_Compound& nbt, bool nl)
 
 	newLine();
 
-	os_ << '}';
+	(*os_) << '}';
 }
 
 void JSON::write(TAG_Int_Array& nbt)

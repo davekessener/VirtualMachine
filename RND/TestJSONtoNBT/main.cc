@@ -1,4 +1,5 @@
 #include <iostream>
+#include <sstream>
 #include <fstream>
 #include <vector>
 #include <nbt/NBT.h>
@@ -51,10 +52,18 @@ try
 	nbt::json::write(out, nbt);
 	out.close();
 
+	std::ifstream in(args.at(0) + ".json");
+	nbt::TAG_Compound_ptr_t check = nbt::json::read(in);
+	in.close();
+
+	out.open(args.at(0) + "_check.json");
+	nbt::json::write(out, check);
+	out.close();
+
 	return 0;
 }
 catch(const std::string& e)
 {
-	std::cerr << e << std::endl;
+	std::cerr << std::flush << e << std::endl;
 }
 
