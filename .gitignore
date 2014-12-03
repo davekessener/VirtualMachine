@@ -11,6 +11,8 @@
 !*.rb
 !*.sh
 !*.txt
+!*.json
+!*.mk
 !*.s
 !*.b
 !*.doc

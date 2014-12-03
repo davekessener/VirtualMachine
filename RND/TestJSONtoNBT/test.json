@@ -1,0 +1,33 @@
+{
+	"ID" : 42, 
+	"Name" : "Example", 
+	"Accuracy" : 100, 
+	"Strength" : 65, 
+	"Description" : 
+	{
+		"EN-US" : "desc in us eng", 
+		"EN-UK" : "desc in brit eng", 
+		"EN-AS" : "desc in as eng", 
+		"FR" : "decc ind french", 
+		"GER" : "dec in german"
+	}, 
+	"Effects" : 
+	[
+		{
+			"ID" : 413, 
+			"chance" : 10, 
+			"status" : "Poison"
+		}, 
+		{
+			"ID" : 42, 
+			"chance" : 30, 
+			"status" : "Confusion"
+		}, 
+		{
+			"ID" : 13, 
+			"chance" : 40, 
+			"status" : "Infatuation"
+		}
+	]
+}
+
