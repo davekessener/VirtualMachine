@@ -3,6 +3,7 @@
 #include <sstream>
 #include <vector>
 #include <deque>
+#include <set>
 
 class TokenReader
 {
@@ -14,6 +15,7 @@ class TokenReader
 		std::deque<std::string> v_;
 };
 
+unsigned HM = 31;
 
 typedef unsigned hash_t;
 enum { D = 1 + 2 * 26 };
@@ -26,17 +28,17 @@ hash_t C(const char& c)
 	else throw std::string("ERR: invalid character!");
 };
 
-hash_t doHash(const std::string& s, unsigned W = 13, unsigned M = 31)
+hash_t doHash(const std::string& s, unsigned W = 13)
 {
 	hash_t v(0), t(1);
 
 	for(auto i(s.crbegin()), e(s.crend()) ; i != e ; ++i)
 	{
-		v = (v + (C(*i) * t) % M) % M;
-		t = (t * (D % M)) % M;
+		v = (v + (C(*i) * t) % HM) % HM;
+		t = (t * (D % HM)) % HM;
 	}
 
-	return (W * v) % M;
+	return (W * v) % HM;
 }
 
 template<typename K, typename V>
@@ -61,8 +63,8 @@ class HashST
 		pointer *vals_;
 };
 
-template<typename K, typename V, int M>
-void HashST<K, V, M>::put(const K& k, const V& v)
+template<typename K, typename V>
+void HashST<K, V>::put(const K& k, const V& v)
 {
 	hash_t i(doHash(k) % M);
 	cnt_ = 1;
@@ -78,8 +80,8 @@ void HashST<K, V, M>::put(const K& k, const V& v)
 	else vals_[i]->second = v;
 }
 
-template<typename K, typename V, int M>
-typename HashST<K, V, M>::pointer HashST<K, V, M>::find(const K& k)
+template<typename K, typename V>
+typename HashST<K, V>::pointer HashST<K, V>::find(const K& k)
 {
 	hash_t i(doHash(k) % M);
 	cnt_ = 1;
@@ -89,8 +91,8 @@ typename HashST<K, V, M>::pointer HashST<K, V, M>::find(const K& k)
 	return vals_[i];
 }
 
-template<typename K, typename V, int M>
-V& HashST<K, V, M>::get(const K& k)
+template<typename K, typename V>
+V& HashST<K, V>::get(const K& k)
 {
 	pointer p(find(k));
 
@@ -102,17 +104,29 @@ V& HashST<K, V, M>::get(const K& k)
 template<typename I>
 void checkHashST(I i1, I i2, size_t M)
 {
-	HashST map(M);
+	HashST<std::string, int> map(M);
+	auto i0(i1);
 
 	int c(0), i(0);
 	while(i1 != i2)
 	{
 		map.put(i1->first, i1->second);
-		c += map.count;
+		c += map.count();
 		++i;
+		++i1;
 	}
 
-	std::cout << "
+	std::cout << "For " << (i * 100 / M) << "% fill 'put' averages " << (c / (double)i) << " steps and 'get' ";
+
+	c = 0;
+	while(i0 != i2)
+	{
+		map.get(i0->first);
+		c += map.count();
+		++i0;
+	}
+
+	std::cout << (c / (double)i) << " steps." << std::endl;
 }
 
 int main(int argc, char *argv[])
@@ -132,7 +146,7 @@ try
 	std::ifstream in("text.txt");
 	TokenReader reader(in);
 
-	typedef pair_t std::pair<std::string, int>;
+	typedef std::pair<std::string, int> pair_t;
 	std::vector<pair_t> words;
 	
 	{
@@ -142,7 +156,7 @@ try
 		{
 			std::string s(reader.next());
 
-			if(!table.contains(s))
+			if(!table.count(s))
 			{
 				table.insert(s);
 				words.push_back(std::make_pair(s, i));
@@ -150,9 +164,14 @@ try
 		}
 	}
 
-	checkHashST(words.cbegin(), words.cend(), words.size() * 4 + 1);
-	checkHashST(words.cbegin(), words.cend(), words.size() * 2 + 1);
-	checkHashST(words.cbegin(), words.cend(), words.size() + 1);
+	for(int i = 0 ; i < 5 ; ++i)
+	{
+		std::cout << "For M == " << HM << ":\n";
+		checkHashST(words.cbegin(), words.cend(), words.size() * 4);
+		checkHashST(words.cbegin(), words.cend(), words.size() * 2);
+		checkHashST(words.cbegin(), words.cend(), words.size());
+		HM <<= 2;
+	}
 
 	in.close();
 
