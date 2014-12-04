@@ -39,26 +39,26 @@ hash_t doHash(const std::string& s, unsigned W = 13, unsigned M = 31)
 	return (W * v) % M;
 }
 
-template<typename K, typename V, int M = 1000>
+template<typename K, typename V>
 class HashST
 {
 	typedef std::pair<const K, V> type;
 	typedef type *pointer;
 
 	public:
-	enum { capacity = M };
-
-	public:
-		HashST( ) : cnt_(0) { for(pointer *p = vals_, *e = p + M ; p != e ; ++p) *p = nullptr; }
+		HashST(int c) : M(c), cnt_(0), vals_(new pointer[M]) { for(pointer *p = vals_, *e = p + M ; p != e ; ++p) *p = nullptr; }
+		~HashST( ) { delete[] vals_; }
 		void put(const K&, const V&);
 		V& get(const K&);
 		bool contains(const K& k) { return find(k); }
 		int count( ) const { return cnt_; }
 	private:
 		pointer find(const K&);
+	public:
+		const int M;
 	private:
 		unsigned cnt_;
-		pointer vals_[M];
+		pointer *vals_;
 };
 
 template<typename K, typename V, int M>
@@ -99,6 +99,22 @@ V& HashST<K, V, M>::get(const K& k)
 	return p->second;
 }
 
+template<typename I>
+void checkHashST(I i1, I i2, size_t M)
+{
+	HashST map(M);
+
+	int c(0), i(0);
+	while(i1 != i2)
+	{
+		map.put(i1->first, i1->second);
+		c += map.count;
+		++i;
+	}
+
+	std::cout << "
+}
+
 int main(int argc, char *argv[])
 try
 {
@@ -116,28 +132,27 @@ try
 	std::ifstream in("text.txt");
 	TokenReader reader(in);
 
-	typedef HashST<std::string, int, 830> map_t;
-	map_t map;
-	int c(0), i(0), wc(0);
-
-	for( ; !reader.empty() ; ++i)
+	typedef pair_t std::pair<std::string, int>;
+	std::vector<pair_t> words;
+	
 	{
-		std::string s(reader.next());
+		std::set<std::string> table;
 
-		if(!map.contains(s))
+		for(int i = 0 ; !reader.empty() ; ++i)
 		{
-			map.put(s, i);
-			if(++wc > 400)
+			std::string s(reader.next());
+
+			if(!table.contains(s))
 			{
-				c += map.count();
-				std::cout << "a put: " << map.count() << std::endl;
+				table.insert(s);
+				words.push_back(std::make_pair(s, i));
 			}
 		}
 	}
 
-	double dc = c / (double)(wc - 400);
-
-	std::cout << "put steps @(" << (wc * 100 / map_t::capacity) << "%) (in " << wc << " words): " << dc << std::endl;
+	checkHashST(words.cbegin(), words.cend(), words.size() * 4 + 1);
+	checkHashST(words.cbegin(), words.cend(), words.size() * 2 + 1);
+	checkHashST(words.cbegin(), words.cend(), words.size() + 1);
 
 	in.close();
 
