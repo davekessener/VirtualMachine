@@ -1,5 +1,8 @@
 #include <iostream>
+#include <fstream>
+#include <sstream>
 #include <vector>
+#include <deque>
 
 class TokenReader
 {
@@ -43,10 +46,16 @@ class HashST
 	typedef type *pointer;
 
 	public:
-		HashST( ) : cnt_(0) { for(pointer *p = vals_, *e = p + M ; p != e ; ++p) *p = nullptr;
+	enum { capacity = M };
+
+	public:
+		HashST( ) : cnt_(0) { for(pointer *p = vals_, *e = p + M ; p != e ; ++p) *p = nullptr; }
 		void put(const K&, const V&);
 		V& get(const K&);
+		bool contains(const K& k) { return find(k); }
 		int count( ) const { return cnt_; }
+	private:
+		pointer find(const K&);
 	private:
 		unsigned cnt_;
 		pointer vals_[M];
@@ -58,7 +67,7 @@ void HashST<K, V, M>::put(const K& k, const V& v)
 	hash_t i(doHash(k) % M);
 	cnt_ = 1;
 
-	while(vals_[i] != null)
+	while(vals_[i] != nullptr)
 	{
 		++cnt_;
 		if(vals_[i]->first == k) break;
@@ -70,19 +79,28 @@ void HashST<K, V, M>::put(const K& k, const V& v)
 }
 
 template<typename K, typename V, int M>
-V& HashST<K, V, M>::get(const K& k)
+typename HashST<K, V, M>::pointer HashST<K, V, M>::find(const K& k)
 {
 	hash_t i(doHash(k) % M);
 	cnt_ = 1;
 
 	while(vals_[i] && ++cnt_ && vals_[i]->first != k) if(++i == M) i = 0;
 
-	if(!vals_[i]) throw std::string("ERR: Unknown key: " + k);
+	return vals_[i];
+}
 
-	return vals_[i]->second;
+template<typename K, typename V, int M>
+V& HashST<K, V, M>::get(const K& k)
+{
+	pointer p(find(k));
+
+	if(!p) throw std::string("ERR: Unknown key: " + k);
+
+	return p->second;
 }
 
 int main(int argc, char *argv[])
+try
 {
 	std::vector<std::string> args(argv + 1, argv + argc);
 
@@ -98,18 +116,36 @@ int main(int argc, char *argv[])
 	std::ifstream in("text.txt");
 	TokenReader reader(in);
 
-	HashST<std::string, int, 1000> map;
+	typedef HashST<std::string, int, 830> map_t;
+	map_t map;
+	int c(0), i(0), wc(0);
 
-	for(int i = 0 ; !reader.empty() ; ++i)
+	for( ; !reader.empty() ; ++i)
 	{
 		std::string s(reader.next());
 
-		if(!map.contains(s)) map.put(s, i);
+		if(!map.contains(s))
+		{
+			map.put(s, i);
+			if(++wc > 400)
+			{
+				c += map.count();
+				std::cout << "a put: " << map.count() << std::endl;
+			}
+		}
 	}
+
+	double dc = c / (double)(wc - 400);
+
+	std::cout << "put steps @(" << (wc * 100 / map_t::capacity) << "%) (in " << wc << " words): " << dc << std::endl;
 
 	in.close();
 
 	return 0;
+}
+catch(const std::string& e)
+{
+	std::cerr << e << std::endl;
 }
 
 TokenReader::TokenReader(std::istream& in)
@@ -130,7 +166,7 @@ TokenReader::TokenReader(std::istream& in)
 	std::string s("");
 	for(const auto& c : str)
 	{
-		if((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '\'')
+		if((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'))
 		{
 			s.push_back(c);
 		}
