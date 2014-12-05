@@ -58,7 +58,7 @@ class JSON
 
 			return v * sign;
 		}
-		void next( ) { while((look_ = is_->get()) == ' ' || look_ == '\t' || look_ == '\n'); }
+		void next( ) { while((look_ = is_->get()) == ' ' || look_ == '\t' || look_ == '\n'); std::cerr << "NEW: '" << (char)look_ << "'" << std::endl; }
 		void assertNext(int v) { if(v != look_) throw std::string("ERR: Expected " + (char)v); next(); }
 	private:
 		void newLine( )
@@ -109,10 +109,14 @@ void write(std::ostream& os, TAG_Compound_ptr_t nbt)
 
 TAG_Byte_ptr_t JSON::readBoolean(void)
 {
-	std::string s;
+	std::string s("");
 	bool v;
 
-	(*is_) >> s;
+	while(look_ >= 'a' && look_ <= 'z')
+	{
+		s.push_back(look_);
+		next();
+	}
 
 	if(s == "true") v = true;
 	else if(s == "false") v = false;
@@ -123,17 +127,7 @@ TAG_Byte_ptr_t JSON::readBoolean(void)
 
 TAG_Long_ptr_t JSON::readNumber(void)
 {
-	std::string s;
-
-	(*is_) >> s;
-
-	std::stringstream ss(s);
-
-	long v;
-
-	ss >> v;
-
-	return Make<TAG_Long>("", v);
+	return Make<TAG_Long>("", readRawNumber<long>());
 }
 
 TAG_String_ptr_t JSON::readString(void)

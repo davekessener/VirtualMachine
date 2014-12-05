@@ -107,16 +107,18 @@ void checkHashST(I i1, I i2, size_t M)
 	HashST<std::string, int> map(M);
 	auto i0(i1);
 
-	int c(0), i(0);
+	auto d(std::distance(i1, i2) * 95 / 100);
+
+	unsigned c(0), i(0);
 	while(i1 != i2)
 	{
 		map.put(i1->first, i1->second);
-		c += map.count();
-		++i;
 		++i1;
+		if(++i > d) c += map.count();
+		else if(i == d) i0 = i1;
 	}
 
-	std::cout << "For " << (i * 100 / M) << "% fill 'put' averages " << (c / (double)i) << " steps and 'get' ";
+	std::cout << "For " << (i * 100 / M) << "% fill 'put' averages " << (c / (double)(i - d)) << " steps and 'get' ";
 
 	c = 0;
 	while(i0 != i2)
@@ -126,7 +128,7 @@ void checkHashST(I i1, I i2, size_t M)
 		++i0;
 	}
 
-	std::cout << (c / (double)i) << " steps." << std::endl;
+	std::cout << (c / (double)(i - d)) << " steps." << std::endl;
 }
 
 int main(int argc, char *argv[])
@@ -164,13 +166,14 @@ try
 		}
 	}
 
-	for(int i = 0 ; i < 5 ; ++i)
+	for(int i = 0 ; i < 7 ; ++i)
 	{
 		std::cout << "For M == " << HM << ":\n";
-		checkHashST(words.cbegin(), words.cend(), words.size() * 4);
 		checkHashST(words.cbegin(), words.cend(), words.size() * 2);
-		checkHashST(words.cbegin(), words.cend(), words.size());
-		HM <<= 2;
+		checkHashST(words.cbegin(), words.cend(), words.size() * 3 / 2);
+		checkHashST(words.cbegin(), words.cend(), words.size() * 4 / 3);
+		checkHashST(words.cbegin(), words.cend(), words.size() * 10 / 9);
+		HM <<= 1;
 	}
 
 	in.close();
