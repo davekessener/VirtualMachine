@@ -1,28 +1,37 @@
 #include <iostream>
+#include <cassert>
 #include "Surface.h"
 #include "gl.h"
 
 namespace dav { namespace pkmn { namespace screen {
 
-void Surface::init(int x, int y, uint w, uint h)
+void Surface::init(int x, int y, int w, int h)
 {
 	i_doInit();
 	move(x, y);
 	resize(w, h);
+
+	dirty(true);
 }
 
 void Surface::move(int x, int y)
 {
 	x_ = x;
 	y_ = y;
+
+	updateAP();
+
+	dirty(true);
 }
 
-void Surface::resize(uint w, uint h)
+void Surface::resize(int w, int h)
 {
 	w_ = w;
 	h_ = h;
 
 	i_doResize();
+
+	dirty(true);
 }
 
 void Surface::update(uint d)
@@ -31,7 +40,7 @@ void Surface::update(uint d)
 
 	for(auto& p : children_)
 	{
-		static_cast<Surface_ptr>(p)->update(d);
+		p->update(d);
 	}
 }
 
@@ -39,20 +48,72 @@ void Surface::render(void)
 {
 	if(dirty_)
 	{
-		i_doRender();
+		i_doPrerender();
 		dirty_ = false;
 	}
 
+	i_doRender();
+
 	for(auto& p : children_)
 	{
-		static_cast<Surface_ptr>(p)->render();
+		p->render();
 	}
+}
+
+void Surface::mouseClick(MouseButtons b, int x, int y, bool down)
+{
+	Surface_ptr p = getControlAt(x, y);
+	if(down) p->i_doMouseDown(b, x + p->dx_, y + p->dy_);
+	else p->i_doMouseUp(b, x + p->dx_, y + p->dy_);
+}
+
+void Surface::mouseDrag(int x, int y)
+{
+	mousePos(x, y);
+	i_doMouseDrag(x + dx_, y + dy_);
+}
+
+void Surface::mouseHover(int x, int y)
+{
+	Surface_ptr p = getControlAt(x, y);
+	mousePos(x, y);
+	p->i_doMouseHover(x + p->dx_, y + p->dy_);
+}
+
+void Surface::mouseScroll(int d)
+{
+	coords p(mousePos());
+	getControlAt(p.x, p.y)->i_doMouseScroll(d);
+}
+
+void Surface::input(Controls k, bool down)
+{
+	if(down) i_doKeyDown(k);
+	else i_doKeyUp(k);
+}
+
+Surface_ptr Surface::getControlAt(int x, int y)
+{
+	if(x < 0 || y < 0 || x >= w_ || y >= h_)
+		assert(false);//throw std::string("Out of bound! getControlAt");
+	
+	for(auto i(children_.rbegin()), e(children_.rend()) ; i != e ; ++i)
+	{
+		Surface_ptr p = static_cast<Surface_ptr>(*i);
+		if(x >= p->x_ && y >= p->y_ && x < p->x_ + p->w_ && y < p->y_ + p->h_)
+		{
+			return p->getControlAt(x - p->x_, y - p->y_);
+		}
+	}
+
+	return shared_from_this();
 }
 
 void Surface::addChild(Surface_ptr p, uint v)
 {
-	child_t c(v, p);
-	children_.insert(std::upper_bound(children_.begin(), children_.end(), c), c);
+//	child_t c(v, p);
+//	children_.insert(std::upper_bound(children_.begin(), children_.end(), c), c);
+	children_.push_back(p);
 	p->setParent(shared_from_this());
 }
 
@@ -73,7 +134,7 @@ bool Surface::hasChild(DWORD id) const
 {
 	for(auto& p : children_)
 	{
-		if(static_cast<Surface_ptr>(p)->id_ == id) return true;
+		if(p->id_ == id) return true;
 	}
 
 	return false;
@@ -81,31 +142,32 @@ bool Surface::hasChild(DWORD id) const
 
 void Surface::fillRect(int x1, int y1, int x2, int y2, color_t c)
 {
-	x1 += x_; y1 += y_;
-	x2 += x_; y2 += y_;
+	bbox bb(getAbsoluteAABB());
 
-	if(hasParent())
-	{
-		parent()->fillRect(x1, y1, x2, y2, c);
-	}
-	else
-	{
-		if(x2 <= x_ || y2 <= y_ || x1 >= x_ + w_ || y1 >= y_ + h_) return;
-		
-		using std::min;
-		using std::max;
-		
-		gl::fill_rect(max(x1, x_), max(y1, y_), min(x2, x_ + w_ - 1), min(y2, y_ + h_ - 1), c.rgb());
-	}
+	x1 -= dx_; y1 -= dy_;
+	x2 -= dx_; y2 -= dy_;
+
+	if(x1 >= x2 || y1 >= y2) return;
+	
+	using std::min;
+	using std::max;
+
+	gl::fill_rect
+	(
+		max(x1, bb.pos.x),
+		max(y1, bb.pos.y),
+		min(x2, bb.pos.x + bb.vec.w),
+		min(y2, bb.pos.y + bb.vec.h),
+		c
+	);
 }
 
 void Surface::draw(DWORD id, float u1, float v1, float u2, float v2, int x1, int y1, int x2, int y2)
 {
 	bbox bb(getAbsoluteAABB());
-	coords o(getAbsolutePosition());
 
-	x1 += o.x; y1 += o.y;
-	x2 += o.x; y2 += o.y;
+	x1 -= dx_; y1 -= dy_;
+	x2 -= dx_; y2 -= dy_;
 
 	if(x1 < bb.pos.x) { u1 += (bb.pos.x - x1) * (u2 - u1) / (x2 - x1); x1 = bb.pos.x; }
 	if(y1 < bb.pos.y) { v1 += (bb.pos.y - y1) * (v2 - v1) / (y2 - y1); y1 = bb.pos.y; }
@@ -116,36 +178,45 @@ void Surface::draw(DWORD id, float u1, float v1, float u2, float v2, int x1, int
 	
 	if(x1 >= x2 || y1 >= y2) return;
 	
-	gl::bind_texture(id);
+	if(id) gl::bind_texture(id);
 	gl::draw_face2d(u1, v1, u2, v2, x1, y1, x2, y2);
 }
 
 void Surface::drawString(const std::string& s, int x, int y, color_t c, uint cw)
 {
-	DWORD tid(charsetID());
-
 	gl::color(c.rgb());
+	gl::bind_texture(charsetID());
 
 	for(const char& ch : s)
 	{
 		if(ch != ' ')
 		{
 			float u((ch % 16) / 16.0), v((ch / 16) / 16.0);
-			draw(tid, u, v, u + 0.0625, v + 0.0625, x, y, x + cw, y + cw);
+			draw(0, u, v, u + 0.0625, v + 0.0625, x, y, x + cw, y + cw);
 		}
 		x += cw;
 	}
+
+	gl::color(0xffffff);
 }
 
 bool Surface::dirty(bool force)
 {
-	if(force == true)
+	if(force)
 	{
-		if(!dirty_ && hasParent()) parent()->dirty(true);
-		dirty_ = true;
+		return dirty_ = true;
 	}
+	else
+	{
+		if(dirty_) return true;
 
-	return dirty_;
+		for(auto& p : children_)
+		{
+			if(p->dirty()) return true;
+		}
+
+		return false;
+	}
 }
 
 void Surface::invalidate(void)
@@ -154,7 +225,17 @@ void Surface::invalidate(void)
 
 	for(auto& p : children_)
 	{
-		static_cast<Surface_ptr>(p)->invalidate();
+		p->invalidate();
+	}
+}
+
+void Surface::active(bool a)
+{
+	active_ = a;
+
+	for(auto& p : children_)
+	{
+		p->active(active_);
 	}
 }
 
@@ -177,18 +258,18 @@ bbox Surface::getAbsoluteAABB(void)
 	return bb;
 }
 
-coords Surface::getAbsolutePosition( )
+void Surface::updateAP( )
 {
-	coords p(x_, y_);
-	Surface_ptr pp = shared_from_this();
+	dx_ = -x_; dy_ = -y_;
 
-	while(pp->hasParent())
+	Surface_ptr p = shared_from_this();
+
+	while(p->hasParent())
 	{
-		pp = pp->parent();
-		p.x += pp->x_; p.y += pp->y_;
+		p = p->parent();
+		dx_ -= p->x_;
+		dy_ -= p->y_;
 	}
-
-	return p;
 }
 
 }}}

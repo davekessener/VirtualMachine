@@ -3,11 +3,11 @@ SDLCFLAGS=$(shell sdl2-config --cflags)
 PNGCFLAGS=$(shell libpng16-config --cflags)
 SDLLIBS=$(shell sdl2-config --libs)
 PNGLIBS=$(shell libpng16-config --ldflags)
-CFLAGS=-std=gnu++11 -O0 -ggdb -Wall -I/home/dave/include $(SDLCFLAGS) $(PNGCFLAGS)
+CFLAGS=-std=gnu++11 -O0 -ggdb -gdwarf-3 -Wall -I/home/dave/include $(SDLCFLAGS) $(PNGCFLAGS)
 LIBS=-L/home/dave/include/lib -lpng -lGL $(SDLLIBS) $(PNGLIBS)
 SRC=$(wildcard *.cc)
 OBJ=$(SRC:.cc=.o)
-DEPS=$(wildcard *.{h,hpp})
+DEPS=$(wildcard *.h) $(wildcard *.hpp)
 TARGET=test
 
 .PHONY: all clean

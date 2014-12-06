@@ -1,5 +1,3 @@
-#include <string>
-#include <vector>
 #include <cassert>
 #include "PNGLoader.h"
 #include <png/png.hpp>
@@ -9,11 +7,20 @@ namespace dav { namespace pkmn { namespace screen {
 
 DWORD PNGLoader::LoadPNG(const std::string& s)
 {
+	std::vector<BYTE> buf;
+
+	int w = LoadRawPNG(s, buf);
+
+	return GLImageBuffer::getImage(&buf.front(), w);
+}
+
+int PNGLoader::LoadRawPNG(const std::string& s, std::vector<BYTE>& buf)
+{
 	png::image<png::rgba_pixel> img(s);
 	int w = img.get_width(), h = img.get_height();
-	std::vector<BYTE> buf(w * h * 4);
+	buf.resize(w * h * 4);
 
-	assert(w&&w==h&&!(w&(w-1)));
+	assert(w>0&&w==h&&!(w&(w-1)));
 
 	BYTE *p = &buf.front();
 	for(int y = 0 ; y < h ; ++y)
@@ -27,8 +34,8 @@ DWORD PNGLoader::LoadPNG(const std::string& s)
 			*p++ = c.alpha;
 		}
 	}
-
-	return GLImageBuffer::getImage(&buf.front(), w);
+	
+	return w;
 }
 
 }}}

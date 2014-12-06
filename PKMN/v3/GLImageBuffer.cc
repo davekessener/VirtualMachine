@@ -11,15 +11,21 @@ DWORD GLImageBuffer::getImage(const void *img, size_t s)
 	return r;
 }
 
-void GLImageBuffer::updateImage(DWORD id, const void *data, size_t s)
+DWORD GLImageBuffer::updateImage(DWORD id, const void *data, size_t s)
 {
-	if(!id || instance().imgs_.find(id) == instance().imgs_.cend())
+	if(!id)
+	{
+		return getImage(data, s);
+	}
+	else if(instance().imgs_.find(id) == instance().imgs_.cend())
 	{
 //		LOG("ERR: Trying to update invalid image, id %u.", id);
 		throw std::string("trying to update invalid image!");
 	}
 
 	gl::set_texture(id, data, s, s, gl::RGBA);
+
+	return id;
 }
 
 void GLImageBuffer::deleteImage(DWORD id)

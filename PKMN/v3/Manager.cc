@@ -6,6 +6,7 @@
 
 #define MXT_SCREENWIDTH (1920-2)
 #define MXT_SCREENHEIGHT (1080-54)
+#define MXT_REFRESHFRAMERATE 1000
 
 namespace dav { namespace pkmn { namespace screen {
 
@@ -13,7 +14,7 @@ namespace
 {
 	bool running_ = false;
 	uint time_ = 0;
-	Surface_ptr root_;
+	Surface_ptr root_, locked_;
 
 	void init(int w, int h)
 	{
@@ -28,10 +29,10 @@ namespace
 	{
 		root_->update(d);
 
-		if((time_ += d) >= 250)
+		if((time_ += d) >= MXT_REFRESHFRAMERATE)
 		{
 			root_->invalidate();
-			time_ -= 250;
+			time_ -= MXT_REFRESHFRAMERATE;
 		}
 
 		if(root_->dirty())
@@ -53,14 +54,19 @@ namespace
 
 	void mouse(sdl::MouseButtons b, uint x, uint y, bool down)
 	{
+		locked_ = down ? root_->getControlAt(x, y) : Surface_ptr();
+		root_->mouseClick(b, x, y, down);
 	}
 
 	void mouse_m(uint x, uint y, int dx, int dy)
 	{
+		if(static_cast<bool>(locked_)) locked_->mouseDrag(x, y);
+		else root_->mouseHover(x, y);
 	}
 
 	void mouse_w(int dx, int dy)
 	{
+		root_->mouseScroll(dy);
 	}
 }
 

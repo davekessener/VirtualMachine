@@ -91,7 +91,7 @@ namespace dav
 		{
 			static DWORD id_(0);
 	
-			if(id_ != id)
+			if(id && id_ != id)
 			{
 	    		glBindTexture(GL_TEXTURE_2D, id_ = id);
 			}

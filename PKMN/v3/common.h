@@ -4,6 +4,13 @@
 #include <cstdint>
 #include <cstddef>
 
+// # ===========================================================================
+
+#define MXT_ICON_BASEUP "icons/btn_up.png"
+#define MXT_ICON_BASEDOWN "icons/btn_down.png"
+
+// # ===========================================================================
+
 #ifdef NULL
 #undef NULL
 #endif
@@ -32,6 +39,13 @@ struct cn \
 	VPAIR(coords, int, x, int, y);
 	VPAIR(size, int, w, int, h);
 	VPAIR(bbox, coords, pos, size, vec);
+
+	struct text_info
+	{
+		DWORD id;
+		float u1, v1, u2, v2;
+		uint size;
+	};
 
 	class color_t
 	{

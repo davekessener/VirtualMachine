@@ -18,6 +18,8 @@ namespace dav
 					OrderedPair(const K& k, V v) : key_(k), value_(v) { }
 					bool operator<(const self& p) const { return op_(key_, p.key_); }
 					operator V( ) const { return value_; }
+					V operator->( ) { return value_; }
+					const V operator->( ) const { return value_; }
 				private:
 					K key_;
 					V value_;
