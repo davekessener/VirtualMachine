@@ -26,6 +26,8 @@ namespace dav
 					const std::string& message( ) const { return msg_; }
 					void charsize(uint);
 					uint charsize( ) const { return sx_; }
+					uint labelWidth( ) { prerender(); return pieces_.size() ? pieces_.at(0).size() * sx_ : 0; }
+					uint labelHeight( ) { prerender(); return pieces_.size() * sy_; }
 					void spacing(uint dy) { sy_ = sx_ + dy; dirty(true); }
 					uint spacing( ) const { return sy_ - sx_; }
 					void color(color_t c) { c_ = c.rgb(); dirty(true); }
@@ -35,6 +37,7 @@ namespace dav
 				protected:
 					void i_doPrerender( );
 					void i_doRender( );
+					void i_doResize( );
 				private:
 					std::string msg_;
 					std::vector<std::string> pieces_;

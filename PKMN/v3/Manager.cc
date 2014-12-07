@@ -23,6 +23,7 @@ namespace
 		gl::init2d(w, h);
 
 		root_->init(0, 0, w, h);
+		root_->active(true);
 	}
 
 	bool update(int d)
@@ -54,8 +55,16 @@ namespace
 
 	void mouse(sdl::MouseButtons b, uint x, uint y, bool down)
 	{
-		locked_ = down ? root_->getControlAt(x, y) : Surface_ptr();
-		root_->mouseClick(b, x, y, down);
+		if(!down)
+		{
+			if(static_cast<bool>(locked_) && locked_->active()) locked_->mouseClick(b, x, y, false);
+			locked_.reset();
+		}
+		else
+		{
+			locked_ = root_->getControlAt(x, y);
+			if(static_cast<bool>(locked_) && locked_->active()) locked_->mouseClick(b, x, y, true);
+		}
 	}
 
 	void mouse_m(uint x, uint y, int dx, int dy)

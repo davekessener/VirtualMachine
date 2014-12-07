@@ -18,6 +18,8 @@ namespace dav
 					Icon(const std::string& s = "") : path_(s) { img_.id = 0; }
 					void load(const std::string&);
 					const std::string& path( ) const { return path_; }
+					uint size( ) const
+						{ if(!img_.id) throw std::string("Icon not jet loaded!"); return img_.size; }
 				private:
 					void i_doPrerender( );
 					void i_doRender( );

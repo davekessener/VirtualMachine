@@ -70,6 +70,9 @@ namespace dav
 					DWORD ID( ) const { return id_; }
 					bbox getAbsoluteAABB( );
 					void updateAP( );
+					void prerender( );
+					void i_render( );
+					bool isOver(int x, int y) const { return x >= 0 && y >= 0 && x < w_ && y < h_; }
 				private:
 					virtual void i_doInit( ) { };
 					virtual void i_doResize( ) { };
@@ -83,6 +86,7 @@ namespace dav
 					virtual void i_doMouseScroll(int) { }
 					virtual void i_doKeyDown(Controls) { }
 					virtual void i_doKeyUp(Controls) { }
+					virtual Surface_ptr i_doGetControlAt(int, int);
 				private:
 					static DWORD nextID( )
 						{ static DWORD nid(0); return ++nid; }

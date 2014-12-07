@@ -58,13 +58,18 @@ void Label::i_doPrerender(void)
 
 void Label::i_doRender(void)
 {
-	int y = center_ ? (height() - pieces_.size() * sy_) / 2 + (sy_ - sx_) / 2 : 1;
+	int y = (center_ ? (height() - pieces_.size() * sy_) / 2 : 0) + (sy_ - sx_) / 2;
 
 	for(const std::string& s : pieces_)
 	{
-		drawString(s, center_ ? (width() - s.size() * sx_) / 2 : 1, y, c_, sx_);
+		drawString(s, center_ ? (width() - s.size() * sx_) / 2 : 0, y, c_, sx_);
 		y += sy_;
 	}
+}
+
+void Label::i_doResize(void)
+{
+	pieces_.empty();
 }
 
 }}}

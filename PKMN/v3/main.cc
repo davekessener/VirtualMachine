@@ -4,6 +4,7 @@
 #include "Manager.h"
 #include "Label.h"
 #include "Icon.h"
+#include "Button.h"
 
 namespace dav { namespace pkmn {
 
@@ -16,7 +17,7 @@ class Test : public screen::Surface
 	private:
 		void i_doInit( )
 		{
-			p_.x = p_.y = 0;
+			p_.x = p_.y = last_.x = last_.y = 0;
 		}
 		void i_doRender( )
 		{
@@ -27,13 +28,15 @@ class Test : public screen::Surface
 		}
 		void i_doMouseHover(int x, int y)
 		{
-			if(x != p_.x || y != p_.y)
+			if(x != last_.x || y != last_.y)
 			{
-				p_.x = x; p_.y = y;
+				p_.x = x + (x - last_.x);
+				p_.y = y + (y - last_.y);
+				last_.x = x; last_.y = y;
 				dirty(true);
 			}
 		}
-		coords p_;
+		coords p_, last_;
 };
 
 class Visualizer : public screen::Label
@@ -66,22 +69,26 @@ class Root : public screen::Surface
 			addChild(icon_ = std::make_shared<screen::Icon>(), 10);
 			icon_->init(160, 160, 16, 16);
 			icon_->load("icons/save.png");
+
+			addChild(button_ = std::make_shared<screen::Button>());
+			button_->init(100, 8, 64, 32);
+			button_->loadIcon("icons/split.png");
+			button_->loadText("OK");
 			
 			id = screen::PNGLoader::LoadPNG("test.png");
-			cs = screen::PNGLoader::LoadPNG("charset.png");
 		}
 		void i_doRender( )
 		{
 			auto s(getSize());
 			fillRect(0, 0, s.w, s.h, 0xffffff);
 			draw(id, 0, 0, 1, 1, 800, 100, 832, 132);
-			draw(cs, 0.0625, 0, 0.125, 0.0625, 800, 64, 832, 96);
 		}
 	private:
-		DWORD id, cs;
+		DWORD id;
 		Surface_ptr test_;
 		screen::Label_ptr lbl_;
 		screen::Icon_ptr icon_;
+		screen::Button_ptr button_;
 };
 
 }}

@@ -20,8 +20,6 @@ void Surface::move(int x, int y)
 	y_ = y;
 
 	updateAP();
-
-	dirty(true);
 }
 
 void Surface::resize(int w, int h)
@@ -44,27 +42,41 @@ void Surface::update(uint d)
 	}
 }
 
-void Surface::render(void)
+void Surface::prerender(void)
 {
+	for(auto& p : children_)
+	{
+		p->prerender();
+	}
+
 	if(dirty_)
 	{
 		i_doPrerender();
 		dirty_ = false;
 	}
+}
 
+void Surface::render(void)
+{
+	prerender();
+
+	i_render();
+}
+
+void Surface::i_render(void)
+{
 	i_doRender();
 
 	for(auto& p : children_)
 	{
-		p->render();
+		p->i_render();
 	}
 }
 
 void Surface::mouseClick(MouseButtons b, int x, int y, bool down)
 {
-	Surface_ptr p = getControlAt(x, y);
-	if(down) p->i_doMouseDown(b, x + p->dx_, y + p->dy_);
-	else p->i_doMouseUp(b, x + p->dx_, y + p->dy_);
+	if(down) i_doMouseDown(b, x + dx_, y + dy_);
+	else i_doMouseUp(b, x + dx_, y + dy_);
 }
 
 void Surface::mouseDrag(int x, int y)
@@ -97,6 +109,11 @@ Surface_ptr Surface::getControlAt(int x, int y)
 	if(x < 0 || y < 0 || x >= w_ || y >= h_)
 		assert(false);//throw std::string("Out of bound! getControlAt");
 	
+	return i_doGetControlAt(x, y);
+}
+
+Surface_ptr Surface::i_doGetControlAt(int x, int y)
+{
 	for(auto i(children_.rbegin()), e(children_.rend()) ; i != e ; ++i)
 	{
 		Surface_ptr p = static_cast<Surface_ptr>(*i);
