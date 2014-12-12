@@ -330,6 +330,9 @@ namespace dav
 	template<typename K, typename V>
 	using RandomizedBinarySearchTree = BinarySearchTree<K, V, std::hash<K>>;
 
+	template<typename K, typename V>
+	using RegularBinarySearchTree = BinarySearchTree<K, V>;
+
 	template<typename K, typename V, typename R, typename S>
 	void BinarySearchTree<K, V, R, S>::insert(key_type k, const V& v)
 	{

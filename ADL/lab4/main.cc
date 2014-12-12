@@ -17,15 +17,10 @@ class TokenReader
 		std::deque<std::string> v_;
 };
 
-int main(int argc, char *argv[])
-try
+template<template<typename, typename> class T>
+void test(void)
 {
-	std::vector<std::string> args(argv, argv + argc);
-
-	using namespace dav;
-
-	BinarySearchTree<std::string, int> bst;
-//	std::map<std::string, int> bst;
+	T<std::string, int> bst;
 	TokenReader in(std::cin);
 
 	int idx = 0;
@@ -36,7 +31,6 @@ try
 		if(s.empty()) continue;
 
 		if(!bst.contains(s)) bst.insert(s, idx);
-//		if(!bst.count(s)) bst[s] = idx;
 
 		++idx;
 	}
@@ -49,22 +43,26 @@ try
 	std::cout << "\nWords: " << idx << "\nDepth: " << bst.depth() << std::endl;
 
 	bst.clear();
+}
 
-//	BinarySearchTree<size_t, int> tree;
-//	std::mt19937_64 gen(std::random_device{}());
-//	std::uniform_int_distribution<size_t> dist(0, static_cast<size_t>(-1));
-//	idx = 0;
-//	for(size_t n = 1 ; n <= 20 ; ++n)
-//	{
-//		for(size_t i = 0, e = idx + 1 ; i < e ; ++i)
-//		{
-//			tree.insert(dist(gen), 0); ++idx;
-//		}
-//
-//		std::cout << "\nSize: 2^" << n << "-1=" << idx << "\nDepth: " << tree.depth() << std::endl;
-//	}
-//
-//	std::cout << std::endl;
+int main(int argc, char *argv[])
+try
+{
+	std::vector<std::string> args(argv + 1, argv + argc);
+	bool rand = false;
+
+	if(args.size() &&args.at(0) == "-r") rand = true;
+
+	using namespace dav;
+
+	if(rand)
+	{
+		test<RandomizedBinarySearchTree>();
+	}
+	else
+	{
+		test<RegularBinarySearchTree>();
+	}
 
 	return 0;
 }
