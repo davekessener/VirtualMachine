@@ -137,7 +137,7 @@ try
 	std::vector<std::string> args(argv + 1, argv + argc);
 
 	std::vector<std::string> test{"abc", "cba", "aaa", "a", "Az Za", "A Long Hashing Example"};
-	std::vector<int> res{21, 24, 19, 13, 5, -1};
+	std::vector<int> res{21, 24, 19, 13, 5, 27};
 
 	std::cout << "String = precalculation = hash-function" << std::endl;
 	for(unsigned i = 0 ; i < test.size() ; ++i)
@@ -147,6 +147,7 @@ try
 
 	std::ifstream in("text.txt");
 	TokenReader reader(in);
+	in.close();
 
 	typedef std::pair<std::string, int> pair_t;
 	std::vector<pair_t> words;
@@ -166,17 +167,21 @@ try
 		}
 	}
 
-	for(int i = 0 ; i < 10 ; ++i)
+	for(int i = 0 ; i < 15 ; ++i)
 	{
 		std::cout << "For M == " << HM << ":\n";
 		checkHashST(words.cbegin(), words.cend(), words.size() * 2);
 		checkHashST(words.cbegin(), words.cend(), words.size() * 3 / 2);
 		checkHashST(words.cbegin(), words.cend(), words.size() * 4 / 3);
 		checkHashST(words.cbegin(), words.cend(), words.size() * 10 / 9);
-		HM <<= 1;
+		HM = (HM << 1) | 1;
 	}
 
-	in.close();
+	std::cout << "\n Trying to read a word that's not in the text:" << std::endl;
+
+	HashST<std::string, int> map(10);
+
+	map.get("ThisIsNotInTheText");
 
 	return 0;
 }
