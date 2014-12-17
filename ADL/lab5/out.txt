@@ -1,0 +1,57 @@
+String = precalculation = hash-function
+"abc" = 21 = 21
+"cba" = 24 = 24
+"aaa" = 19 = 19
+"a" = 13 = 13
+"Az Za" = 5 = 5
+"A Long Hashing Example" = -1 = 27
+For M == 31:
+For 50% fill 'put' averages 390.19 steps and 'get' 391.19 steps.
+For 66% fill 'put' averages 390.19 steps and 'get' 391.19 steps.
+For 75% fill 'put' averages 390.19 steps and 'get' 391.19 steps.
+For 90% fill 'put' averages 390.19 steps and 'get' 391.19 steps.
+For M == 62:
+For 50% fill 'put' averages 372.476 steps and 'get' 373.476 steps.
+For 66% fill 'put' averages 372.476 steps and 'get' 373.476 steps.
+For 75% fill 'put' averages 372.476 steps and 'get' 373.476 steps.
+For 90% fill 'put' averages 372.476 steps and 'get' 373.476 steps.
+For M == 124:
+For 50% fill 'put' averages 345.905 steps and 'get' 346.905 steps.
+For 66% fill 'put' averages 345.905 steps and 'get' 346.905 steps.
+For 75% fill 'put' averages 345.905 steps and 'get' 346.905 steps.
+For 90% fill 'put' averages 345.905 steps and 'get' 346.905 steps.
+For M == 248:
+For 50% fill 'put' averages 298.667 steps and 'get' 299.667 steps.
+For 66% fill 'put' averages 298.667 steps and 'get' 299.667 steps.
+For 75% fill 'put' averages 298.667 steps and 'get' 299.667 steps.
+For 90% fill 'put' averages 298.667 steps and 'get' 299.667 steps.
+For M == 496:
+For 50% fill 'put' averages 7.04762 steps and 'get' 8.04762 steps.
+For 66% fill 'put' averages 7.04762 steps and 'get' 8.04762 steps.
+For 75% fill 'put' averages 7.04762 steps and 'get' 8.04762 steps.
+For 90% fill 'put' averages 49.1905 steps and 'get' 50.1905 steps.
+For M == 992:
+For 50% fill 'put' averages 3 steps and 'get' 4 steps.
+For 66% fill 'put' averages 4.42857 steps and 'get' 5.42857 steps.
+For 75% fill 'put' averages 9.14286 steps and 'get' 10.1429 steps.
+For 90% fill 'put' averages 51.4286 steps and 'get' 52.4286 steps.
+For M == 1984:
+For 50% fill 'put' averages 2.47619 steps and 'get' 3.47619 steps.
+For 66% fill 'put' averages 5.14286 steps and 'get' 6.14286 steps.
+For 75% fill 'put' averages 6.42857 steps and 'get' 7.42857 steps.
+For 90% fill 'put' averages 33.5714 steps and 'get' 34.5714 steps.
+For M == 3968:
+For 50% fill 'put' averages 2.85714 steps and 'get' 3.85714 steps.
+For 66% fill 'put' averages 3.28571 steps and 'get' 4.28571 steps.
+For 75% fill 'put' averages 8.09524 steps and 'get' 9.09524 steps.
+For 90% fill 'put' averages 15.4762 steps and 'get' 16.4762 steps.
+For M == 7936:
+For 50% fill 'put' averages 1.90476 steps and 'get' 2.90476 steps.
+For 66% fill 'put' averages 3.14286 steps and 'get' 4.14286 steps.
+For 75% fill 'put' averages 7.61905 steps and 'get' 8.61905 steps.
+For 90% fill 'put' averages 19.381 steps and 'get' 20.381 steps.
+For M == 15872:
+For 50% fill 'put' averages 2.14286 steps and 'get' 3.14286 steps.
+For 66% fill 'put' averages 2.47619 steps and 'get' 3.47619 steps.
+For 75% fill 'put' averages 4.04762 steps and 'get' 5.04762 steps.
+For 90% fill 'put' averages 19.381 steps and 'get' 20.381 steps.

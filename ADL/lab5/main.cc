@@ -166,7 +166,7 @@ try
 		}
 	}
 
-	for(int i = 0 ; i < 7 ; ++i)
+	for(int i = 0 ; i < 10 ; ++i)
 	{
 		std::cout << "For M == " << HM << ":\n";
 		checkHashST(words.cbegin(), words.cend(), words.size() * 2);
