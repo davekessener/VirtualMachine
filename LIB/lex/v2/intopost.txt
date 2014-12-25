@@ -28,7 +28,10 @@ BEGIN
 			= "sqrt" O7 PRINT("SQRT")
 			= "exp" PRINT("E") O4 PRINT("^")
 			= O7
-	RULE O7	= "(" O1 ")"
+	RULE O7 = O8 F7
+	RULE F7 = "%" PRINT("100") PRINT("/")
+			= EMPTY
+	RULE O8	= "(" O1 ")"
 			= ID(R"pi|PI") PRINT("PI")
 			= ID(R"[eE]")  PRINT("E")
 			= ID(R$NUM) PRINT
