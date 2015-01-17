@@ -44,6 +44,9 @@ namespace pkmn
 			} moves[4];
 			std::vector<std::string> forgotten_moves;
 		public:
+			void writeToNBT(nbt::TAG_Compound_ptr_t) const;
+			void readFromNBT(nbt::TAG_Compound_ptr_t);
+		public:
 			Pokemon( );
 			Pokemon(const std::string&, uint);
 	};
