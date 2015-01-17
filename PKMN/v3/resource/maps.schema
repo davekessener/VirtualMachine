@@ -1,0 +1,41 @@
+{
+	'Maps' :
+	[
+		{
+			'id' : 'string',
+			'width' : 'int',
+			'height' : 'int',
+			'data' :
+			{
+				'bottom' : 'int-array',
+				'animation-bottom' : 'int-array',?
+				'median' : 'int-array',?
+				'animation-top' : 'int-array',?
+				'top' : 'int-array',?
+				'collision' : 'int-array'
+			}
+			'connections' :
+			[
+				{
+					'id' : 'string',
+					'offset' : 'int'
+				},*
+			],
+			'events' :
+			[
+				{
+					'x' : 'int',
+					'y' : 'int',
+					'type' : 'string', // "SIGN", "NPC", "TRIGGER"
+					'text' : 'string', // <-- "SIGN"
+					'sprite' : 'string', // <-- "NPC"
+					'movement' : 'string', // "FACE LEFT/UP/DOWN/RIGHT", "WALK CIRCLE", ...
+					'trainer-id' : 'string',
+					'scipt-id' : 'string', // <-- "TRIGGER"
+					'disable-id' : 'string' // <-- "NPC"/"TRIGGER"
+				},*
+			]
+		},*
+	]
+}
+

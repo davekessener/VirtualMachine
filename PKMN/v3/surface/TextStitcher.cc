@@ -1,3 +1,4 @@
+#include <cassert>
 #include "TextStitcher.h"
 #include "PNGLoader.h"
 #include "GLImageBuffer.h"
@@ -55,7 +56,7 @@ text_info TextureStitcher::Stitcher::storeImage(const BYTE *data)
 
 		text_info ti
 		{
-			id_ = GLImageBuffer::updateImage(id_, &img_.front(), MXT_TEXTSIZE),
+			id_ = GLImageBuffer::UpdateImage(id_, &img_.front(), MXT_TEXTSIZE),
 			(float)(x / (double)MXT_TEXTSIZE),
 			(float)(y / (double)MXT_TEXTSIZE),
 			(float)((x + w_) / (double)MXT_TEXTSIZE),
@@ -80,7 +81,10 @@ text_info TextureStitcher::doLoadIcon(const std::string& s)
 	if(i == lookup_.end())
 	{
 		std::vector<BYTE> buf;
-		DWORD w = PNGLoader::LoadRawPNG(s, buf);
+		auto info = PNGLoader::LoadRawPNG(s, buf);
+		DWORD w = info.s;
+
+		assert(info.w==info.h&&info.w==info.s);
 
 		auto j(st_.find(w));
 

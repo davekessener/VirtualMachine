@@ -14,8 +14,15 @@ namespace dav
 			class PNGLoader
 			{
 				public:
-					static DWORD LoadPNG(const std::string&);
-					static int LoadRawPNG(const std::string&, std::vector<BYTE>&);
+					struct raw_info
+					{
+						int w, h;
+						int s;
+					};
+				public:
+					static DWORD LoadSquarePNG(const std::string&);
+					static text_info LoadPNG(const std::string&);
+					static raw_info LoadRawPNG(const std::string&, std::vector<BYTE>&);
 			};
 		}
 	}

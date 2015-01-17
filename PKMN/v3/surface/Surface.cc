@@ -1,7 +1,7 @@
 #include <iostream>
 #include <cassert>
 #include "Surface.h"
-#include "gl.h"
+#include <dav/gl.h>
 
 namespace dav { namespace pkmn { namespace screen {
 

@@ -1,107 +1,299 @@
 #include <iostream>
 #include <unistd.h>
-#include "PNGLoader.h"
-#include "Manager.h"
-#include "Label.h"
-#include "Icon.h"
-#include "Button.h"
+//#include "surface/PNGLoader.h"
+//#include "surface/GLImageBuffer.h"
+//#include "surface/Manager.h"
+//#include "surface/Label.h"
+//#include "surface/Icon.h"
+//#include "surface/Button.h"
+#include <aux>
+#include "Species.h"
+#include "Pokemon.h"
+#include "UUID.hpp"
 
-namespace dav { namespace pkmn {
+nbt::TAG_Compound_ptr_t generateCharizard( );
+nbt::TAG_Compound_ptr_t generateSpecies( );
 
-using screen::Surface_ptr;
+nbt::TAG_Compound_ptr_t loadSpecies( );
 
-class Test : public screen::Surface
+void printSpecies(std::ostream&, const pkmn::Species&);
+
+void run(void)
 {
-	using screen::Surface::MouseButtons;
-	public:
-	private:
-		void i_doInit( )
-		{
-			p_.x = p_.y = last_.x = last_.y = 0;
-		}
-		void i_doRender( )
-		{
-			auto s(getSize());
-			fillRect(0, 0, s.w, s.h, 0);
-			fillRect(1, 1, s.w - 1, s.h - 1, 0xffffff);
-			fillRect(p_.x - 5, p_.y - 5, p_.x + 5, p_.y + 5, 0xff0000);
-		}
-		void i_doMouseHover(int x, int y)
-		{
-			if(x != last_.x || y != last_.y)
-			{
-				p_.x = x + (x - last_.x);
-				p_.y = y + (y - last_.y);
-				last_.x = x; last_.y = y;
-				dirty(true);
-			}
-		}
-		coords p_, last_;
-};
+	nbt::TAG_Compound_ptr_t tag = loadSpecies();
 
-class Visualizer : public screen::Label
+	pkmn::SpeciesManager::Load(tag->getTagList("Species"));
+
+	printSpecies(std::cout, pkmn::SpeciesManager::Get("charizard"));
+
+	uint c = 0;
+	for(uint i = 0 ; i < 0x1000 ; ++i)
+	{
+		if(dav::UUID::Bool(0.875)) ++c;
+	}
+
+	std::cout << "With a chance of 87.5% the rand function returns " << (c / (double)0x1000) << std::endl;
+}
+
+void printSpecies(std::ostream& os, const pkmn::Species& sp)
 {
-	private:
-		void i_doRender(void)
-		{
-			int w(width()), h(height());
-			fillRect(0, 0, w, h, 0x000000);
-			fillRect(1, 1, w - 1, h - 1, 0xffffff);
-			screen::Label::i_doRender();
-		}
-};
+	os	<< "ID : '" << sp.id << "'\n"
+		<< "Name : '" << sp.name << "'\n"
+		<< "Types : ['" << sp.types[0] << "', '" << sp.types[1] << "']\n"
+		<< "Abilities : ['" << sp.abilities[0] << "', '" << sp.abilities[1] << "']\n"
+		<< "Hidden Ability : '" << sp.hidden_ability << "'\n"
+		<< "Gender Ratio : '" << sp.gender_ratio << "'\n"
+		<< "Is Genderless : '" << (sp.is_genderless ? "TRUE" : "FALSE") << "'\n"
+		<< "Is Baby : '" << (sp.is_baby ? "TRUE" : "FALSE") << "'\n"
+		<< "Catch Rate : '" << sp.catch_rate << "'\n"
+		<< "Egg Groups : ['" << sp.egg_groups[0] << "', '" << sp.egg_groups[1] << "']\n"
+		<< "Egg Cycles : '" << sp.egg_cycles << "'\n"
+		<< "Base Experience : '" << sp.base_exp << "'\n"
+		<< "Base Happiness : '" << sp.base_happiness << "'\n"
+		<< "Growth Rate : '" << sp.growth_rate << "'\n"
+		<< "Stats : ['" << sp.stats[0] << "'";
 
-class Root : public screen::Surface
+	for(int i = 1 ; i < 6 ; ++i)
+	{
+		os << ", '" << sp.stats[i] << "'";
+	}
+
+	os	<< "]\n"
+		<< "EVs : ['" << sp.evs[0] << "'";
+
+	for(int i = 1 ; i < 6 ; ++i)
+	{
+		os << ", '" << sp.evs[i] << "'";
+	}
+
+	os	<< "]\n"
+		<< "Dex : { Number : '" << sp.dex.number 
+		<< "', Height : '" << sp.dex.height 
+		<< "', Weight : '" << sp.dex.weight 
+		<< "', Color : '" << sp.dex.color << "' }\n";
+}
+
+nbt::TAG_Compound_ptr_t loadSpecies(void)
 {
-	public:
-	private:
-		void i_doInit( )
-		{
-			addChild(test_ = std::make_shared<Test>());
-			test_->init(256, 256, 500, 500);
+	return nbt::readFile("species.nbt");
+}
 
-			addChild(lbl_ = std::make_shared<Visualizer>(), 20);
-			lbl_->init(8, 8, 80, 80);
-			lbl_->message("This is a test!");
-			lbl_->center(true);
-			lbl_->spacing(lbl_->charsize());
-			
-			addChild(icon_ = std::make_shared<screen::Icon>(), 10);
-			icon_->init(160, 160, 16, 16);
-			icon_->load("icons/save.png");
+nbt::TAG_Compound_ptr_t generateChrizard(void)
+{
+	nbt::TAG_Compound_ptr_t tag = nbt::Make<nbt::TAG_Compound>();
 
-			addChild(button_ = std::make_shared<screen::Button>());
-			button_->init(100, 8, 64, 32);
-			button_->loadIcon("icons/split.png");
-			button_->loadText("OK");
-			
-			id = screen::PNGLoader::LoadPNG("test.png");
-		}
-		void i_doRender( )
-		{
-			auto s(getSize());
-			fillRect(0, 0, s.w, s.h, 0xffffff);
-			draw(id, 0, 0, 1, 1, 800, 100, 832, 132);
-		}
-	private:
-		DWORD id;
-		Surface_ptr test_;
-		screen::Label_ptr lbl_;
-		screen::Icon_ptr icon_;
-		screen::Button_ptr button_;
-};
+	tag->setString("ID", "charizard");
+	tag->setString("Name", "Charizard");
+	nbt::TAG_List_ptr_t types = nbt::Make<nbt::TAG_List>();
+	types->addTag(nbt::Make<nbt::TAG_String>("", "fire"));
+	types->addTag(nbt::Make<nbt::TAG_String>("", "flying"));
+	tag->setTagList("Types", types);
+	nbt::TAG_List_ptr_t abilities = nbt::Make<nbt::TAG_List>();
+	abilities->addTag(nbt::Make<nbt::TAG_String>("", "blaze"));
+	tag->setTagList("Abilities", abilities);
+	tag->setString("HiddenAbility", "solar-power");
+	tag->setFloat("GenderRatio", 0.875);
+	tag->setByte("IsGenderless", 0);
+	tag->setByte("IsBaby", 0);
+	tag->setFloat("CatchRate", 5.9);
+	tag->setInt("EggCycles", 21);
+	tag->setInt("BaseExperience", 209);
+	tag->setInt("BaseHappiness", 70);
+	tag->setInt("GrowthRate", 4);
+	nbt::TAG_List_ptr_t egg_groups = nbt::Make<nbt::TAG_List>();
+	egg_groups->addTag(nbt::Make<nbt::TAG_String>("", "Dragon"));
+	egg_groups->addTag(nbt::Make<nbt::TAG_String>("", "Monster"));
+	tag->setTagList("EggGroups", egg_groups);
+	nbt::TAG_List_ptr_t stats= nbt::Make<nbt::TAG_List>();
+	stats->addTag(nbt::Make<nbt::TAG_Int>("", 78));
+	stats->addTag(nbt::Make<nbt::TAG_Int>("", 84));
+	stats->addTag(nbt::Make<nbt::TAG_Int>("", 78));
+	stats->addTag(nbt::Make<nbt::TAG_Int>("", 109));
+	stats->addTag(nbt::Make<nbt::TAG_Int>("", 85));
+	stats->addTag(nbt::Make<nbt::TAG_Int>("", 100));
+	tag->setTagList("Stats", stats);
+	nbt::TAG_List_ptr_t evs = nbt::Make<nbt::TAG_List>();
+	evs->addTag(nbt::Make<nbt::TAG_Int>("", 0));
+	evs->addTag(nbt::Make<nbt::TAG_Int>("", 0));
+	evs->addTag(nbt::Make<nbt::TAG_Int>("", 0));
+	evs->addTag(nbt::Make<nbt::TAG_Int>("", 3));
+	evs->addTag(nbt::Make<nbt::TAG_Int>("", 0));
+	evs->addTag(nbt::Make<nbt::TAG_Int>("", 0));
+	tag->setTagList("EVs", evs);
+	nbt::TAG_Compound_ptr_t dex = nbt::Make<nbt::TAG_Compound>();
+	dex->setInt("Number", 6);
+	dex->setInt("Height", 170);
+	dex->setInt("Weight", 905);
+	dex->setString("Color", "red");
+	tag->setCompoundTag("Dex", dex);
 
-}}
+	return tag;
+}
+
+nbt::TAG_Compound_ptr_t generateSpecies(void)
+{
+	nbt::TAG_Compound_ptr_t root = nbt::Make<nbt::TAG_Compound>();
+	nbt::TAG_List_ptr_t species = nbt::Make<nbt::TAG_List>();
+
+	species->addTag(generateChrizard());
+
+	root->setTagList("Species", species);
+
+	return root;
+}
+
+//namespace dav { namespace pkmn {
+//
+//namespace screen
+//{
+//	class DexAnimation : public Surface
+//	{
+//		public:
+//			DexAnimation(const std::string& base) : base_(base), time_(0), cur_(0) { }
+//		private:
+//			void i_doInit( )
+//			{
+//				const int MAXFRAME = 47;
+//				
+//				frames_.resize(MAXFRAME);
+//
+//				for(int i = 0 ; i < MAXFRAME ; ++i)
+//				{
+//					frames_[i] = PNGLoader::LoadPNG(aux::stringify(base_, '-', i, ".png"));
+//					GLImageBuffer::SetLinear(frames_[i].id);
+//				}
+//			}
+//			void i_doUpdate(uint d)
+//			{
+//				const int FRAME = 1500 / 47;
+//
+//				if((time_ += d) >= FRAME)
+//				{
+//					cur_ = (cur_ + 1) % frames_.size();
+//					time_ -= FRAME;
+//					dirty(true);
+//				}
+//			}
+//			void i_doRender( )
+//			{
+//				auto frame(frames_.at(cur_));
+//				int w(width()), h(height());
+//				
+//				float f1(frame.u2 / frame.v2), f2(w / (float)h);
+//				
+//				if(f1 < f2)
+//				{
+//					w = f1 * h;
+//				}
+//				else if(f2 < f1)
+//				{
+//					h = w / f1;
+//				}
+//
+//				draw(frame.id, 0, 0, frame.u2, frame.v2, 0, 0, w, h);
+//			}
+//		private:
+//			std::string base_;
+//			std::vector<text_info> frames_;
+//			uint time_, cur_;
+//	};
+//}
+//
+//using screen::Surface_ptr;
+//
+//class Test : public screen::Surface
+//{
+//	using screen::Surface::MouseButtons;
+//	public:
+//	private:
+//		void i_doInit( )
+//		{
+//			p_.x = p_.y = last_.x = last_.y = 0;
+//		}
+//		void i_doRender( )
+//		{
+//			auto s(getSize());
+//			fillRect(0, 0, s.w, s.h, 0);
+//			fillRect(1, 1, s.w - 1, s.h - 1, 0xffffff);
+//			fillRect(p_.x - 5, p_.y - 5, p_.x + 5, p_.y + 5, 0xff0000);
+//		}
+//		void i_doMouseHover(int x, int y)
+//		{
+//			if(x != last_.x || y != last_.y)
+//			{
+//				p_.x = x + (x - last_.x);
+//				p_.y = y + (y - last_.y);
+//				last_.x = x; last_.y = y;
+//				dirty(true);
+//			}
+//		}
+//		coords p_, last_;
+//};
+//
+//class Visualizer : public screen::Label
+//{
+//	private:
+//		void i_doRender(void)
+//		{
+//			int w(width()), h(height());
+//			fillRect(0, 0, w, h, 0x000000);
+//			fillRect(1, 1, w - 1, h - 1, 0xffffff);
+//			screen::Label::i_doRender();
+//		}
+//};
+//
+//class Root : public screen::Surface
+//{
+//	public:
+//	private:
+//		void i_doInit( )
+//		{
+//			addChild(test_ = std::make_shared<Test>());
+//			test_->init(256, 256, 500, 500);
+//
+//			addChild(lbl_ = std::make_shared<Visualizer>(), 20);
+//			lbl_->init(8, 8, 80, 80);
+//			lbl_->message("This is a test!");
+//			lbl_->center(true);
+//			lbl_->spacing(lbl_->charsize());
+//			
+//			addChild(icon_ = std::make_shared<screen::Icon>(), 10);
+//			icon_->init(160, 160, 16, 16);
+//			icon_->load("icons/save.png");
+//
+//			addChild(button_ = std::make_shared<screen::Button>());
+//			button_->init(100, 8, 64, 32);
+//			button_->loadIcon("icons/split.png");
+//			button_->loadText("OK");
+//			
+//			addChild(dex_ = std::make_shared<screen::DexAnimation>("dexsprites/006"));
+//			dex_->init(8, 160, 133, 140);
+//			
+//			id = screen::PNGLoader::LoadSquarePNG("test.png");
+//		}
+//		void i_doRender( )
+//		{
+//			auto s(getSize());
+//			fillRect(0, 0, s.w, s.h, 0xffffff);
+//			draw(id, 0, 0, 1, 1, 800, 100, 832, 132);
+//		}
+//	private:
+//		DWORD id;
+//		Surface_ptr test_, dex_;
+//		screen::Label_ptr lbl_;
+//		screen::Icon_ptr icon_;
+//		screen::Button_ptr button_;
+//};
+//
+//}}
 
 int main(int argc, char *argv[])
 try
 {
-	using namespace dav::pkmn;
-	using namespace dav::pkmn::screen;
-
 	chdir("resource/");
 
-	runProgram("Test", std::make_shared<Root>());
+//	runProgram("Pokemon", std::make_shared<Root>());
+	run();
 
 	return 0;
 }

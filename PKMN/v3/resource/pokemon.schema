@@ -1,0 +1,133 @@
+'species' :
+[
+	{
+		'id' : 'string',
+		'name' : 'string',
+		'types' :
+		[
+			'string',{1-2}
+		],
+		'abilities' :
+		[
+			'string',{1-2}
+		],
+		'hidden-ability' : 'string', // "" == no HA
+		'gender-ratio' : 'float', // chance it's male
+		'is-genderless' : 'bool',
+		'is-baby' : 'bool',
+		'catch-rate' : 'float',
+		'egg-groups' :
+		[
+			'string',{1-2}
+		],
+		'egg-cycles' : 'int',
+		'base-exp' : 'int',
+		'base-happiness' : 'int',
+		'growth-rate' : 'int', // 1 - 6
+		'stats' :
+		[
+			'int',{6}
+		],
+		'evs' :
+		[
+			'int',{6}
+		],
+		'tms' :
+		[
+			'int',*
+		],
+		'hms' :
+		[
+			'int',*
+		],
+		'dex' :
+		{
+			'number' : 'int', // 0 == no dex
+			'height' : 'int', // in cm
+			'weight' : 'int', // in 100g's
+			'color' : 'string'
+		}
+	},*
+]
+
+'pokemon' :
+{
+	'species' : 'string',
+	'sprite' : 'string',
+	'gender' : 'int', // 1 == male, 0 == genderless, -1 == female
+	'personality' : 'long',
+	'level' : 'int',
+	'exp' : 'int', // needed exp. points for next lvl
+	'happiness' : 'int',
+	'ability' : 'string', //id
+	'stats' :
+	[
+		'int',{6}
+	],
+	'evs' :
+	[
+		'int',{6}
+	],
+	'ivs' :
+	[
+		'int',{6}
+	],
+	'nature' : 'string',
+	'health' : 'int', // hp left
+	'status' : 'string', // status condition
+	'nickname' : 'string',
+	'ot' :
+	{
+		'name' : 'string',
+		'id' : 'UUID'
+	},
+	'moves' :
+	[
+		{
+			'id' : 'string',
+			'pp' : 'int', // pp left
+			'pp-ups' : 'int'
+		},{1-4}
+	],
+	'forgotten-moves' :
+	[
+		'string',* // ids
+	],
+	'held-item' : 'string' // id
+}
+
+'in-battle' :
+{
+	'name' : 'string', //nickname
+	'species' : 'species_ptr',
+	'sprite' : 'string',
+	'gender' : 'int',
+	'personality' : 'long',
+	'ability' : 'ability_ptr',
+	'level' : 'int',
+	'exp' : 'float', // percent exp-bar filled
+	'stats' :
+	[
+		'int',{6}
+	],
+	'stat-modifiers' :
+	[
+		'int',{8} // HP useless
+	],
+	'health' : 'int',
+	'status-primary' : 'status',
+	'status-secondary' :
+	[
+		'status',*
+	],
+	'moves' :
+	[
+		{
+			'move' : 'move_ptr',
+			'pp' : 'int',
+			'pp-left' : 'int'
+		},{1-4}
+	],
+	'item' : 'item_ptr'
+}
+

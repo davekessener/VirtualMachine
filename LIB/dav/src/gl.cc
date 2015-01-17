@@ -30,6 +30,15 @@ namespace dav
 	    	if(id) glBindTexture(GL_TEXTURE_2D, id);
 	    	glTexImage2D(GL_TEXTURE_2D, 0, p, w, h, 0, p, GL_UNSIGNED_BYTE, data);
 		}
+
+		void mod_texture(DWORD id, int ln)
+		{
+			int f(ln == NEAR ? GL_NEAREST : GL_LINEAR);
+
+	    	if(id) glBindTexture(GL_TEXTURE_2D, id);
+	    	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, f);
+	    	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, f);
+		}
 	
 		void init2d(int w, int h)
 		{

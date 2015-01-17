@@ -1,8 +1,8 @@
 #include <vector>
 #include "Manager.h"
 #include "Surface.h"
-#include "sdl.h"
-#include "gl.h"
+#include <dav/sdl.h>
+#include <dav/gl.h>
 
 #define MXT_SCREENWIDTH (1920-2)
 #define MXT_SCREENHEIGHT (1080-54)

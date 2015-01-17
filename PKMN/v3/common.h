@@ -1,8 +1,10 @@
 #ifndef DAV_PKMN_COMMON_H
 #define DAV_PKMN_COMMON_H
 
-#include <cstdint>
-#include <cstddef>
+#include <dav/inc.h>
+
+#define NBT_NO_GZ
+#include <nbt/NBT.h>
 
 // # ===========================================================================
 
@@ -10,20 +12,6 @@
 #define MXT_ICON_BASEDOWN "icons/btn_down.png"
 
 // # ===========================================================================
-
-#ifdef NULL
-#undef NULL
-#endif
-
-#define NULL nullptr
-typedef decltype(NULL) NULL_t;
-
-typedef unsigned uint;
-
-typedef std::uint8_t BYTE;
-typedef std::uint16_t WORD;
-typedef std::uint32_t DWORD;
-typedef std::uint64_t QWORD;
 
 namespace dav
 {

@@ -13,11 +13,13 @@ namespace dav
 			class GLImageBuffer
 			{
 				public:
-					static DWORD getImage(const void *, size_t);
-					static DWORD updateImage(DWORD, const void *, size_t);
-					static void deleteImage(DWORD);
+					static DWORD GetImage(const void *, size_t);
+					static DWORD UpdateImage(DWORD, const void *, size_t);
+					static void SetNear(DWORD);
+					static void SetLinear(DWORD);
+					static void DeleteImage(DWORD);
 				private:
-					static GLImageBuffer& instance( );
+					static GLImageBuffer& Instance( );
 				private:
 					GLImageBuffer( ) { }
 					~GLImageBuffer( ) noexcept;

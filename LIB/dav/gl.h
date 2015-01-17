@@ -17,6 +17,7 @@ namespace dav
 	
 		DWORD create_texture(const void *, int, int, int = RGB, int = NEAR);
 		void set_texture(DWORD, const void *, int, int, int = RGB);
+		void mod_texture(DWORD, int = NEAR);
 		void init2d(int, int);
 		void init3d(int, int, float = 45.0, float = 1.0, float = 100.0);
 		void start_draw( );

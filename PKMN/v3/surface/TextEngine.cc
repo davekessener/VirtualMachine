@@ -9,7 +9,7 @@ DWORD TextureEngine::load(const std::string& s)
 
 	if(i != lookup_.end()) return i->second;
 
-	DWORD id = PNGLoader::LoadPNG(s);
+	DWORD id = PNGLoader::LoadSquarePNG(s);
 
 	lookup_[s] = id;
 	reverse_[id] = s;

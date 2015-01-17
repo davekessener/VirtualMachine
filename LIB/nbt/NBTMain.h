@@ -150,7 +150,7 @@ namespace nbt
 
 				public:
 					std::shared_ptr<T> operator*() { return std::dynamic_pointer_cast<T>(*i); }
-					T& operator->() { return *operator*(); }
+					std::shared_ptr<T> operator->() { return operator*(); }
 					iterator<T>& operator++() { ++i; return *this; }
 					bool operator==(const iterator& _i) { return i == _i.i; }
 					bool operator!=(const iterator& _i) { return i != _i.i; }
@@ -272,7 +272,7 @@ namespace nbt
 			bool hasTag(const std::string& s) { return find(s) != end(); }
 			bool empty( ) { return map_t::empty(); }
 			size_t size( ) { return map_t::size(); }
-			NBT_ptr_t getTag(const std::string& s) { auto i(find(s)); return i == end() ? NBT_ptr_t(nullptr) : i->second; }
+			NBT_ptr_t getTag(const std::string& s) { auto i(find(s)); if(i == end()) throw NBTException("Tag '" + NBTBase::getName() + "' has no tag named '" + s + "'!"); else return i->second; }
 			template<typename T>
 				std::shared_ptr<T> getTag(const std::string& s) { return std::dynamic_pointer_cast<T>(getTag(s)); }
 			void setTag(const std::string& s, NBT_ptr_t p) { p->setName(s); setTag(p); }

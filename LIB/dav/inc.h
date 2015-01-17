@@ -16,5 +16,7 @@ typedef std::uint16_t WORD;
 typedef std::uint32_t DWORD;
 typedef std::uint64_t QWORD;
 
+typedef unsigned uint;
+
 #endif
 
