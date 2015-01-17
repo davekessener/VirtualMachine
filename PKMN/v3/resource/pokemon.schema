@@ -106,6 +106,7 @@
 	'ability' : 'ability_ptr',
 	'level' : 'int',
 	'exp' : 'float', // percent exp-bar filled
+	'nature' : 'nature_ptr',
 	'stats' :
 	[
 		'int',{6}
@@ -128,6 +129,7 @@
 			'pp-left' : 'int'
 		},{1-4}
 	],
+	'last-move' : 'move_ptr',
 	'item' : 'item_ptr'
 }
 

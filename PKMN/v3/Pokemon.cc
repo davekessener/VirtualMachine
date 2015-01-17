@@ -10,7 +10,8 @@ namespace pkmn
 	}
 
 	Pokemon::Pokemon(void)
-		: species("")
+		: id(dav::UUID::Nil())
+		, species("")
 		, nickname("")
 		, sprite("")
 		, gender(0)
@@ -41,7 +42,8 @@ namespace pkmn
 	}
 
 	Pokemon::Pokemon(const std::string& sp, uint lvl)
-		: species(sp)
+		: id()
+		, species(sp)
 		, nickname("")
 		, sprite(species)
 		, personality(dav::UUID::rand<QWORD>())

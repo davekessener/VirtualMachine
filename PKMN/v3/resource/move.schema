@@ -1,0 +1,60 @@
+'moves' :
+[
+	{
+		'id' : 'string',
+		'name' : 'string',
+		'type' : 'string',
+		'category' : 'int', // 0 == status, 1 == physical, 2 == special
+		'pp' : 'int',
+		'power' : 'int',
+		'accuracy' : 'float',
+		'priority' : 'int',
+		'makes-contact' : 'bool',
+		'affected-by-protect' : 'bool',
+		'affected-by-magiccoat' : 'bool',
+		'affected-by-snatch' : 'bool',
+		'target' : 'int', // 0 == self, 1 == enemy
+		'stat-changes' :
+		[
+			{
+				'stat' : 'int',
+				'stage' : 'int',
+				'chance' : 'float'
+			},*
+		],
+		'status-changes' :
+		[
+			{
+				'status' : 'string',
+				'chance' : 'float'
+			},
+		],
+		'healing' :
+		{
+			'absolute' : 'int',
+			'percentage' : 'float'
+		},
+		'special' : 'int'
+	},*
+]
+
+type
+category
+pp
+power
+accuracy
+priority
+makes-contact
+blockable
+bouncable
+snatchable
+copyable
+inc-crits
+healing
+punch-move
+claw-move
+sound-move
+blocked-by-gravity
+stat-changes
+status-changes
+

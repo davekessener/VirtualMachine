@@ -15,6 +15,7 @@ namespace pkmn
 		public:
 			static Pokemon_ptr Generate(const std::string&, uint);
 		public:
+			dav::UUID id;
 			std::string species;
 			std::string nickname;
 			std::string sprite;
