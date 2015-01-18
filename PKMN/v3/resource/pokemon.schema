@@ -40,6 +40,13 @@
 		[
 			'int',*
 		],
+		'moves' :
+		[
+			{
+				'id' : 'string',
+				'lvl' : 'int'
+			},*
+		],
 		'dex' :
 		{
 			'number' : 'int', // 0 == no dex

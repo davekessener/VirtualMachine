@@ -11,7 +11,7 @@ namespace pkmn
 	struct Nature
 	{
 		std::string name;
-		int inc, dec;
+		uint inc, dec;
 	};
 
 	class Natures
@@ -23,7 +23,7 @@ namespace pkmn
 				std::advance(i, dav::UUID::rand<uint>() % 25);
 				return i->second.name;
 			}
-			double Multiplier(const std::string& sid, uint stat)
+			static double Multiplier(const std::string& sid, uint stat)
 			{
 				auto i(Instance().natures_.find(sid));
 				if(i == Instance().natures_.end()) throw std::string("ERR: Unknown nature '" + sid + "'!");

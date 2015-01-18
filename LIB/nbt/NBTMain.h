@@ -294,12 +294,12 @@ namespace nbt
 			void setFloat(const std::string& s, float v) { set<float>(s, v); }
 			void setDouble(const std::string& s, double v) { set<double>(s, v); }
 			void setString(const std::string& name, const std::string& s) { setTag(NBT_ptr_t(new TAG_String(name, s))); }
-			void setByteArray(const std::string&s, BYTE *v, int n) { assert(n>0&&v); setByteArray<BYTE *>(s, v, v + n); }
+			void setByteArray(const std::string&s, const BYTE *v, int n) { assert(n>0&&v); setByteArray<const BYTE *>(s, v, v + n); }
 			template<template<typename T, typename = std::allocator<T>> class C>
 				void setByteArray(const std::string&s, C<BYTE> c) { setByteArray<typename C<BYTE>::iterator>(s, c.begin(), c.end()); }
 			template<typename I>
 				void setByteArray(const std::string& s, I i1, I i2) { setTag(NBT_ptr_t(new TAG_Byte_Array(s, i1, i2))); }
-			void setIntArray(const std::string&s, DWORD *v, int n) { assert(n>0&&v); setIntArray<DWORD *>(s, v, v + n); }
+			void setIntArray(const std::string&s, const DWORD *v, int n) { assert(n>0&&v); setIntArray<const DWORD *>(s, v, v + n); }
 			template<template<typename T, typename = std::allocator<T>> class C>
 				void setIntArray(const std::string&s, C<DWORD> c) { setIntArray<typename C<DWORD>::iterator>(s, c.begin(), c.end()); }
 			template<typename I>

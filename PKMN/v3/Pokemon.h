@@ -4,6 +4,7 @@
 #include <vector>
 #include "common.h"
 #include "UUID.hpp"
+#include <nbt/NBT.h>
 
 namespace pkmn
 {

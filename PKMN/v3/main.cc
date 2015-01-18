@@ -8,31 +8,27 @@
 //#include "surface/Button.h"
 #include <aux>
 #include "Species.h"
+#include "Move.h"
 #include "Pokemon.h"
 #include "UUID.hpp"
 
-nbt::TAG_Compound_ptr_t generateCharizard( );
-nbt::TAG_Compound_ptr_t generateSpecies( );
-
-nbt::TAG_Compound_ptr_t loadSpecies( );
+nbt::TAG_List_ptr_t generateSpecies( );
+nbt::TAG_List_ptr_t generateMoves( );
 
 void printSpecies(std::ostream&, const pkmn::Species&);
 
 void run(void)
 {
-	nbt::TAG_Compound_ptr_t tag = loadSpecies();
+	nbt::TAG_Compound_ptr_t root = nbt::Make<nbt::TAG_Compound>();
+	root->setTagList("Species", generateSpecies());
+	root->setTagList("Moves", generateMoves());
 
-	pkmn::SpeciesManager::Load(tag->getTagList("Species"));
+	pkmn::SpeciesManager::Load(root->getTagList("Species"));
+	pkmn::Moves::Load(root->getTagList("Moves"));
 
 	printSpecies(std::cout, pkmn::SpeciesManager::Get("charizard"));
 
-	uint c = 0;
-	for(uint i = 0 ; i < 0x1000 ; ++i)
-	{
-		if(dav::UUID::Bool(0.875)) ++c;
-	}
-
-	std::cout << "With a chance of 87.5% the rand function returns " << (c / (double)0x1000) << std::endl;
+	nbt::writeFile("pokemon.nbt", root);
 }
 
 void printSpecies(std::ostream& os, const pkmn::Species& sp)
@@ -66,16 +62,42 @@ void printSpecies(std::ostream& os, const pkmn::Species& sp)
 		os << ", '" << sp.evs[i] << "'";
 	}
 
-	os	<< "]\n"
-		<< "Dex : { Number : '" << sp.dex.number 
+	os	<< "]\n";
+
+	os	<< "TMs : [";
+	bool f = true;
+	for(uint tm : sp.tms)
+	{
+		if(!f) os << ", ";
+		os << "'" << tm << "'";
+		f = false;
+	}
+	os << "]\n";
+
+	os	<< "HMs : [";
+	f = true;
+	for(uint hm : sp.hms)
+	{
+		if(!f) os << ", ";
+		os << "'" << hm << "'";
+		f = false;
+	}
+	os << "]\n";
+
+	os << "'Moves' :\n[";
+	f = true;
+	for(auto& m : sp.moves)
+	{
+		if(!f) os << ",";
+		os << "\n\t{ID : '" << m.id << "', Level : '" << m.lvl << "'}";
+		f = false;
+	}
+	os << "\n]\n";
+
+	os	<< "Dex : { Number : '" << sp.dex.number 
 		<< "', Height : '" << sp.dex.height 
 		<< "', Weight : '" << sp.dex.weight 
 		<< "', Color : '" << sp.dex.color << "' }\n";
-}
-
-nbt::TAG_Compound_ptr_t loadSpecies(void)
-{
-	return nbt::readFile("species.nbt");
 }
 
 nbt::TAG_Compound_ptr_t generateChrizard(void)
@@ -104,22 +126,16 @@ nbt::TAG_Compound_ptr_t generateChrizard(void)
 	egg_groups->addTag(nbt::Make<nbt::TAG_String>("", "Dragon"));
 	egg_groups->addTag(nbt::Make<nbt::TAG_String>("", "Monster"));
 	tag->setTagList("EggGroups", egg_groups);
-	nbt::TAG_List_ptr_t stats= nbt::Make<nbt::TAG_List>();
-	stats->addTag(nbt::Make<nbt::TAG_Int>("", 78));
-	stats->addTag(nbt::Make<nbt::TAG_Int>("", 84));
-	stats->addTag(nbt::Make<nbt::TAG_Int>("", 78));
-	stats->addTag(nbt::Make<nbt::TAG_Int>("", 109));
-	stats->addTag(nbt::Make<nbt::TAG_Int>("", 85));
-	stats->addTag(nbt::Make<nbt::TAG_Int>("", 100));
-	tag->setTagList("Stats", stats);
-	nbt::TAG_List_ptr_t evs = nbt::Make<nbt::TAG_List>();
-	evs->addTag(nbt::Make<nbt::TAG_Int>("", 0));
-	evs->addTag(nbt::Make<nbt::TAG_Int>("", 0));
-	evs->addTag(nbt::Make<nbt::TAG_Int>("", 0));
-	evs->addTag(nbt::Make<nbt::TAG_Int>("", 3));
-	evs->addTag(nbt::Make<nbt::TAG_Int>("", 0));
-	evs->addTag(nbt::Make<nbt::TAG_Int>("", 0));
-	tag->setTagList("EVs", evs);
+	tag->setByteArray("Stats", std::vector<BYTE>{78, 84, 78, 109, 85, 100});
+	tag->setByteArray("EVs", std::vector<BYTE>{0, 0, 0, 3, 0, 0});
+	tag->setByteArray("TMs", std::vector<BYTE>());
+	tag->setByteArray("HMs", std::vector<BYTE>());
+	nbt::TAG_List_ptr_t moves = nbt::Make<nbt::TAG_List>();
+	nbt::TAG_Compound_ptr_t tackle_0 = nbt::Make<nbt::TAG_Compound>();
+	tackle_0->setString("ID", "tackle");
+	tackle_0->setInt("Level", 1);
+	moves->addTag(tackle_0);
+	tag->setTagList("Moves", moves);
 	nbt::TAG_Compound_ptr_t dex = nbt::Make<nbt::TAG_Compound>();
 	dex->setInt("Number", 6);
 	dex->setInt("Height", 170);
@@ -130,16 +146,43 @@ nbt::TAG_Compound_ptr_t generateChrizard(void)
 	return tag;
 }
 
-nbt::TAG_Compound_ptr_t generateSpecies(void)
+nbt::TAG_Compound_ptr_t generateTackle(void)
 {
-	nbt::TAG_Compound_ptr_t root = nbt::Make<nbt::TAG_Compound>();
-	nbt::TAG_List_ptr_t species = nbt::Make<nbt::TAG_List>();
+	nbt::TAG_Compound_ptr_t tag = nbt::Make<nbt::TAG_Compound>();
+
+	tag->setString("ID", "tackle");
+	tag->setString("Name", "Tackle");
+	tag->setString("Description", "");
+	tag->setString("Type", "normal");
+	tag->setString("Category", "Physical");
+	tag->setInt("Power", 50);
+	tag->setFloat("Accuracy", 1.0);
+	tag->setInt("PP", 35);
+	tag->setInt("Priority", 0);
+	tag->setString("Target", "Opponent");
+	tag->setByte("MakesContact", 1);
+	tag->setTagList("StatChanges", nbt::Make<nbt::TAG_List>("", nbt::TAG_Compound::ID));
+	tag->setTagList("StatusChanges", nbt::Make<nbt::TAG_List>("", nbt::TAG_Compound::ID));
+
+	return tag;
+}
+
+nbt::TAG_List_ptr_t generateSpecies(void)
+{
+	nbt::TAG_List_ptr_t species = nbt::Make<nbt::TAG_List>("Species");
 
 	species->addTag(generateChrizard());
 
-	root->setTagList("Species", species);
+	return species;
+}
 
-	return root;
+nbt::TAG_List_ptr_t generateMoves(void)
+{
+	nbt::TAG_List_ptr_t moves = nbt::Make<nbt::TAG_List>("Moves");
+
+	moves->addTag(generateTackle());
+
+	return moves;
 }
 
 //namespace dav { namespace pkmn {

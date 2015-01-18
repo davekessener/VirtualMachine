@@ -6,12 +6,12 @@ namespace pkmn
 	{
 		for(auto i(list->begin<nbt::TAG_Compound>()), e(list->end<nbt::TAG_Compound>()) ; i != e ; ++i)
 		{
-			Species_ptr s = Read(*i);
+			Species_sptr s = Read(*i);
 			species_[s->id] = s;
 		}
 	}
 
-	Species_ptr SpeciesManager::get(const std::string& id) const
+	Species_sptr SpeciesManager::get(const std::string& id) const
 	{
 		auto i(species_.find(id));
 
@@ -20,9 +20,9 @@ namespace pkmn
 		return i->second;
 	}
 
-	Species_ptr SpeciesManager::Read(nbt::TAG_Compound_ptr_t tag)
+	Species_sptr SpeciesManager::Read(nbt::TAG_Compound_ptr_t tag)
 	{
-		Species_ptr s(std::make_shared<Species>());
+		Species_sptr s = std::make_shared<Species>();
 		
 		s->id = "#ERR#";
 
@@ -61,19 +61,27 @@ namespace pkmn
 				s->egg_groups[c] = i->get();
 				if(++c > 2) throw std::string("ERR: Too many egg groups in species '" + s->id + "'!");
 			}
-			
-			nbt::TAG_List_ptr_t stats = tag->getTagList("Stats"); c = 0;
-			for(auto i(stats->begin<nbt::TAG_Int>()), e(stats->end<nbt::TAG_Int>()) ; i != e ; ++i)
-			{
-				s->stats[c] = i->get();
-				if(++c > 6) throw std::string("ERR: Too many evs in species '" + s->id + "'!");
-			}
 
-			nbt::TAG_List_ptr_t evs = tag->getTagList("EVs"); c = 0;
-			for(auto i(evs->begin<nbt::TAG_Int>()), e(evs->end<nbt::TAG_Int>()) ; i != e ; ++i)
+			std::vector<BYTE> stats = tag->getByteArray("Stats");
+			if(stats.size() != 6) throw std::string("ERR: Too many stats in species '" + s->id + "'!");
+			std::copy(stats.cbegin(), stats.cend(), s->stats);
+
+			std::vector<BYTE> evs = tag->getByteArray("EVs");
+			if(evs.size() != 6) throw std::string("ERR: Too many evs in species '" + s->id + "'!");
+			std::copy(evs.cbegin(), evs.cend(), s->evs);
+
+			s->tms = tag->getByteArray("TMs");
+			s->hms = tag->getByteArray("HMs");
+
+			nbt::TAG_List_ptr_t moves = tag->getTagList("Moves");
+			for(auto i(moves->begin<nbt::TAG_Compound>()), e(moves->end<nbt::TAG_Compound>()) ; i != e ; ++i)
 			{
-				s->evs[c] = i->get();
-				if(++c > 6) throw std::string("ERR: Too many evs in species '" + s->id + "'!");
+				Species::Moves m;
+
+				m.id = (*i)->getString("ID");
+				m.lvl = (*i)->getInt("Level");
+
+				s->moves.push_back(m);
 			}
 
 			nbt::TAG_Compound_ptr_t dex = tag->getCompoundTag("Dex");

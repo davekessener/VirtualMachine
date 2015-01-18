@@ -36,6 +36,8 @@ namespace dav
 			bool operator==(const UUID& id) const
 				{ for(uint i = 0 ; i < N ; ++i) if(data_[i] != id.data_[i]) return false; return true; }
 			bool operator!=(const UUID& id) const { return !(*this == id); }
+			bool operator<(const UUID& id) const { for(int i = 0 ; i < N ; ++i) if(data_[i] < id.data_[i]) return true; return false; }
+			explicit operator bool( ) const { return *this != Nil(); }
 			std::string toString( ) const
 			{
 				std::stringstream ss;

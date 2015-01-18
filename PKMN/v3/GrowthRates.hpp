@@ -3,12 +3,10 @@
 
 #include <vector>
 #include <functional>
-#include "common.hpp"
+#include "common.h"
 
 namespace pkmn
 {
-	class GrowthRates;
-
 	class GrowthRate
 	{
 		typedef std::function<uint(uint)> exp_fn;
@@ -17,17 +15,15 @@ namespace pkmn
 			const std::string& name( ) const { return name_; }
 			uint nextLevel(uint lvl) const { return lvl < 99 ? experience(lvl + 1) - experience(lvl) : 0; }
 			uint experience(uint lvl) const { return lvl < 100 ? exp_(lvl + 1) : 0; }
-		private:
+		public:
 			GrowthRate( ) : name_("#ERR#") { }
 			GrowthRate(const std::string& n, exp_fn e) : name_(n), exp_(e) { }
-			GrowthRate(const GrowthRate&) = delete;
+			GrowthRate(const GrowthRate&) = default;
 			~GrowthRate( ) = default;
-			GrowthRate& operator=(const GrowthRate&) = delete;
+			GrowthRate& operator=(const GrowthRate&) = default;
 		private:
 			std::string name_;
 			exp_fn exp_;
-		private:
-			friend class GrowthRate;
 	};
 
 	class GrowthRates
@@ -35,9 +31,9 @@ namespace pkmn
 		public:
 			static const GrowthRate& Get(uint i) { return Instance().rates_.at(i); }
 		private:
-			static GrowthRate& Instance( ) { static GrowthRate gr; return gr; }
+			static GrowthRates& Instance( ) { static GrowthRates gr; return gr; }
 		private:
-			GrowthRate( )
+			GrowthRates( )
 			{
 				rates_.emplace_back("Erratic", [](uint lvl) -> uint
 				{
@@ -48,7 +44,7 @@ namespace pkmn
 				});
 				rates_.emplace_back("Fast", [](uint lvl) -> uint
 				{
-					return 4 * lvl * lvl * lvl / 5
+					return 4 * lvl * lvl * lvl / 5;
 				});
 				rates_.emplace_back("MediumFast", [](uint lvl) -> uint
 				{
@@ -64,14 +60,14 @@ namespace pkmn
 				});
 				rates_.emplace_back("Fluctuating", [](uint lvl) -> uint
 				{
-					if(lvl <= 15) return lvl * lvl * lvl * ((((n + 1) / 3) + 24) / 50);
-					else if(lvl <= 36) lvl * lvl * lvl * ((lvl + 14) / 50);
+					if(lvl <= 15) return lvl * lvl * lvl * ((((lvl + 1) / 3) + 24) / 50);
+					else if(lvl <= 36) return lvl * lvl * lvl * ((lvl + 14) / 50);
 					else return lvl * lvl * lvl * (((lvl / 2) + 32) / 50);
 				});
 			}
-			~GrowthRate( ) = default;
-			GrowthRate(const GrowthRate&) = delete;
-			GrowthRate& operator=(const GrowthRate&) = delete;
+			~GrowthRates( ) = default;
+			GrowthRates(const GrowthRates&) = delete;
+			GrowthRates& operator=(const GrowthRates&) = delete;
 		private:
 			std::vector<GrowthRate> rates_;
 	};

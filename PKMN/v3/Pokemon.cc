@@ -1,6 +1,8 @@
 #include "Pokemon.h"
 #include "Species.h"
+#include "Move.h"
 #include "Natures.hpp"
+#include "GrowthRates.hpp"
 
 namespace pkmn
 {
@@ -64,15 +66,27 @@ namespace pkmn
 			evs[i] = 0;
 			ivs[i] = dav::UUID::rand<uint>() % 32;
 			stats[i] = i == 0
-				? (ivs[i] + 2 * s.base_stats[i] + evs[i] / 4 + 100) * level / 100 + 10
-				: ((ivs[i] + 2 * s.base_stats[i] + evs[i] / 4) * level / 100 + 5) * Natures::Multiplier(i);
+				? (ivs[i] + 2 * s.stats[i] + evs[i] / 4 + 100) * level / 100 + 10
+				: ((ivs[i] + 2 * s.stats[i] + evs[i] / 4) * level / 100 + 5) * Natures::Multiplier(nature, i);
 		}
 		health = stats[0];
+
+		int c = 0;
+		for(const auto& m : s.moves)
+		{
+			if(m.lvl > level) break;
+			moves[c % 4].id = m.id;
+			moves[c % 4].pp = Moves::Get(m.id).pp;
+			moves[c % 4].pp_ups = 0;
+			++c;
+		}
+
+		if(!c) throw std::string("ERR: Pokemon '" + s.name + "' has no attacks!");
 	}
 
 	void Pokemon::writeToNBT(nbt::TAG_Compound_ptr_t tag) const
 	{
-		tag->setString("UUID", id->toString());
+		tag->setString("UUID", id.toString());
 		tag->setString("Species", species);
 		tag->setString("Nickname", nickname);
 		tag->setString("Sprite", sprite);

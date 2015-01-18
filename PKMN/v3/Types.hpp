@@ -64,13 +64,13 @@ namespace pkmn
 					 std::initializer_list<std::string>&& weak,
 					 std::initializer_list<std::string>&& immune)
 			{
-				Type t;
-				t.id = id;
-				t.name = name;
-				t.strong = strong;
-				t.weak = weak;
-				t.immune = immune;
-				types_[t.id] = t;
+				std::shared_ptr<Type> t(new Type);
+				t->id = id;
+				t->name = name;
+				t->strong = strong;
+				t->weak = weak;
+				t->immune = immune;
+				types_[t->id] = t;
 			}
 		private:
 			std::map<std::string, std::shared_ptr<Type>> types_;

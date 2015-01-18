@@ -42,7 +42,7 @@ namespace pkmn
 		std::string type;
 		Category category;
 		uint power;
-		uint accuracy;
+		float accuracy;
 		uint pp;
 		int priority;
 		Target target;
@@ -57,7 +57,7 @@ namespace pkmn
 	{
 		public:
 			static void Load(nbt::TAG_List_ptr_t);
-			static Move_ptr Get(const std::string&);
+			static const Move& Get(const std::string&);
 		private:
 			static Moves& Instance( ) { static Moves m; return m; }
 			static std::shared_ptr<Move> Read(nbt::TAG_Compound_ptr_t);

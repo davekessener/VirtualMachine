@@ -11,12 +11,12 @@ namespace pkmn
 		}
 	}
 
-	Move_ptr Moves::Get(const std::string& sid)
+	const Move& Moves::Get(const std::string& sid)
 	{
 		auto i(Instance().moves_.find(sid));
 		if(i == Instance().moves_.end())
 			throw std::string("ERR: Move '" + sid + "' doesn't exist!");
-		return i->second.get();
+		return *i->second;
 	}
 
 	std::shared_ptr<Move> Moves::Read(nbt::TAG_Compound_ptr_t tag)
@@ -38,7 +38,7 @@ namespace pkmn
 		}
 
 		move->power = tag->getInt("Power");
-		move->accuracy = tag->getInt("Accuracy");
+		move->accuracy = tag->getFloat("Accuracy");
 		move->pp = tag->getInt("PP");
 		move->priority = tag->getInt("Priority");
 
@@ -71,9 +71,9 @@ namespace pkmn
 			for(auto i(status->begin<nbt::TAG_Compound>()), e(status->end<nbt::TAG_Compound>()) ; i != e ; ++i)
 			{
 				Move::StatusChanges sc;
-				sc.stat = (*i)->getInt("Status");
+				sc.status = (*i)->getInt("Status");
 				sc.chance = (*i)->getFloat("Chance");
-				move->stat_changes.push_back(sc);
+				move->status_changes.push_back(sc);
 			}
 		}
 

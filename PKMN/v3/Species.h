@@ -2,12 +2,20 @@
 #define PKMN_GAME_SPECIES_H
 
 #include <string>
+#include <vector>
 #include "common.h"
+#include <nbt/NBT.h>
 
 namespace pkmn
 {
 	struct Species
 	{
+		struct Moves
+		{
+			std::string id;
+			uint lvl;
+		};
+
 		std::string id;
 		std::string name;
 		std::string types[2];
@@ -24,6 +32,8 @@ namespace pkmn
 		uint growth_rate;
 		uint stats[6];
 		uint evs[6];
+		std::vector<BYTE> tms, hms;
+		std::vector<Moves> moves;
 		struct
 		{
 			uint number;
@@ -33,7 +43,8 @@ namespace pkmn
 		} dex;
 	};
 
-	typedef std::shared_ptr<Species> Species_ptr;
+	typedef std::shared_ptr<Species> Species_sptr;
+	typedef const Species *Species_ptr;
 
 	class SpeciesManager
 	{
@@ -42,10 +53,10 @@ namespace pkmn
 			static const Species& Get(const std::string& id) { return *Instance().get(id); }
 		private:
 			void load(nbt::TAG_List_ptr_t);
-			Species_ptr get(const std::string&) const;
-			static Species_ptr Read(nbt::TAG_Compound_ptr_t);
+			Species_sptr get(const std::string&) const;
+			static Species_sptr Read(nbt::TAG_Compound_ptr_t);
 		private:
-			std::map<std::string, Species_ptr> species_;
+			std::map<std::string, Species_sptr> species_;
 		private:
 			static SpeciesManager& Instance( ) { static SpeciesManager sm; return sm; }
 		private:
