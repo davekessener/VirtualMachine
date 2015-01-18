@@ -41,12 +41,13 @@ namespace pkmn
 
 			public:
 				Event(dav::UUID id) : trainer_(id) { }
-				BYTE ID( ) const { return i_doID(); }
+				Events ID( ) const { return i_doID(); }
 				dav::UUID trainer( ) const { return trainer_; }
 				void writeToNBT(nbt::TAG_Compound_ptr_t tag) const
 				{
 					i_writeToNBT(tag);
 					tag->setString("Trainer-UUID", trainer_.toString());
+					tag->setByte("ID", static_cast<BYTE>(ID()));
 				}
 				void readFromNBT(nbt::TAG_Compound_ptr_t tag)
 				{
@@ -59,7 +60,7 @@ namespace pkmn
 					return Event_ptr(new T(tt...));
 				}
 			private:
-				virtual BYTE i_doID( ) const = 0;
+				virtual Events i_doID( ) const = 0;
 				virtual void i_writeToNBT(nbt::TAG_Compound_ptr_t) const { }
 				virtual void i_readFromNBT(nbt::TAG_Compound_ptr_t nbt) { }
 			private:
@@ -96,7 +97,7 @@ namespace pkmn
 				const dav::UUID& pokemon( ) const { return poke_; }
 				const std::string& move( ) const { return move_; }
 			private:
-				BYTE i_doID( ) const { return static_cast<BYTE>(Events::USE_ATTACK); }
+				Events i_doID( ) const { return Events::USE_ATTACK; }
 				void i_writeToNBT(nbt::TAG_Compound_ptr_t tag) const
 				{
 					tag->setString("Pokemon-UUID", poke_.toString());
@@ -118,7 +119,7 @@ namespace pkmn
 				Demand_Event(dav::UUID t, Demands d) : Event(t), demand_(d) { }
 				Demands demand( ) const { return demand_; }
 			private:
-				BYTE i_doID( ) const { return static_cast<BYTE>(Events::DEMAND); }
+				Events i_doID( ) const { return Events::DEMAND; }
 				void i_writeToNBT(nbt::TAG_Compound_ptr_t tag) const
 					{ tag->setByte("Demand", static_cast<BYTE>(demand_)); }
 				void i_readFromNBT(nbt::TAG_Compound_ptr_t tag)
@@ -133,7 +134,7 @@ namespace pkmn
 				Missed_Event(dav::UUID trainer, dav::UUID poke) : Event(trainer), poke_(poke) { }
 				dav::UUID pokemon( ) const { return poke_; }
 			private:
-				BYTE i_doID( ) const { return static_cast<BYTE>(Events::MISSED); }
+				Events i_doID( ) const { return Events::MISSED; }
 				void i_writeToNBT(nbt::TAG_Compound_ptr_t tag) const
 					{ tag->setString("Pokemon-UUID", poke_.toString()); }
 				void i_readFromNBT(nbt::TAG_Compound_ptr_t tag)
@@ -148,7 +149,7 @@ namespace pkmn
 				Info_Event(Info msg) : Event(dav::UUID::Nil()), msg_(msg) { }
 				Info message( ) const { return msg_; }
 			private:
-				BYTE i_doID( ) const { return static_cast<BYTE>(Events::INFO); }
+				Events i_doID( ) const { return Events::INFO; }
 				void i_writeToNBT(nbt::TAG_Compound_ptr_t tag) const { tag->setByte("Message", static_cast<BYTE>(msg_)); }
 				void i_readFromNBT(nbt::TAG_Compound_ptr_t tag) { msg_ = static_cast<Info>((BYTE)tag->getByte("Message")); }
 			private:
@@ -166,7 +167,7 @@ namespace pkmn
 				uint stat( ) const { return stat_; }
 				int stages( ) const { return stages_; }
 			private:
-				BYTE i_doID( ) const { return static_cast<BYTE>(Events::STAT); }
+				Events i_doID( ) const { return Events::STAT; }
 				void i_writeToNBT(nbt::TAG_Compound_ptr_t tag) const
 				{
 					tag->setInt("Stat", stat_);

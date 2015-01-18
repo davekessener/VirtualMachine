@@ -138,6 +138,8 @@ void Battle::actAttack(const Attack_Action& a)
 	Pokemon &user = trainers_[t1].poke;
 	Pokemon &target = trainers_[t2].poke;
 
+	if(user.health == 0) return;
+
 	assert(trainers_[t1].data->id == a.pokemon() && user.moves[a.move()].move); 
 
 	auto &move = *user.moves[a.move()].move;
@@ -175,6 +177,14 @@ void Battle::actAttack(const Attack_Action& a)
 		uint def = move.category == Category::PHYSICAL ? user.Def() : user.SpD();
 
 		uint damage = ((2 * user.level + 10) * atk * move.power / 250.0 / def + 2) * mod + 0.5;
+
+		if(damage > target.health) damage = target.health;
+
+		target.health -= damage;
+		queueEvent(Event::Make<Damage_Event>(t2, trainers_[t2].data->id, damage));
+
+		if(type > 1.0) queueEvent(Event::Make<Info_Event>(Info::SUPER_EFFECTIVE));
+		else if(type < 1.0) queueEvent(Event::Make<Info_Event>(Info::NOT_EFFECTIVE));
 	}
 }
 
