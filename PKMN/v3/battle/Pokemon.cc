@@ -12,6 +12,7 @@ Pokemon Pokemon::Create(::pkmn::Pokemon_ptr poke)
 	p.types[0] = sp->types[0];
 	p.types[1] = sp->types[1];
 	p.gender = poke->gender;
+	p.level = poke->level;
 	
 	for(int i = 0 ; i < 6 ; ++i)
 	{

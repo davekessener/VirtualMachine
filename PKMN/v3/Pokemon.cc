@@ -177,5 +177,10 @@ namespace pkmn
 			forgotten_moves.push_back((*i)->get());
 		}
 	}
+
+	std::string Pokemon::Name(void) const
+	{
+		return nickname.empty() ? SpeciesManager::Get(species).name : nickname;
+	}
 }
 

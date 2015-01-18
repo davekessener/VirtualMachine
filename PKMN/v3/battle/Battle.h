@@ -27,7 +27,7 @@ namespace pkmn
 			public:
 				void registerTrainers(dav::UUID, Pokemon_ptr, dav::UUID, Pokemon_ptr);
 				void switchPokemon(dav::UUID, Pokemon_ptr);
-				void useMove(dav::UUID, dav::UUID, const std::string&);
+				void useMove(dav::UUID, dav::UUID, uint);
 				bool hasEvents( ) const { return !events_.empty(); }
 				Event_ptr getEvent( );
 			private:

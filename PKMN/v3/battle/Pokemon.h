@@ -19,6 +19,7 @@ namespace pkmn
 			Species_ptr species = nullptr;
 			std::string types[2];
 			int gender;
+			uint level;
 			uint stats[6];
 			int stat_modifier[8];
 			uint health;

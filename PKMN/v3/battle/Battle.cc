@@ -10,13 +10,21 @@ void Battle::registerTrainers(dav::UUID t1, Pokemon_ptr p1, dav::UUID t2, Pokemo
 	if(t1 == t2) throw std::string("ERR: Cannot register same trainer twice!");
 
 	trainers_[t1].id = t1;
+	trainers_[t1].poke = Pokemon::Create(p1);
+	trainers_[t1].data = p1;
 	trainers_[t2].id = t2;
+	trainers_[t2].poke = Pokemon::Create(p2);
+	trainers_[t2].data = p2;
+
+	std::cout << "Trainer registered: " << t1.toString() << std::endl;
+	std::cout << "Trainer registered: " << t2.toString() << std::endl;
 
 //	queueEvent(Event::Make<Info_Event>(t1, Info::CHALLENGED));
 //	queueEvent(Event::Make<Info_Event>(t2, Info::CHALLENGED));
-
-	switchPokemon(t1, p1);
-	switchPokemon(t2, p2);
+	queueEvent(Event::Make<SendOut_Event>(t1, p1));
+	queueEvent(Event::Make<SendOut_Event>(t2, p2));
+	queueEvent(Event::Make<Demand_Event>(t1, Demands::CHOOSE_ACTION));
+	queueEvent(Event::Make<Demand_Event>(t2, Demands::CHOOSE_ACTION));
 }
 
 void Battle::switchPokemon(dav::UUID t, Pokemon_ptr p)
@@ -37,7 +45,7 @@ void Battle::switchPokemon(dav::UUID t, Pokemon_ptr p)
 	}
 }
 
-void Battle::useMove(dav::UUID t, dav::UUID p, const std::string& sid)
+void Battle::useMove(dav::UUID t, dav::UUID p, uint idx)
 {
 	checkTrainer(t);
 
@@ -45,11 +53,13 @@ void Battle::useMove(dav::UUID t, dav::UUID p, const std::string& sid)
 
 	Pokemon &poke = trainers_[t].poke;
 
-	if(!poke || !poke.health) throw std::string("ERR: No pokemon to attack with '" + sid + "'!");
+	if(!poke || !poke.health) throw std::string("ERR: No pokemon to attack!");
 
-	uint i = poke.getAttack(sid);
+	if(!poke.moves[idx].move) throw std::string("ERR: Invalid move.");
 
-	addAction(Action::Make<Attack_Action>(t, p, i, poke.moves[i].move->priority));
+	if(!poke.moves[idx].pp) throw std::string("ERR: No PP left!");
+
+	addAction(Action::Make<Attack_Action>(t, p, idx, poke.moves[idx].move->priority));
 }
 
 Event_ptr Battle::getEvent(void)
@@ -111,6 +121,17 @@ void Battle::addAction(Action_ptr a)
 	{
 		p.second.action.reset();
 	}
+
+	for(auto& p : trainers_)
+	{
+		if(!p.second.poke.health) queueEvent(Event::Make<Fainted_Event>(p.second.id, p.second.data->id));
+	}
+
+	for(auto& p : trainers_)
+	{
+		queueEvent(Event::Make<Demand_Event>(p.second.id,
+			p.second.poke.health ? Demands::CHOOSE_ACTION : Demands::CHOOSE_POKEMON));
+	}
 }
 
 void Battle::act(Action_ptr a)
@@ -148,7 +169,7 @@ void Battle::actAttack(const Attack_Action& a)
 
 	queueEvent(Event::Make<UseMove_Event>(t1, trainers_[t1].data->id, a.move()));
 
-	if(move.accuracy > 0.0 && !dav::UUID::Bool(move.accuracy * user.accuracy() / target.evasion()))
+	if(move.accuracy > 0.0 && !dav::UUID::Bool(move.accuracy * user.Accuracy() / target.Evasion()))
 	{
 		queueEvent(Event::Make<Missed_Event>(t1, a.pokemon()));
 		return;
@@ -170,7 +191,7 @@ void Battle::actAttack(const Attack_Action& a)
 
 		float stab = move.type == user.types[0] || move.type == user.types[1] ? 1.5 : 1.0;
 		float crit = dav::UUID::Bool(0.0625) ? 1.5 : 1.0;
-		float r = 0.85 + 0.15 * (dav::UUID::Rand<uint>() / (double)((uint) -1));
+		float r = 0.85 + 0.15 * (dav::UUID::rand<uint>() / (double)((uint) -1));
 
 		float mod = type * stab * crit * r;
 		uint atk = move.category == Category::PHYSICAL ? user.Atk() : user.SpA();
@@ -214,8 +235,8 @@ bool Battle::havePokemon(void) const
 
 void Battle::checkTrainer(dav::UUID t) const
 {
-	if(!hasTrainers()) throw std::string("ERR: Not initialized!;");
-	if(trainers_.count(t) != 1) throw std::string("ERR: Unknown trainer!");
+	if(!hasTrainers()) throw std::string("ERR: Not initialized!");
+	if(!trainers_.count(t)) throw std::string("ERR: Unknown trainer(" + t.toString() + ")!");
 }
 
 dav::UUID Battle::otherTrainer(dav::UUID t) const

@@ -330,13 +330,16 @@ nbt::TAG_List_ptr_t generateMoves(void)
 //
 //}}
 
+extern void run_test();
+
 int main(int argc, char *argv[])
 try
 {
 	chdir("resource/");
 
+	run_test();
 //	runProgram("Pokemon", std::make_shared<Root>());
-	run();
+//	run();
 
 	return 0;
 }
