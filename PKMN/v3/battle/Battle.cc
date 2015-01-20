@@ -175,10 +175,7 @@ void Battle::actAttack(const Attack_Action& a)
 		return;
 	}
 
-	if(move.category == Category::STATUS)
-	{
-	}
-	else
+	if(move.category != Category::STATUS)
 	{
 		float type = Types::Modifier(move.type, target.types[0]);
 		if(!target.types[1].empty()) type *= Types::Modifier(move.type, target.types[1]);
@@ -195,7 +192,7 @@ void Battle::actAttack(const Attack_Action& a)
 
 		float mod = type * stab * crit * r;
 		uint atk = move.category == Category::PHYSICAL ? user.Atk() : user.SpA();
-		uint def = move.category == Category::PHYSICAL ? user.Def() : user.SpD();
+		uint def = move.category == Category::PHYSICAL ? target.Def() : target.SpD();
 
 		uint damage = ((2 * user.level + 10) * atk * move.power / 250.0 / def + 2) * mod + 0.5;
 
@@ -204,8 +201,21 @@ void Battle::actAttack(const Attack_Action& a)
 		target.health -= damage;
 		queueEvent(Event::Make<Damage_Event>(t2, trainers_[t2].data->id, damage));
 
+		if(crit > 1.0) queueEvent(Event::Make<Info_Event>(Info::CRITICAL_HIT));
 		if(type > 1.0) queueEvent(Event::Make<Info_Event>(Info::SUPER_EFFECTIVE));
 		else if(type < 1.0) queueEvent(Event::Make<Info_Event>(Info::NOT_EFFECTIVE));
+	}
+
+	for(auto &sc : move.stat_changes)
+	{
+		if(sc.chance < 1.0 && !dav::UUID::Bool(sc.chance)) continue;
+		bool self(sc.target == Target::SELF);
+		int ac = (self ? user : target).applyStat(sc.stat, sc.stages);
+		queueEvent(Event::Make<Stat_Event>(self ? t1 : t2, trainers_[self ? t1 : t2].data->id, sc.stat, sc.stages, ac));
+	}
+
+	for(auto &sc : move.status_changes)
+	{
 	}
 }
 

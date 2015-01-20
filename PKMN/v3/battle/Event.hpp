@@ -31,6 +31,7 @@ namespace pkmn
 		{
 			CHALLENGED,
 			FAILED,
+			CRITICAL_HIT,
 			SUPER_EFFECTIVE,
 			NOT_EFFECTIVE
 		};
@@ -73,7 +74,13 @@ namespace pkmn
 		class SendOut_Event : public Event
 		{
 			public:
-				SendOut_Event(dav::UUID trainer, Pokemon_ptr poke) : Event(trainer), poke_(poke) { }
+				SendOut_Event(dav::UUID trainer, Pokemon_ptr poke) : Event(trainer), poke_(poke)
+				{
+					nbt::TAG_Compound_ptr_t tag = nbt::Make<nbt::TAG_Compound>();
+					i_writeToNBT(tag);
+					i_readFromNBT(tag);
+				}
+				Pokemon_ptr pokemon( ) const { return poke_; }
 			private:
 				Events i_doID( ) const { return Events::SEND_OUT; }
 				void i_writeToNBT(nbt::TAG_Compound_ptr_t tag) const
@@ -85,7 +92,7 @@ namespace pkmn
 				void i_readFromNBT(nbt::TAG_Compound_ptr_t tag)
 				{
 					poke_.reset(new Pokemon);
-					poke_->readFromNBT(tag);
+					poke_->readFromNBT(tag->getCompoundTag("Pokemon"));
 				}
 			private:
 				Pokemon_ptr poke_;
@@ -174,29 +181,32 @@ namespace pkmn
 		class Stat_Event : public Event
 		{
 			public:
-				Stat_Event(dav::UUID trainer, dav::UUID pokemon, uint stat, int stages)
-					: Event(trainer), poke_(pokemon), stat_(stat), stages_(stages)
+				Stat_Event(dav::UUID trainer, dav::UUID pokemon, uint stat, int stages, int actual)
+					: Event(trainer), poke_(pokemon), stat_(stat), stages_(stages), actual_(actual)
 				{
 				}
 				const dav::UUID& pokemon( ) const { return poke_; }
 				uint stat( ) const { return stat_; }
 				int stages( ) const { return stages_; }
+				int actualStages( ) const { return actual_; }
 			private:
 				Events i_doID( ) const { return Events::STAT; }
 				void i_writeToNBT(nbt::TAG_Compound_ptr_t tag) const
 				{
 					tag->setInt("Stat", stat_);
 					tag->setInt("Stages", stages_);
+					tag->setInt("ActualStages", actual_);
 				}
 				void i_readFromNBT(nbt::TAG_Compound_ptr_t tag)
 				{
 					stat_ = tag->getInt("Stat");
 					stages_ = tag->getInt("Stages");
+					actual_ = tag->getInt("ActualStages");
 				}
 			private:
 				dav::UUID poke_;
 				uint stat_;
-				int stages_;
+				int stages_, actual_;
 		};
 
 		class Fainted_Event : public Event

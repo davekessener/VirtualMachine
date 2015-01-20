@@ -23,10 +23,10 @@ void run(void)
 	root->setTagList("Species", generateSpecies());
 	root->setTagList("Moves", generateMoves());
 
-	pkmn::SpeciesManager::Load(root->getTagList("Species"));
-	pkmn::Moves::Load(root->getTagList("Moves"));
-
-	printSpecies(std::cout, pkmn::SpeciesManager::Get("charizard"));
+//	pkmn::SpeciesManager::Load(root->getTagList("Species"));
+//	pkmn::Moves::Load(root->getTagList("Moves"));
+//
+//	printSpecies(std::cout, pkmn::SpeciesManager::Get("charizard"));
 
 	nbt::writeFile("pokemon.nbt", root);
 }
@@ -130,12 +130,31 @@ nbt::TAG_Compound_ptr_t generateChrizard(void)
 	tag->setByteArray("EVs", std::vector<BYTE>{0, 0, 0, 3, 0, 0});
 	tag->setByteArray("TMs", std::vector<BYTE>());
 	tag->setByteArray("HMs", std::vector<BYTE>());
+
 	nbt::TAG_List_ptr_t moves = nbt::Make<nbt::TAG_List>();
-	nbt::TAG_Compound_ptr_t tackle_0 = nbt::Make<nbt::TAG_Compound>();
-	tackle_0->setString("ID", "tackle");
-	tackle_0->setInt("Level", 1);
-	moves->addTag(tackle_0);
+	{
+		nbt::TAG_Compound_ptr_t flamethrower = nbt::Make<nbt::TAG_Compound>();
+		flamethrower->setString("ID", "flamethrower");
+		flamethrower->setInt("Level", 1);
+		moves->addTag(flamethrower);
+
+		nbt::TAG_Compound_ptr_t tackle = nbt::Make<nbt::TAG_Compound>();
+		tackle->setString("ID", "tackle");
+		tackle->setInt("Level", 1);
+		moves->addTag(tackle);
+
+		nbt::TAG_Compound_ptr_t rockthrow = nbt::Make<nbt::TAG_Compound>();
+		rockthrow->setString("ID", "rockthrow");
+		rockthrow->setInt("Level", 1);
+		moves->addTag(rockthrow);
+
+		nbt::TAG_Compound_ptr_t leer = nbt::Make<nbt::TAG_Compound>();
+		leer->setString("ID", "leer");
+		leer->setInt("Level", 1);
+		moves->addTag(leer);
+	}
 	tag->setTagList("Moves", moves);
+	
 	nbt::TAG_Compound_ptr_t dex = nbt::Make<nbt::TAG_Compound>();
 	dex->setInt("Number", 6);
 	dex->setInt("Height", 170);
@@ -167,6 +186,78 @@ nbt::TAG_Compound_ptr_t generateTackle(void)
 	return tag;
 }
 
+nbt::TAG_Compound_ptr_t generateRockThrow(void)
+{
+	nbt::TAG_Compound_ptr_t tag = nbt::Make<nbt::TAG_Compound>();
+
+	tag->setString("ID", "rockthrow");
+	tag->setString("Name", "Rock Throw");
+	tag->setString("Description", "");
+	tag->setString("Type", "rock");
+	tag->setString("Category", "Physical");
+	tag->setInt("Power", 50);
+	tag->setFloat("Accuracy", 0.9);
+	tag->setInt("PP", 15);
+	tag->setInt("Priority", 0);
+	tag->setString("Target", "Opponent");
+	tag->setByte("MakesContact", 0);
+	tag->setTagList("StatChanges", nbt::Make<nbt::TAG_List>("", nbt::TAG_Compound::ID));
+	tag->setTagList("StatusChanges", nbt::Make<nbt::TAG_List>("", nbt::TAG_Compound::ID));
+
+	return tag;
+}
+
+nbt::TAG_Compound_ptr_t generateFlamethrower(void)
+{
+	nbt::TAG_Compound_ptr_t tag = nbt::Make<nbt::TAG_Compound>();
+
+	tag->setString("ID", "flamethrower");
+	tag->setString("Name", "Flamethrower");
+	tag->setString("Description", "");
+	tag->setString("Type", "fire");
+	tag->setString("Category", "Special");
+	tag->setInt("Power", 90);
+	tag->setFloat("Accuracy", 1.0);
+	tag->setInt("PP", 15);
+	tag->setInt("Priority", 0);
+	tag->setString("Target", "Opponent");
+	tag->setByte("MakesContact", 0);
+	tag->setTagList("StatChanges", nbt::Make<nbt::TAG_List>("", nbt::TAG_Compound::ID));
+	tag->setTagList("StatusChanges", nbt::Make<nbt::TAG_List>("", nbt::TAG_Compound::ID));
+
+	return tag;
+}
+
+nbt::TAG_Compound_ptr_t generateLeer(void)
+{
+	nbt::TAG_Compound_ptr_t tag = nbt::Make<nbt::TAG_Compound>();
+
+	tag->setString("ID", "leer");
+	tag->setString("Name", "Leer");
+	tag->setString("Description", "");
+	tag->setString("Type", "normal");
+	tag->setString("Category", "Status");
+	tag->setInt("Power", 0);
+	tag->setFloat("Accuracy", 1.0);
+	tag->setInt("PP", 30);
+	tag->setInt("Priority", 0);
+	tag->setString("Target", "Opponent");
+	tag->setByte("MakesContact", 0);
+	{
+		nbt::TAG_List_ptr_t stat = nbt::Make<nbt::TAG_List>();
+		nbt::TAG_Compound_ptr_t eff = nbt::Make<nbt::TAG_Compound>();
+		eff->setInt("Stat", 2);
+		eff->setInt("Stages", -2);
+		eff->setFloat("Chance", 1.0);
+		stat->addTag(eff);
+		tag->setTagList("StatChanges", stat);
+	}
+//	tag->setTagList("StatChanges", nbt::Make<nbt::TAG_List>("", nbt::TAG_Compound::ID));
+	tag->setTagList("StatusChanges", nbt::Make<nbt::TAG_List>("", nbt::TAG_Compound::ID));
+
+	return tag;
+}
+
 nbt::TAG_List_ptr_t generateSpecies(void)
 {
 	nbt::TAG_List_ptr_t species = nbt::Make<nbt::TAG_List>("Species");
@@ -181,6 +272,9 @@ nbt::TAG_List_ptr_t generateMoves(void)
 	nbt::TAG_List_ptr_t moves = nbt::Make<nbt::TAG_List>("Moves");
 
 	moves->addTag(generateTackle());
+	moves->addTag(generateRockThrow());
+	moves->addTag(generateFlamethrower());
+	moves->addTag(generateLeer());
 
 	return moves;
 }
@@ -337,9 +431,9 @@ try
 {
 	chdir("resource/");
 
+	run();
 	run_test();
 //	runProgram("Pokemon", std::make_shared<Root>());
-//	run();
 
 	return 0;
 }

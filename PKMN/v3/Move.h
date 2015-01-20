@@ -29,11 +29,13 @@ namespace pkmn
 			uint stat;
 			int stages;
 			float chance;
+			Target target;
 		};
 		struct StatusChanges
 		{
 			std::string status;
 			float chance;
+			Target target;
 		};
 
 		std::string id;

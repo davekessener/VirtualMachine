@@ -44,5 +44,25 @@ Pokemon Pokemon::Create(::pkmn::Pokemon_ptr poke)
 	return p;
 }
 
+int Pokemon::applyStat(uint i, int s)
+{
+	if(i < 2 || i > 7) throw std::string("ERR: invalid stat to modify!");
+
+	if(s == 0) throw std::string("ERR: can't not modify stat (WUT)!");
+
+	if(s < 0)
+	{
+		if(stat_modifier[i] + s < -6) s = -6 - stat_modifier[i];
+	}
+	else
+	{
+		if(stat_modifier[i] + s > 6) s = 6 - stat_modifier[i];
+	}
+
+	stat_modifier[i] += s;
+
+	return s;
+}
+
 }}
 

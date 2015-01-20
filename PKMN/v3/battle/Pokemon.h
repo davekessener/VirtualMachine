@@ -43,7 +43,8 @@ namespace pkmn
 			float Evasion( ) const { return stageMod(stat_modifier[7]); }
 			uint getStat(uint i) const
 				{ assert(i<6); return i == 0 ? stats[0] : (uint)(stats[i] * stageMod(stat_modifier[i])); }
-			float stageMod(int i) const { return i < 0 ? 1.0 / stageMod(-i) : 1.0 + 0.5 * i; }
+			float stageMod(int i) const { return i < 0 ? 1.0 / stageMod(-i) : (1.0 + 0.5 * i); }
+			int applyStat(uint, int);
 
 			operator bool( ) const { return static_cast<bool>(species); }
 			uint getAttack(const std::string& sid) const

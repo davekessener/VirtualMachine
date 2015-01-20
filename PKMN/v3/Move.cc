@@ -21,6 +21,13 @@ namespace pkmn
 
 	std::shared_ptr<Move> Moves::Read(nbt::TAG_Compound_ptr_t tag)
 	{
+		auto getTarget = [](const std::string& s) -> Target
+		{
+			     if(s == "Self")     return Target::SELF;
+			else if(s == "Opponent") return Target::OPPONENT;
+			else throw std::string("ERR: Invalid move target '" + s + "'!");
+		};
+
 		std::shared_ptr<Move> move = std::make_shared<Move>();
 
 		move->id = tag->getString("ID");
@@ -41,14 +48,7 @@ namespace pkmn
 		move->accuracy = tag->getFloat("Accuracy");
 		move->pp = tag->getInt("PP");
 		move->priority = tag->getInt("Priority");
-
-		{
-			std::string s(tag->getString("Target"));
-
-			     if(s == "Self")     move->target = Target::SELF;
-			else if(s == "Opponent") move->target = Target::OPPONENT;
-			else throw std::string("ERR: Invalid move target '" + s + "'!");
-		}
+		move->target = getTarget(tag->getString("Target"));
 
 		move->contact = tag->getByte("MakesContact");
 
@@ -61,6 +61,7 @@ namespace pkmn
 				sc.stat = (*i)->getInt("Stat");
 				sc.stages = (*i)->getInt("Stages");
 				sc.chance = (*i)->getFloat("Chance");
+				sc.target = (*i)->hasTag("Target") ? getTarget(tag->getString("Target")) : move->target;
 				move->stat_changes.push_back(sc);
 			}
 		}
@@ -73,6 +74,7 @@ namespace pkmn
 				Move::StatusChanges sc;
 				sc.status = (*i)->getInt("Status");
 				sc.chance = (*i)->getFloat("Chance");
+				sc.target = (*i)->hasTag("Target") ? getTarget(tag->getString("Target")) : move->target;
 				move->status_changes.push_back(sc);
 			}
 		}
