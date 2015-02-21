@@ -123,4 +123,14 @@
 	)
 )
 
+(defun read-poly (e)
+	(let
+		(
+		 (result nil)
+		)
+		(labels
+			(
+			 (remsp (l) (cond ((null l) nil) ((equal (car l) #\space) (remsp (cdr l))) (t (cons (car l) (remsp (cdr l))))))
+			 (remove-spaces (e) (remsp (coerce (string-upcase e) 'list)))
+			 (read-number (lst) (setf (cons (read-from-string (reverse (do ((l lst (cdr l)) (r nil (cons (car l) r))) ((null l) r) () ))) result) result))
 
