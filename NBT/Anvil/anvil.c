@@ -1,21 +1,13 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
 #include <zlib.h>
-#include <assert.h>
-#include <stdint.h>
+#include "NBT.h"
 
 enum
 {
 	EXTRACT,
 	INSERT
 };
-
-typedef unsigned uint;
-typedef uint8_t BYTE;
-typedef uint16_t WORD;
-typedef uint32_t DWORD;
-typedef uint64_t QWORD;
 
 int getMode(const char *);
 uint getOffset(int, int);

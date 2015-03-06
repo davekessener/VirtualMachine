@@ -1,0 +1,260 @@
+Blissey "Kiyoshi" (F, Natural Cure) @Leftovers
+[Calm, 20HP/236Def/252SpD, 31/x/31/31/31/31]
+- Soft-Boiled (lvl)
+- Minimize (lvl)
+- Flamethrower (TM)
+- Toxic (TM)
+
+Skarmory "Takao" (M, Sturdy) @Leftovers/Rocky Helmet
+[Impish, 252HP/252Def/4SpD, 31/x/31/x/31/31]
+- Roost (TM)
+- Spikes (lvl)
+- Stealth Rock (mt)
+- Whirlwind (egg)
+
+Gliscor "Hanamiya" (M, HA:Poison Heal) @Toxic Orb
+[Impish, 252HP/252Def/4SpD, 31/31/31/x/31/31]
+- Protect (TM)
+- Roost (TM)/Substitute (TM)
+- Toxic (TM)
+- Earthquake (TM)
+
+Sabley "Imayoshi" (M, HA:Prankster) @Wide Lens/Leftovers
+[Impish, 252HP/252Def/4SpD, 31/31/31/x/31/31]
+- Taunt (TM)
+- Will-O-Wisp (TM)
+- Recover (egg)/Confuse Ray (lvl)
+- Knock Off (lvl)
+
+Gengar "Seto" (M, Levitate) @Gengarite
+[Timid, 224HP/252Def/32Spe, 31/x/31/31/31/31]
+- Perish Song (egg)
+- Protect (TM)
+- Will-O-Wisp (TM)
+- Shadow Ball (lvl)/Sludge Wave (TM)
+
+Blaziken "Taiga" (M, HA:Speed Boost) @Life Orb
+[Jolly, 4HP/252Atk/252Spe, 31/31/31/x/31/31]
+- Brick Break (TM)
+- Swords Dance (TM)
+- Protect (TM)
+- Baton Pass (egg)
+
+Ferrothorn "Mitobe" (M, Iron Barbs) @Big Root/Shed Shell
+[Sassy, 252HP/4Def/252SpD, 31/31/31/x/31/31]
+- Gyro Ball (TM)
+- Leech Seed (egg)
+- Toxic (TM)/Ingrain (lvl)
+- Spikes (egg)/Stealth Rock(mt)
+
+Whimsicott "Moriyama" (M, Prankster) @Leftovers
+[Bold, 252HP/252Def/4SpD, 31/x/31/x/31/31]
+- Leech Seed (lvl)
+- Substitute (TM)
+- Encore (egg)
+- Taunt (TM)
+
+Aegislash "Atsushi" (M, Stance Change) @Leftovers/Sitrus Berry
+[Sassy, 252HP/4Atk/252SpD, 31/x/31/31/31/0]
+- King's Shield (lvl)
+- Toxic (TM)
+- Gyro Ball (TM)
+- Shadow Ball (TM)/Shadow Sneak (lvl)
+
+Kangaskhan "Tsuchida" (F, Scrappy) @Kangaskhanite
+[Jolly, 252Atk/4Def/252Spe, 31/31/31/x/31/31]
+- Fake Out (lvl)
+- Sucker Punch (lvl)
+- Return (TM)
+- Earthquake (TM)
+
+Tyranitar "Wakamatsu" (M, Sand Stream) @Lum Berry/Life Orb
+[Careful, 252HP/252SpD/4Spe, 31/31/31/x/31/31]
+- Stealth Rock (mt)
+- Pursuit (egg)
+- Low Kick (mt)
+- Fire Punch (mt)
+
+Clefable "Riko" (M, HA:Unaware) @Leftovers/Lum Berry
+[Bold, 252HP/252Def/4SpD, 31/x/31/31/31/31]
+- Moonblast (lvl)
+- Wish (egg)
+- Heal Bell (mt)
+- Protect (TM)
+
+Excadrill "Otsubo" (M, Sand Rush) @Life Orb
+[Adamant, 4HP/252Atk/252Spe, 31/31/31/x/31/31]
+- Earthquake (TM)
+- Rock Slide (TM)
+- Iron Head (mt)
+- Sword Dance (TM)
+
+Meowstic "Koga" (M, HA:Prankster) @Light Clay
+[Bold, 252HP/252Def/4SpD, 31/x/31/x/31/31]
+- Reflect (lvl)
+- Light Screen (lvl)
+- Yawn (egg)
+- Thunder Wave (TM)
+
+Zangoose "Daiki" (M, HA:Toxic Boost) @Toxic Orb
+[Adamant, 252Atk/4Def/252Spe, 31/31/31/x/31/31]
+- Facade (TM)
+- Pursuit (lvl)
+- Quick Attack (lvl)
+- Close Combat (lvl)
+
+Mawile "Hyuga" (M, Intimidate) @Mawilite
+[Careful, 252HP/4Atk/252SpD, 31/31/31/x/31/31]
+- Iron Head (lvl)
+- Play Rough (lvl)
+- Sucker Punch (lvl)
+- Pain Split (mt)
+
+Pinsir "Momo" (M, Hyper Cutter) @Pinsirite
+[Jolly, 252Atk/4SpD/252Spe, 31/31/31/x/31/31]
+- Return (TM)
+- Feint (egg)
+- X-Scissors (lvl)/Swords Dance (TM)
+- Protect (TM)
+
+Alakazam "Shintaro" (M, HA:Magic Guard) @Focus Sash
+[Timid, 4Def/252SpA/252Spe, 31/x/31/31/31/31]
+- Psychic (TM)
+- Shadow Ball (TM)
+- Focus Blast (TM)
+- Calm Mind (TM)
+
+--------------------------------------------------------------------------------
+
+Slowbro "Paul" (M, Oblivious) @Slowbronite
+[Bold, 252HP/252Def/4SpA, 31/x/31/31/31/31]
+- Calm Mind (TM)
+- Rest (TM)
+- Sleep Talk (TM)
+- Scald (TM)
+
+Slowbro "Paul" (M, HA:Regenerator) @Leftovers
+[Bold, 252HP/252Def/4SpA, 31/x/31/31/31/31]
+- Scald (TM)
+- Flamethrower (TM)
+- Thunder Wave (TM)
+- Slack Off (lvl)
+
+Politoed "" (M, HA:Drizzle) @Damp Rock
+[Calm, 252HP/3Def/252SpD, 31/x/31/31/31/31]
+- Scald (TM)
+- Ice Beam (TM)
+- Sleep Talk (TM)
+- Rest (TM)
+
+Honchkrow "" (M, HA:Moxie) @Life Orb
+[Adamant, 252Atk/4SpD/252Spe, 31/31/31/x/31/31]
+- Brave Bird (egg)
+- Sucker Punch (lvl)
+- Pursuit (lvl)
+- Roost (TM)
+
+================================================================================
+
+Ambipom "" (M, Technician) @Life Orb
+[Jolly, 252Atk/4Def/252Spe, 31/31/31/x/31/31]
+- Fake Out (egg)
+- Return (TM)
+- U-Turn (TM)
+- Knock Off (mt)
+
+Kingdra "" (M, Sniper) @Scope Lens/Razor Fang
+[Modest, 60HP/252SpA/200Spe, 31/x/31/31/31/31]
+- Focus Energy (lvl)
+- Draco Meteor (mt)
+- Hydro Pump (lvl)/Surf (TM)/Waterfall (TM)
+- Agility (lvl)/Outrage (egg)
+
+yanmega - endure @weakness policy + speed boost
+smeargle + boost pass
+Aggron
+
+Azumarill "" (M, Huge Power) @Sitrus Berry/Mystic Water
+[Adamant, 92HP/252Atk/164Spe, 31/31/31/x/31/31]
+- Belly Drum (egg)
+- Aqua Jet (egg)
+- Play Rough (lvl)
+- Superpower (lvl)
+
+Cloyster "" (M, Skill Link) @Focus Sash/White Herb
+[Jolly, 252Atk/4Def/252Spe, 31/31/31/x/31/31]
+- Icicle Spear (lvl)
+- Rapid Spin (egg)
+- Shell Smash (lvl)
+- Spikes (lvl)
+
+Forretress "" (M, Sturdy) @Leftovers
+[Calm, 248HP/8Def/252SpD, 31/31/31/x/31/0]
+- Rapid Spin (lvl)
+- Stealth Rock (mt)/Spikes (lvl)/Toxic Spikes (lvl)
+- Volt Switch (TM)
+- Gyro Ball (TM)/Toxic (TM)
+
+Chandelure "" (M, Flash Fire) @Choice Scarf/Choice Specs
+[Timid, 4Def/252SpA/252Spe, 31/x/31/31/31/31]
+- Overheat (TM)
+- Shadow Ball (TM)
+- Hidden Power: Fighting/Ice (TM)
+- Energy Ball (TM)
+
+Ninetales "" (M, HA:Drought) @Wide Lens
+[Calm, 252HP/4Def/252SpD, 31/x/31/31/31/31]
+- Fire Blast (TM)
+- Will-O-Wisp (TM)
+- Solarbeam (TM)
+- Protect (TM)
+
+Tangrowth "" (M, HA:Regenerator) @Leftovers
+[Relaxed, 252HP/252Def/4SpD, 31/31/31/31/30/31]
+- Giga Drain (lvl)
+- Knock Off (lvl)
+- Erathquake (TM)
+- Hidden Power [Ice] (TM)
+
+Clefable "" (M, HA:Unaware) @Leftovers
+[Bold, 252HP/252Def/4SpD, 31/x/31/31/31/31]
+- Stored Power (lvl)
+- Minimize (hs)
+- Cosmic Power (lvl)
+- Heal Bell (mt)
+
+Talonflame "Izuki" (M, HA:Gale Wings) @Shell Bell/Life Orb
+[Adamant, 248HP/252SpD/8Spe, 31/31/31/x/31/31]
+- Bulk Up (TM)
+- Brave Bird (lvl)
+- Flare Blitz (lvl)
+- Roost (TM)
+
+Shuckle "" (M, HA:Contrary) @Binding Band
+[Calm, 4HP/252Def/252SpD, 31/x/31/x/31/31]
+- Infestation (TM)
+- Toxic (TM)
+- Shell Smash (lvl)
+- Rest (lvl)
+
+Aron [FEAR] "Nigou" (M, Sturdy) @Shell Bell
+[-]
+- Endeavor (egg)
+- Protect (TM)
+- Toxic (TM)
+- Rock Slide (TM)
+
+Gardevoir "Ryota" (M, HA:Telepathy) @Choice Scarf
+[Modest, 4HP/252SpA/252Spe, 31/x/31/31/31/31]
+- Moonblast (lvl)/Dazzling Gleam (TM)
+- Psyshock (TM)
+- Thunderbolt (TM)
+- Will-O-Wisp (TM)
+
+Salamence
+Hippowdon
+Garchomp
+Bronzong
+Tentacruel
+Jumpluff
+
