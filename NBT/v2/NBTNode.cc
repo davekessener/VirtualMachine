@@ -80,7 +80,7 @@ void NBTNode::insert(BYTE id, const std::string& name)
 		case nbt::TAG_List::ID:
 		{
 			nbt::TAG_List::ptr_t list = std::dynamic_pointer_cast<nbt::TAG_List>(tag_);
-			if(list->tagID() && list->tagID() != id) throw std::string("invalid type for list!");
+			if(list->tagID() && list->size() > 0 && list->tagID() != id) throw std::string("invalid type for list!");
 			list->addTag(tag);
 			break;
 		}

@@ -184,8 +184,8 @@ namespace nbt
 			NBT_ptr_t tagAt(int i) { assert(i>=0&&i<vec_t::size()); return vec_t::at(i); }
 			template<typename T>
 				void addTag(std::shared_ptr<T> tag)
-					{ assert(!tagIds||tagIds==tag->getID()); vec_t::push_back(std::dynamic_pointer_cast<NBTBase>(tag)); if(!tagIds) tagIds = tag->getID(); }
-			void addTag(NBT_ptr_t tag) { assert(!tagIds||tagIds==tag->getID()); vec_t::push_back(tag); if(!tagIds) tagIds = tag->getID(); }
+					{ assert(!tagIds||!size()||tagIds==tag->getID()); if(!tagIds||!size()) tagIds = tag->getID(); vec_t::push_back(std::dynamic_pointer_cast<NBTBase>(tag)); }
+			void addTag(NBT_ptr_t tag) { assert(!tagIds||!size()||tagIds==tag->getID()); if(!tagIds||!size()) tagIds = tag->getID(); vec_t::push_back(tag); }
 			void removeTag(NBT_ptr_t tag) { vec_t::erase(std::find(begin(), end(), tag)); }
 			void removeTag(vec_t::iterator i) { vec_t::erase(i); }
 			template<typename T>

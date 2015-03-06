@@ -3,6 +3,7 @@
 #include <string.h>
 #include <zlib.h>
 #include <assert.h>
+#include <stdint.h>
 
 enum
 {
@@ -11,6 +12,10 @@ enum
 };
 
 typedef unsigned uint;
+typedef uint8_t BYTE;
+typedef uint16_t WORD;
+typedef uint32_t DWORD;
+typedef uint64_t QWORD;
 
 int getMode(const char *);
 uint getOffset(int, int);
@@ -71,12 +76,15 @@ int main(int argc, char *argv[])
 
 	if(mode == INSERT)
 	{
-		anvil_insert(rf, df, getOffset(x, z));
+		anvil_insert(rf, df, getOffset(cx, cz));
 	}
 	else
 	{
-		anvil_extract(rf, df, getOffset(x, z));
+		anvil_extract(rf, df, getOffset(cx, cz));
 	}
+
+	fclose(rf);
+	fclose(df);
 
 	return EXIT_SUCCESS;
 }
@@ -99,5 +107,140 @@ uint getOffset(int x, int z)
 {
 	assert(x>=0&&x<32&&z>=0&&z<32);
 	return (x | (z << 5)) << 2;
+}
+
+BYTE *anvil_uncompress(const BYTE *d, DWORD l, DWORD *s, BYTE *buf)
+{
+	uLong t = *s;
+	int r = uncompress(buf, &t, d, l);
+	
+	switch(r)
+	{
+		case Z_OK:
+			*s = t;
+			break;
+		case Z_MEM_ERROR:
+		case Z_BUF_ERROR:
+			free(buf);
+			return anvil_uncompress(d, l, s, buf = malloc(*s *= 2));
+		default:
+			fprintf(stderr, "ERR: Error during decompression (%d)\n", r);
+			exit(EXIT_FAILURE);
+	}
+
+	return buf;
+}
+
+void anvil_extract(FILE *rf, FILE *df, uint o)
+{
+	DWORD sector;
+
+	fseek(rf, o, SEEK_SET);
+	fread(&sector, 1, sizeof(sector), rf);
+	
+	uint a = ((sector & 0xff) << 16) | (sector & 0xff00) | ((sector & 0xff0000) >> 16);
+//	uint l = (sector >> 24) & 0xff;
+
+	fseek(rf, a << 12, SEEK_SET);
+	DWORD l;
+	fread(&l, 1, sizeof(l), rf);
+	l = ((l & 0xff) << 24) | ((l & 0xff00) << 8) | ((l & 0xff0000) >> 8) | ((l & 0xff000000) >> 24);
+
+	BYTE *buf = malloc(l);
+	fread(buf, l, sizeof(BYTE), rf);
+
+	if(buf[0] != 2)
+	{
+		fprintf(stderr, "ERR: Wrong compression scheme (%d).\nWrite compressed data instead.\n", (int)buf[0]);
+	}
+	else
+	{
+		DWORD s = l * 2;
+		BYTE *zbuf = anvil_uncompress(buf + 1, l - 1, &s, malloc(s));
+		free(buf);
+		l = s;
+		buf = zbuf;
+	}
+
+	fwrite(buf, l, sizeof(BYTE), df);
+
+	free(buf);
+}
+
+void anvil_insert(FILE *rf, FILE *df, uint o)
+{
+	DWORD sector;
+
+	fseek(rf, o, SEEK_SET);
+	fread(&sector, 1, sizeof(sector), rf);
+	
+	uint a = ((sector & 0xff) << 16) | (sector & 0xff00) | ((sector & 0xff0000) >> 16);
+//	uint l = (sector >> 24) & 0xff;
+
+	fseek(rf, a << 12, SEEK_SET);
+	DWORD l;
+	fread(&l, 1, sizeof(l), rf);
+	l = ((l & 0xff) << 24) | ((l & 0xff00) << 8) | ((l & 0xff0000) >> 8) | ((l & 0xff000000) >> 24);
+
+	fseek(df, 0, SEEK_END);
+	long p = ftell(df);
+	fseek(df, 0, SEEK_SET);
+
+	BYTE *buf = malloc(p);
+	fread(buf, p, sizeof(BYTE), df);
+
+	BYTE *zbuf = malloc(p);
+	uLong s = p;
+	int r = compress(zbuf, &s, buf, p);
+
+	if(r != Z_OK)
+	{
+		fprintf(stderr, "ERR: Compression error (%d).\n", r);
+		exit(EXIT_FAILURE);
+	}
+
+	free(buf);
+
+	buf = zbuf;
+	p = s + 1;
+	l = ((p & 0xff) << 24) | ((p & 0xff00) << 8) | ((p & 0xff0000) >> 8) | ((p & 0xff000000) >> 24);
+
+	if(p > l)
+	{
+		fseek(rf, 0, SEEK_END);
+		a = ftell(rf);
+		int i;
+		
+		for(i = (0x1000 - (a & 0x0fff)) % 0x1000 ; i > 0 ; --i) putc(0, rf);
+		a = (a >> 12) + (a & 0x0fff ? 1 : 0);
+
+		sector =   ((((p >> 12) + (p & 0x0fff ? 1 : 0)) & 0xff) << 24)
+				 | ((a & 0xff) << 16) | (a & 0xff00) | ((a & 0xff0000) >> 16);
+
+		fwrite(&l, 1, sizeof(l), rf);
+		putc(2, rf);
+		fwrite(buf, p - 1, sizeof(BYTE), rf);
+		
+		p = ftell(rf);
+		for(i = (0x1000 - (p & 0x0fff)) % 0x1000 ; i > 0 ; --i) putc(0, rf);
+
+		fseek(rf, o, SEEK_SET);
+		fwrite(&sector, 1, sizeof(sector), rf);
+	}
+	else
+	{
+		fseek(rf, a << 12, SEEK_SET);
+		fwrite(&l, 1, sizeof(l), rf);
+		putc(2, rf);
+		fwrite(buf, p - 1, sizeof(BYTE), rf);
+
+		sector =   ((((p >> 12) + (p & 0x0fff ? 1 : 0)) & 0xff) << 24)
+				 | ((a & 0xff) << 16) | (a & 0xff00) | ((a & 0xff0000) >> 16);
+
+		fseek(rf, o, SEEK_SET);
+		fwrite(&sector, 1, sizeof(sector), rf);
+	}
+
+	free(buf);
 }
 
