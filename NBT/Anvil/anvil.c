@@ -1,5 +1,3 @@
-#include <stdlib.h>
-#include <stdio.h>
 #include <zlib.h>
 #include "NBT.h"
 
@@ -9,16 +7,51 @@ enum
 	INSERT
 };
 
-int getMode(const char *);
+int nameEquals(const char *, const char *);
 uint getOffset(int, int);
 void anvil_insert(FILE *, FILE *, uint);
 void anvil_extract(FILE *, FILE *, uint);
 
+void nbt_print(const NBT *, FILE *);
+
+int nbt_print_main(int argc, char *argv[])
+{
+	if(argc != 2)
+	{
+		fprintf(stderr, "ERR: usage: %s file.nbt\n", argv[0]);
+		return EXIT_FAILURE;
+	}
+
+	FILE *f = fopen(argv[1], "rb");
+
+	if(!f)
+	{
+		fprintf(stderr, "ERR: Couldn't open file '%s'!\n", argv[1]);
+		return EXIT_FAILURE;
+	}
+
+	NBT *nbt = nbt_read(f);
+
+	fclose(f);
+	
+//	nbt_print(nbt, stdout);
+	nbt_write(nbt, stdout);
+
+	nbt_delete(nbt);
+
+	return EXIT_SUCCESS;
+}
+
 int main(int argc, char *argv[])
 {
 	const char **arg = (const char **) (argv + 1);
-	int mode = getMode(argv[0]);
+	int mode = nameEquals(argv[0], "anvil-insert") ? INSERT : EXTRACT;
 	int ac = argc - 1;
+
+	if(nameEquals(argv[0], "nbt-print"))
+	{
+		return nbt_print_main(argc, argv);
+	}
 
 	if(ac > 0)
 	{
@@ -83,7 +116,7 @@ int main(int argc, char *argv[])
 
 // # ===========================================================================
 
-int getMode(const char *s)
+int nameEquals(const char *s, const char *n)
 {
 	const char *t = s;
 	while(*t)
@@ -92,7 +125,7 @@ int getMode(const char *s)
 		++t;
 	}
 	
-	return strcmp(s, "anvil-insert") == 0 ? INSERT : EXTRACT;
+	return strcmp(s, n) == 0;
 }
 
 uint getOffset(int x, int z)
@@ -234,5 +267,131 @@ void anvil_insert(FILE *rf, FILE *df, uint o)
 	}
 
 	free(buf);
+}
+
+// # ===========================================================================
+
+void print_named_tag(FILE *, const NBT *, int);
+void print_unnamed_tag(FILE *, const void *, BYTE, int);
+void indent(FILE *f, int l) { putc('\n', f); while(l--) putc('\t', f); }
+
+void print_BYTE_ARRAY(FILE *f, const NBT_Array *a)
+{
+	fprintf(f, "b/%d [", a->i);
+
+	int i, first = 1;
+	for(i = 0 ; i < a->i ; ++i)
+	{
+		if(!first) fprintf(f, ", ");
+		fprintf(f, "0x%02X", (uint) ((const BYTE *) a->data)[i]);
+		first = 0;
+	}
+
+	fprintf(f, "]");
+}
+
+void print_INT_ARRAY(FILE *f, const NBT_Array *a)
+{
+	fprintf(f, "i/%d [", a->i);
+
+	int i, first = 1;
+	for(i = 0 ; i < a->i ; ++i)
+	{
+		if(!first) fprintf(f, ", ");
+		fprintf(f, "0x%08X", (uint) ((const DWORD *) a->data)[i]);
+		first = 0;
+	}
+
+	fprintf(f, "]");
+}
+
+void print_LIST(FILE *f, const NBT_List *list, int l)
+{
+	fprintf(f, "[%x]", list->type);
+	indent(f, l++);
+	fprintf(f, "[");
+
+	int i, first = 1;
+	for(i = 0 ; i < list->i ; ++i)
+	{
+		if(!first) fprintf(f, ",");
+		indent(f, l);
+		print_unnamed_tag(f, list->data[i], list->type, l);
+		first = 0;
+	}
+
+	indent(f, --l);
+	fprintf(f, "]");
+}
+
+void print_COMPOUND(FILE *f, const NBT_Compound *tag, int l)
+{
+	indent(f, l++);
+	fprintf(f, "{");
+
+	int i, first = 1;
+	for(i = 0 ; i < tag->i ; ++i)
+	{
+		if(!first) fprintf(f, ",");
+		indent(f, l);
+		print_named_tag(f, tag->tags[i], l);
+		first = 0;
+	}
+
+	indent(f, --l);
+	fprintf(f, "}");
+}
+
+void print_unnamed_tag(FILE *f, const void *d, BYTE t, int l)
+{
+	switch(t)
+	{
+		case NBT_BYTE:
+			fprintf(f, "0x%02X (%d)", (uint) *((const BYTE *) d), (int) *((const BYTE *) d));
+			break;
+		case NBT_SHORT:
+			fprintf(f, "0x%04X (%d)", (uint) *((const WORD *) d), (int) *((const WORD *) d));
+			break;
+		case NBT_INT:
+			fprintf(f, "0x%08X (%d)", (uint) *((const DWORD *) d), (int) *((const DWORD *) d));
+			break;
+		case NBT_LONG:
+			fprintf(f, "0x%016lX (%ld)", (uint64_t) *((const QWORD *) d), (int64_t) *((const QWORD *) d));
+			break;
+		case NBT_FLOAT:
+			fprintf(f, "%ff", *((const float *) d));
+			break;
+		case NBT_DOUBLE:
+			fprintf(f, "%lfd", *((const double *) d));
+			break;
+		case NBT_STRING:
+			fprintf(f, "'%s'", (const char *) d);
+			break;
+		case NBT_BYTE_ARRAY:
+			print_BYTE_ARRAY(f, (const NBT_Array *) d);
+			break;
+		case NBT_INT_ARRAY:
+			print_INT_ARRAY(f, (const NBT_Array *) d);
+			break;
+		case NBT_LIST:
+			print_LIST(f, (const NBT_List *) d, l);
+			break;
+		case NBT_COMPOUND:
+			print_COMPOUND(f, (const NBT_Compound *) d, l);
+			break;
+		default: assert(!"Unknown tag type!");
+	}
+}
+
+void print_named_tag(FILE *f, const NBT *t, int l)
+{
+	fprintf(f, "[%x] '%s' : ", (int) t->type, t->name);
+	print_unnamed_tag(f, t->data, t->type, l);
+}
+
+void nbt_print(const NBT *tag, FILE *f)
+{
+	print_named_tag(f, tag, 0);
+	putc('\n', f);
 }
 

@@ -22,6 +22,7 @@
 !*.chip
 !*.poke
 !makefile
+!aux
 ML/*
 LIB/lib/*
 LIB/boost/*

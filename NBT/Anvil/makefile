@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=
+CFLAGS=-ggdb -gdwarf-3 -Wall
 LIBS=-lz
 SRC=$(wildcard *.c)
 OBJ=$(SRC:.c=.o)
@@ -11,4 +11,7 @@ TARGET=anvil
 
 all: $(OBJ)
 	$(CC) $(OBJ) -o $(TARGET) $(LIBS)
+
+clean:
+	rm -f $(OBJ) $(TARGET)
 
