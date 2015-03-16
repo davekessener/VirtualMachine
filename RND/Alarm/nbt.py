@@ -8,10 +8,9 @@ class NBTBase:
 		self._name = name
 
 	def write(self, s):
-#		s.send(b'%c%c%s' % (chr(self._tid), chr(len(self._name)), self._name))
-		TAG_Num.WriteNumber(s, 'B', self._tid)
-		TAG_Num.WriteNumber(s, 'H', len(self._name))
-		s.send(self._name)
+		NumberTag.WriteNumber(s, 'B', self._tid)
+		NumberTag.WriteNumber(s, 'H', len(self._name))
+		s.send(self._name[:(len(self._name) % 0x10000)])
 		self.write_data(s)
 
 	def read(self, s):
@@ -24,10 +23,13 @@ class NBTBase:
 	def getName(self):
 		return self._name
 
+	def setName(self, s):
+		self_.name = s
+
 	@staticmethod
 	def Read(s, tid = None):
 		if tid is None:
-			tid = ord(s.recv(1))
+			tid = NumberTag.ReadNumber(s, 'B')
 		tag = NBTBase.Create(tid)
 		tag.read(s)
 		return tag
@@ -41,11 +43,8 @@ class NBTBase:
 	
 	@staticmethod
 	def ReadName(s):
-		n = ''
-		l = TAG_Num.ReadNumber(s, 'H', 2)
-		if l > 0:
-			n = s.recv(l)
-		return n
+		l = NumberTag.ReadNumber(s, 'H')
+		return '' if l <= 0 else s.recv(l)
 
 	@staticmethod
 	def RegisterTag(tid, c):
@@ -53,6 +52,261 @@ class NBTBase:
 			raise Exception('Tag \'%d\' was already registered.' % (tid))
 		else:
 			NBTBase.__tids[tid] = lambda: c()
+
+# ------------------------------------------------------------------------------
+
+class NumberTag(NBTBase):
+	def __init__(self, tid, form, value, name):
+		NBTBase.__init__(self, tid, name)
+		self._value = value
+		self._form = form
+
+	def read_data(self, s):
+		self.set(NumberTag.ReadNumber(s, self._form))
+
+	def write_data(self, s):
+		NumberTag.WriteNumber(s, self._form, self.get())
+
+	def get(self):
+		return self._value
+
+	def set(self, v):
+		self._value = v
+
+	@staticmethod
+	def ReadNumber(s, f):
+		w = NumberTag.GetWidth(f)
+		r = s.recv(w)
+		if len(r) != w:
+			raise Exception('String \'%s\' should have length %d!' % (r, w))
+		return struct.unpack(f, r[::-1])[0]
+
+	@staticmethod
+	def WriteNumber(s, f, v):
+		s.send(struct.pack(f, v)[::-1])
+
+	@staticmethod
+	def ClipInteger(v, w = 1):
+		v = int(v)
+		w *= 8
+		if v < 0:
+			v %= -(1 << (w - 1))
+		return v % (1 << w)
+	
+	@staticmethod
+	def GetWidth(f):
+		return struct.calcsize(f)
+
+# ------------------------------------------------------------------------------
+
+class IntegerTag(NumberTag):
+	def get(self):
+		return NumberTag.ClipInteger(self._value, self._width)
+
+# ------------------------------------------------------------------------------
+
+class NumberTag_Array(NBTBase):
+	def __init__(self, tid, form, value, name):
+		NBTBase.__init__(self, tid, name)
+		self._value = value
+		self._form = form
+
+	def read_data(self, s):
+		l = NumberTag.ReadNumber(s, 'I')
+		self._value = []
+		for i in range(0, l):
+			self._value.append(NumberTag.ReadNumber(s, self._form))
+
+	def write_data(self, s):
+		l = NumberTag.ClipInteger(len(self._value), 4)
+		NumberTag.WriteNumber(s, 'I', l)
+		for i in range(0, l):
+			NumberTag.WriteNumber(s, self._form, self._value[i])
+
+	def get(self):
+		return self._value
+
+	def len(self):
+		return len(self._value)
+
+	def size(self):
+		return self.len()
+
+# ==============================================================================
+
+class TAG_Byte(IntegerTag):
+	def __init__(self, value = 0, name = ''):
+		IntegerTag.__init__(self, 1, 'B', value, name)
+
+# ------------------------------------------------------------------------------
+
+class TAG_Short(IntegerTag):
+	def __init__(self, value = 0, name = ''):
+		IntegerTag.__init__(self, 2, 'H', value, name)
+
+# ------------------------------------------------------------------------------
+
+class TAG_Int(IntegerTag):
+	def __init__(self, value = 0, name = ''):
+		IntegerTag.__init__(self, 3, 'I', value, name)
+
+# ------------------------------------------------------------------------------
+
+class TAG_Long(IntegerTag):
+	def __init__(self, value = 0L, name = ''):
+		IntegerTag.__init__(self, 4, 'L', value, name)
+
+# ------------------------------------------------------------------------------
+
+class TAG_Float(NumberTag):
+	def __init__(self, value = 0.0, name = ''):
+		NumberTag.__init__(self, 5, 'f', value, name)
+
+# ------------------------------------------------------------------------------
+
+class TAG_Double(NumberTag):
+	def __init__(self, value = 0.0, name = ''):
+		NumberTag.__init__(self, 6, 'd', value, name)
+
+# ------------------------------------------------------------------------------
+
+class TAG_Byte_Array(NumberTag_Array):
+	def __init__(self, value = [], name = ''):
+		NumberTag_Array.__init__(self, 7, 'B', value, name)
+
+# ------------------------------------------------------------------------------
+
+class TAG_String(NBTBase):
+	def __init__(self, value = '', name = ''):
+		NBTBase.__init__(self, 8, name)
+		self._value = value
+
+	def read_data(self, s):
+		l = NumberTag.ReadNumber(s, 'H')
+		self._value = s.recv(l)
+
+	def write_data(self, s):
+		l = NumberTag.ClipInteger(len(self._value), 2)
+		NumberTag.WriteNumber(s, 'H', l)
+		s.send(self._value)
+
+	def get(self):
+		return self._value
+
+	def set(self, s):
+		self._value = s
+
+# ------------------------------------------------------------------------------
+
+class TAG_List(NBTBase):
+	def __init__(self, name = ''):
+		NBTBase.__init__(self, 9, name)
+		self._eid = 0
+		self._value = []
+
+	def addTag(self, tag):
+		if self._eid == 0:
+			self._eid = tag.getID()
+		elif self._eid != tag.getID():
+			raise Exception('Error: Tag is of invalid type: %d -> %d' % (tag.getID(), self._eid))
+		self._values.append(tag)
+
+	def read_data(self, s):
+		self._eid = NumberTag.ReadNumber(s, 'B')
+		l = NumberTag.ReadNumber(s, 'I')
+		self._value = []
+		for i in xrange(l):
+			tag = NBTBase.Create(self._eid)
+			tag.read_data(s)
+			self._value.append(tag)
+
+	def write_data(self, s):
+		NumberTag.WriteNumber(s, 'B', self._eid)
+		NumberTag.WriteNumber(s, 'I', len(self._value))
+		for tag in self._value:
+			tag.write_data(s)
+
+# ------------------------------------------------------------------------------
+
+class TAG_Compound(NBTBase):
+	def __init__(self, name = ''):
+		NBTBase.__init__(self, 10, name)
+		self._tags = {}
+		self._order = []
+
+	def addTag(self, t):
+		self._tags[t.getName()] = t
+		self._order.append(t.getName())
+
+	def read_data(self, s):
+		self._tags = {}
+		self._order = []
+		while True:
+			tid = NumberTag.ReadNumber(s, 'B')
+			if tid == 0:
+				break
+			self.addTag(NBTBase.Read(s, tid))
+
+	def write_data(self, s):
+		for tag in self._order:
+			self._tags[tag].write(s)
+		s.send('\x00')
+
+	def hasTag(self, name):
+		return name in self._order
+
+	def getTag(self, name):
+		return self_.tags[name]
+	
+	def setByte(self, name, v):
+		addTag(TAG_Byte(value = v, name = name)
+
+	def getByte(self, name):
+		return self_.tags[name].get()
+	
+	def setShort(self, name, v):
+		addTag(TAG_Short(value = v, name = name)
+	
+	def getShort(self, name):
+		return self_.tags[name].get()
+	
+	def setInt(self, name, v):
+		addTag(TAG_Int(value = v, name = name)
+	
+	def getInt(self, name):
+		return self_.tags[name].get()
+	
+	def setLong(self, name, v):
+		addTag(TAG_Long(value = v, name = name)
+	
+	def getLong(self, name):
+		return self_.tags[name].get()
+	
+	def setFloat(self, name, v):
+		addTag(TAG_Float(value = v, name = name)
+	
+	def getFloat(self, name):
+		return self_.tags[name].get()
+	
+	def setDouble(self, name, v):
+		addTag(TAG_Double(value = v, name = name)
+	
+	def getDouble(self, name):
+		return self_.tags[name].get()
+	
+	def setString(self, name, v):
+		addTag(TAG_String(value = v, name = name)
+
+	def getString(self, name):
+		return self_.tags[name].get()
+	
+# ------------------------------------------------------------------------------
+
+class TAG_Int_Array(NumberTag_Array):
+	def __init__(self, value = [], name = ''):
+		NumberTag_Array.__init__(self, 11, 'I', value, name)
+
+# ------------------------------------------------------------------------------
 
 def RegisterTags():
 	NBTBase.RegisterTag(1, TAG_Byte)
@@ -67,169 +321,13 @@ def RegisterTags():
 	NBTBase.RegisterTag(10, TAG_Compound)
 	NBTBase.RegisterTag(11, TAG_Int_Array)
 
-class TAG_Num(NBTBase):
-	def __init__(self, tid, form, value, name):
-		NBTBase.__init__(self, tid, name)
-		self._value = value
-		self._form = form
-		self._width = TAG_Num.GetWidth(form)
+RegisterTags()
 
-	def read_data(self, s):
-		self._value = TAG_Num.ReadNumber(s, self._form, self._width)
+# ==============================================================================
 
-	def write_data(self, s):
-		TAG_Num.WriteNumber(s, self._form, self.get())
-
-	def get(self):
-		return self._value
-
-	@staticmethod
-	def ReadNumber(s, f, w = 0):
-		if w == 0:
-			w = TAG_Num.GetWidth(f)
-		r = s.recv(w)
-		if len(r) != w:
-			raise Exception('String \'%s\' should have length %d!' % (r, w))
-		return struct.unpack(f, r)
-
-	@staticmethod
-	def WriteNumber(s, f, v):
-		s.send(struct.pack(f, v))
-
-	@staticmethod
-	def ClipInteger(v, w = 1):
-		v = int(v)
-		w *= 8
-		if v < 0:
-			v %= -(1 << (w - 1))
-		return v % (1 << w)
-	
-	@staticmethod
-	def GetWidth(f):
-		return len(struct.pack(f, 0))
-
-class TAG_Integer(TAG_Num):
-	def get(self):
-		return TAG_Num.ClipInteger(self._value, self._width)
-
-class TAG_Byte(TAG_Integer):
-	def __init__(self, value = 0, name = ''):
-		TAG_Integer.__init__(self, 1, 'B', value, name)
-
-class TAG_Short(TAG_Integer):
-	def __init__(self, value = 0, name = ''):
-		TAG_Integer.__init__(self, 2, 'H', value, name)
-
-class TAG_Int(TAG_Integer):
-	def __init__(self, value = 0, name = ''):
-		TAG_Integer.__init__(self, 3, 'I', value, name)
-
-class TAG_Long(TAG_Integer):
-	def __init__(self, value = 0L, name = ''):
-		TAG_Integer.__init__(self, 4, 'L', value, name)
-
-class TAG_Float(TAG_Num):
-	def __init__(self, value = 0.0, name = ''):
-		TAG_Num.__init__(self, 5, 'f', value, name)
-
-class TAG_Double(TAG_Num):
-	def __init__(self, value = 0.0, name = ''):
-		TAG_Num.__init__(self, 6, 'd', value, name)
-
-class TAG_Num_Array(NBTBase):
-	def __init__(self, tid, form, value, name):
-		NBTBase.__init__(self, tid, name)
-		self._value = value
-		self._form = form
-		self._width = TAG_Num.GetWidth(form)
-
-	def read_data(self, s):
-		l = TAG_Num.ReadNumber(s, 'I', 4)
-		self._value = []
-		for i in range(0, l):
-			self._value.append(TAG_Num.ReadNumber(s, self._form, self._width))
-
-	def write_data(self, s):
-		l = TAG_Num.ClipInteger(len(self._value), 4)
-		TAG_Num.WriteNumber(s, 'I', l)
-		for i in range(0, l):
-			TAG_Num.WriteNumber(s, self._form, self._value[i])
-
-	def get(self):
-		return self._value
-
-	def len(self):
-		return len(self._value)
-
-class TAG_Byte_Array(TAG_Num_Array):
-	def __init__(self, value = [], name = ''):
-		TAG_Num_Array.__init__(self, 7, 'B', value, name)
-
-class TAG_String(TAG_Num_Array):
-	def __init__(self, value = '', name = ''):
-		TAG_Num_Array.__init__(self, 8, 'B', value, name)
-
-	def get(self):
-		if not type(self._value) is str:
-			self._value = ''.join(chr(c) for c in self._value)
-		return self._value
-
-class TAG_List(NBTBase):
-	def __init__(self, name = ''):
-		NBTBase._init__(self, 9, name)
-		self._eid = 0
-		self._value = []
-
-	def add_tag(self, tag):
-		if self._eid == 0:
-			self._eid = tag.getID()
-		elif self._eid != tag.getID():
-			raise Exception('Error: Tag is of invalid type: %d -> %d' % (tag.getID(), self._eid))
-		self._values.append(tag)
-
-	def read_data(self, s):
-		self._eid = TAG_Num.ReadNumber(s, 'B', 1)
-		l = TAG_Num.ReadNumber(s, 'I', 4)
-		self._value = []
-		for i in xrange(l):
-			tag = NBTBase.Create(self._eid)
-			tag.read_data(s)
-			self._value.append(tag)
-
-	def write_data(self, s):
-		TAG_Num.WriteNumber(s, 'B', self._eid)
-		TAG_Num.WriteNumber(s, 'I', len(self._value))
-		for tag in self._value:
-			tag.write_data(s)
-
-class TAG_Compound(NBTBase):
-	def __init__(self, name = ''):
-		NBTBase.__init__(self, 10, name)
-		self._tags = {}
-
-	def addTag(self, t):
-		self._tags[t.getName()] = t
-
-	def read_data(self, s):
-		while True:
-			tid = TAG_Num.ReadNumber(s, 'B', 1)
-			if tid == 0:
-				break
-			tag = NBTBase.Read(s, tid)
-			self._tags[tag.getName()] = tag
-
-	def write_data(self, s):
-		for tag in self._tags:
-			self._tags[tag].write(s)
-		s.send('\x00')
-
-class TAG_Int_Array(TAG_Num_Array):
-	def __init__(self, value = [], name = ''):
-		TAG_Num_Array.__init__(self, 11, 'I', value, name)
-
-class Buffer:
-	def __init__(self):
-		self._v = ''
+class StringBuffer:
+	def __init__(self, s = ''):
+		self._v = s
 
 	def send(self, s):
 		self._v += s
@@ -239,12 +337,13 @@ class Buffer:
 		self._v = self._v[l:]
 		return r
 
-RegisterTags()
+class FileBuffer:
+	def __init__(self, f):
+		self._f = f
 
-i = TAG_Int(42, 'anint')
-d = TAG_Double(3.141, 'adouble')
-t = TAG_Compound('root')
-t.addTag(i)
-t.addTag(d)
-buf = Buffer()
+	def send(self, s):
+		self._f.write(s)
+
+	def recv(self, l):
+		return self._f.read(l)
 
