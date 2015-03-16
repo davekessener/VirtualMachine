@@ -3,7 +3,7 @@
 #include <string>
 #include <cstdlib>
 #include <cstring>
-#include <ncurses.h>
+#include <ncursesw/ncurses.h>
 
 #define WPRINT_BUFSIZE 2048
 
