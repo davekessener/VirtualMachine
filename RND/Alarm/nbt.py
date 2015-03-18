@@ -259,46 +259,60 @@ class TAG_Compound(NBTBase):
 		return self_.tags[name]
 	
 	def setByte(self, name, v):
-		addTag(TAG_Byte(value = v, name = name)
+		addTag(TAG_Byte(value = v, name = name))
 
 	def getByte(self, name):
 		return self_.tags[name].get()
 	
 	def setShort(self, name, v):
-		addTag(TAG_Short(value = v, name = name)
+		addTag(TAG_Short(value = v, name = name))
 	
 	def getShort(self, name):
 		return self_.tags[name].get()
 	
 	def setInt(self, name, v):
-		addTag(TAG_Int(value = v, name = name)
+		addTag(TAG_Int(value = v, name = name))
 	
 	def getInt(self, name):
 		return self_.tags[name].get()
 	
 	def setLong(self, name, v):
-		addTag(TAG_Long(value = v, name = name)
+		addTag(TAG_Long(value = v, name = name))
 	
 	def getLong(self, name):
 		return self_.tags[name].get()
 	
 	def setFloat(self, name, v):
-		addTag(TAG_Float(value = v, name = name)
+		addTag(TAG_Float(value = v, name = name))
 	
 	def getFloat(self, name):
 		return self_.tags[name].get()
 	
 	def setDouble(self, name, v):
-		addTag(TAG_Double(value = v, name = name)
+		addTag(TAG_Double(value = v, name = name))
 	
 	def getDouble(self, name):
 		return self_.tags[name].get()
 	
 	def setString(self, name, v):
-		addTag(TAG_String(value = v, name = name)
+		addTag(TAG_String(value = v, name = name))
 
 	def getString(self, name):
 		return self_.tags[name].get()
+
+	def setTagList(self, name, tl):
+		tl.setName(name)
+		addTag(tl)
+
+	def getTagList(self, name):
+		return self._tags[name]
+
+	def setCompoundTag(self, name, tag):
+		tag.setName(name)
+		addTag(tag)
+
+	def getCompoundTag(self, name):
+		return self._tags[name]
 	
 # ------------------------------------------------------------------------------
 
