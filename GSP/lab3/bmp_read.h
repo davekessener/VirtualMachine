@@ -9,6 +9,7 @@
 #define BMP_ERR_TOOSHORT 1
 #define BMP_ERR_INVALID 2
 #define BMP_ERR_NOTSUPPORTED 3
+#define BMP_ERR_DECOMPRESSION 4
 
 int bmp_read(FILE *, BITMAPINFOHEADER *, RGBA **);
 

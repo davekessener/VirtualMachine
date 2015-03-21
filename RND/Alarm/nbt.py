@@ -24,7 +24,7 @@ class NBTBase:
 		return self._name
 
 	def setName(self, s):
-		self_.name = s
+		self._name = s
 
 	@staticmethod
 	def Read(s, tid = None):
@@ -101,7 +101,7 @@ class NumberTag(NBTBase):
 
 class IntegerTag(NumberTag):
 	def get(self):
-		return NumberTag.ClipInteger(self._value, self._width)
+		return NumberTag.ClipInteger(self._value, NumberTag.GetWidth(self._form))
 
 # ------------------------------------------------------------------------------
 
@@ -256,60 +256,60 @@ class TAG_Compound(NBTBase):
 		return name in self._order
 
 	def getTag(self, name):
-		return self_.tags[name]
+		return self._tags[name]
 	
 	def setByte(self, name, v):
-		addTag(TAG_Byte(value = v, name = name))
+		self.addTag(TAG_Byte(value = v, name = name))
 
 	def getByte(self, name):
-		return self_.tags[name].get()
+		return self._tags[name].get()
 	
 	def setShort(self, name, v):
-		addTag(TAG_Short(value = v, name = name))
+		self.addTag(TAG_Short(value = v, name = name))
 	
 	def getShort(self, name):
-		return self_.tags[name].get()
+		return self._tags[name].get()
 	
 	def setInt(self, name, v):
-		addTag(TAG_Int(value = v, name = name))
+		self.addTag(TAG_Int(value = v, name = name))
 	
 	def getInt(self, name):
-		return self_.tags[name].get()
+		return self._tags[name].get()
 	
 	def setLong(self, name, v):
-		addTag(TAG_Long(value = v, name = name))
+		self.addTag(TAG_Long(value = v, name = name))
 	
 	def getLong(self, name):
-		return self_.tags[name].get()
+		return self._tags[name].get()
 	
 	def setFloat(self, name, v):
-		addTag(TAG_Float(value = v, name = name))
+		self.addTag(TAG_Float(value = v, name = name))
 	
 	def getFloat(self, name):
-		return self_.tags[name].get()
+		return self._tags[name].get()
 	
 	def setDouble(self, name, v):
-		addTag(TAG_Double(value = v, name = name))
+		self.addTag(TAG_Double(value = v, name = name))
 	
 	def getDouble(self, name):
-		return self_.tags[name].get()
+		return self._tags[name].get()
 	
 	def setString(self, name, v):
-		addTag(TAG_String(value = v, name = name))
+		self.addTag(TAG_String(value = v, name = name))
 
 	def getString(self, name):
-		return self_.tags[name].get()
+		return self._tags[name].get()
 
 	def setTagList(self, name, tl):
 		tl.setName(name)
-		addTag(tl)
+		self.addTag(tl)
 
 	def getTagList(self, name):
 		return self._tags[name]
 
 	def setCompoundTag(self, name, tag):
 		tag.setName(name)
-		addTag(tag)
+		self.addTag(tag)
 
 	def getCompoundTag(self, name):
 		return self._tags[name]
@@ -360,4 +360,12 @@ class FileBuffer:
 
 	def recv(self, l):
 		return self._f.read(l)
+
+def ReadFromFile(fn):
+	with open(fn, 'r') as f:
+		return NBTBase.Read(FileBuffer(f))
+
+def WriteToFile(fn, tag):
+	with open(fn, 'w') as f:
+		tag.write(FileBuffer(f))
 
