@@ -20,9 +20,8 @@ class PRGM
 					entry.end_with?('.cpp') or 
 					entry.end_with?('.h') or
 					entry.end_with?('.hpp') or
-					entry.end_with?('.s') or
-					entry.end_with?('.asm') or
 					entry.end_with?('.sh') or
+					entry.end_with?('.py') or
 					entry.end_with?('.rb')
 				entries << [full_path, entry]
 			end
