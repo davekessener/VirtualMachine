@@ -1,0 +1,122 @@
+<html>
+	<head>
+		<title>Radio Control</title>
+		<script>
+			function addslashes(str)
+			{
+				return str
+					.replace(
+			}
+			function sendAJAX(file, handler, errhandler)
+			{
+				var xmlhttp;
+
+				if(window.XMLHttpRequest)
+				{
+					xmlhttp = new XMLHttpRequest();
+				}
+				else
+				{
+					xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+				}
+
+				xmlhttp.onreadystatechange = function()
+				{
+					if(xmlhttp.readyState == 4)
+					{
+						if(xmlhttp.status == 200)
+						{
+							if(typeof handler !== 'undefined') handler(xmlhttp.responseText.trim());
+						}
+						else
+						{
+							if(typeof errhandle !== 'undefined') errhandler();
+						}
+					}
+				}
+
+				xmlhttp.open("GET", file, true);
+				xmlhttp.send();
+			}
+			function play_track(slot)
+			{
+				sendAJAX("play.php?slot=" + slot, function(text) { setTimeout(get_status, 1500); }, function()
+				{
+					alert("Failed to play " + slot);
+				});
+			}
+			function stop_music()
+			{
+				sendAJAX("play.php", function(text) { setTimeout(get_status, 1500); });
+			}
+			function add_track()
+			{
+				var nname = document.getElementById("new_name");
+				var nurl = document.getElementById("new_url");
+				sendAJAX("add_track.php?name=" + escape(nname.value) + "&url=" + escape(nurl.value));
+				nname.value = nurl.value = '';
+				setTimeout(get_status, 500);
+			}
+			function get_tmp_value(id)
+			{
+				var tmp = document.getElementById(id);
+				if(tmp != null) return tmp.value;
+				else return "";
+			}
+			function refresh_current()
+			{
+				sendAJAX("status.php", function(text)
+				{
+					var elems = text.split("\n");
+					document.getElementById("current").innerHTML = elems[0];
+					setTimeout(refresh_current, 5000);
+				});
+			}
+			function get_status()
+			{
+				sendAJAX("status.php", function(text)
+				{
+					var elems = text.split("\n");
+					var result = "<p>Currently playing<br /><i id=\"current\">" + elems[0] + "</i></p>";
+					var tracks = elems[1].split(";");
+					var tmp_nn = get_tmp_value("new_name");
+					var tmp_nu = get_tmp_value("new_url");
+					result += "<table border=\"1\">";
+					result += "<tr><th>Slot</th><th>Name</th><th>URL</th></tr>";
+					for(var track of tracks)
+					{
+						var parts = track.split("|");
+						var slot = parts[0];
+						result += "<tr>";
+						parts[1] = "<a href=\"javascript:play_track(" + parts[0] + ")\">" + parts[1] + "</a>";
+						for(var part of parts)
+						{
+							result += "<td>" + part + "</td>";
+						}
+						result += "</tr>";
+					}
+					result += "<tr><td><input type=\"submit\" onclick=\"add_track()\" value=\"+\" /></td>";
+					result += "<td><input id=\"new_name\" type=\"text\" value=\"" + tmp_nn + "\"/></td>";
+					result += "<td><input style=\"width:100%;\" id=\"new_url\" type=\"text\" value=\"" + tmp_nu + "\" /></td></tr>";
+					result += "</table>";
+					result += "<p>Volume: " + elems[2] + "%</p>";
+					result += "<input type=\"submit\" onclick=\"stop_music()\" value=\"STOP\" />";
+					result += "<input type=\"submit\" onclick=\"get_status()\" value=\"Refresh\" />";
+					document.getElementById("displayDiv").innerHTML = result;
+					if(active_e !== '') document.getElementById(active_e).focus();
+				});
+			}
+			function status_loop()
+			{
+				get_status();
+				setTimeout(refresh_current, 5000);
+			}
+		</script>
+	</head>
+	<body onload="status_loop()">
+		<div id="displayDiv">
+			<p>Initializing ...</p>
+		</div>
+	</body>
+</html>
+
