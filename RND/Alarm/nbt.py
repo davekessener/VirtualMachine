@@ -204,6 +204,9 @@ class TAG_List(NBTBase):
 		self._value = value
 		self._eid = 0 if not value else value[0]._tid
 
+	def __iter__(self):
+		return self._value.__iter__()
+
 	def addTag(self, tag):
 		if self._eid == 0:
 			self._eid = tag.getID()

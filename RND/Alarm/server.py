@@ -9,8 +9,10 @@ TIME_OUT = 10
 
 STR_ACTION = 'action'
 STR_VERSION = 'version'
+STR_DATA = 'data'
 STR_ERR_OUTDATED = 'outdated server'
 STR_ERR_MISSING = 'versioning required'
+STR_ERRMSG = 'error'
 
 class Connect:
 	def __init__(self, addr):
@@ -101,29 +103,54 @@ class Listener:
 	def quit(self):
 		self._running = False
 
+# ------------------------------------------------------------------------------
+
+class VersionedClient:
+	def __init__(self, addr, version):
+		self.addr, self.version = addr, version
+	
+	def communicate(self, action, data = None):
+		tag = nbt.TAG_Compound()
+		tag.setString(STR_ACTION, action)
+		tag.setString(STR_VERSION, self.version)
+		if data:
+			tag.setCompoundTag(STR_DATA, data)
+		return self.accept(Communicate(self.addr, tag))
+
+	def accept(self, tag):
+		if not tag.hasTag(STR_ACTION):
+			return (tag.getString(STR_VERSION), tag.getCompoundTag(STR_DATA))
+		else:
+			e = tag.getString(STR_ACTION)
+			if tag.hasTag(STR_ERRMSG):
+				e = '%s [%s]' % (e, tag.getString(STR_ERRMSG))
+			raise Exception(e)
+
 class VersionedResponder:
-	def __init__(self):
+	def __init__(self, exe = None):
 		self._versions = []
+		self._exe = exe
 
 	def __call__(self, addr, tag, responder):
 		class Tunnel:
 			def __init__(self, r, v):
 				self._r = r
 				self._v = v
-			def sendPacket(self, t):
-				tag = nbt.TAG_Compound()
-				tag.setCompoundTag(STR_DATA, t)
+			def sendPacket(self, tag):
 				tag.setString(STR_VERSION, self._v)
-				tag.setString(STR_ACTION, STR_ACTION)
 				self._r.sendPacket(tag)
-		if tag.hasTag(STR_VERSION) and tag.hasTag(STR_DATA):
+		if tag.hasTag(STR_VERSION) and tag.hasTag(STR_ACTION):
 			vs, vo = self.getVersion(tag)
 			if vo:
-				vo(addr, tag.getCompoundTag(STR_DATA), Tunnel(responder, vs))
+				vo(addr, tag, Tunnel(responder, vs))
 			else:
 				responder.sendPacket(VersionedResponder.Outdated())
 		else:
 			responder.sendPacket(VersionedResponder.Missing())
+
+	def execute(self, cmd):
+		if self._exe:
+			self._exe.execute(cmd)
 
 	def addVersion(self, resp):
 		vs, vo = resp
