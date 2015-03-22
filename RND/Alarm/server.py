@@ -114,6 +114,7 @@ class VersionedResponder:
 				tag = nbt.TAG_Compound()
 				tag.setCompoundTag(STR_DATA, t)
 				tag.setString(STR_VERSION, self._v)
+				tag.setString(STR_ACTION, STR_ACTION)
 				self._r.sendPacket(tag)
 		if tag.hasTag(STR_VERSION) and tag.hasTag(STR_DATA):
 			vs, vo = self.getVersion(tag)

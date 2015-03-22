@@ -199,10 +199,10 @@ class TAG_String(NBTBase):
 # ------------------------------------------------------------------------------
 
 class TAG_List(NBTBase):
-	def __init__(self, name = ''):
+	def __init__(self, value = [], name = ''):
 		NBTBase.__init__(self, 9, name)
-		self._eid = 0
-		self._value = []
+		self._value = value
+		self._eid = 0 if not value else value[0]._tid
 
 	def addTag(self, tag):
 		if self._eid == 0:
