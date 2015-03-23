@@ -67,14 +67,20 @@ void evaluate(opmap_t *ops, const char *s, stack_t *stack)
 			/* lese eine zahl ein (siehe io.c)
 			   und pushe sie auf den stack (siehe stack.c)
 			*/
-			stack_push(stack, read_number(&s)); 
+			if(stack_push(stack, read_number(&s)))
+			{
+				error(ERR_STACKFULL);
+			}
 		}
 		else
 		{
 			/* eine buchstabengebunde funktion ist gefragt (siehe opmap.c) */
 			op_fn cb = opmap_get(ops, *s++);
 
-			assert(cb);
+			if(!cb)
+			{
+				error(ERR_UNKNOWN);
+			}
 
 			cb(stack);
 		}
@@ -85,15 +91,15 @@ void evaluate(opmap_t *ops, const char *s, stack_t *stack)
 
 void init_operators(opmap_t *m)
 {
-	opmap_set(m, '+', op_add);
-	opmap_set(m, '-', op_sub);
-	opmap_set(m, '*', op_mul);
-	opmap_set(m, '/', op_div);
-	opmap_set(m, 'p', op_p);
-	opmap_set(m, 'f', op_f);
-	opmap_set(m, 'c', op_c);
-	opmap_set(m, 'd', op_d);
-	opmap_set(m, 'r', op_r);
+	if(opmap_set(m, '+', op_add)) error(ERR_MAPFULL);
+	if(opmap_set(m, '-', op_sub)) error(ERR_MAPFULL);
+	if(opmap_set(m, '*', op_mul)) error(ERR_MAPFULL);
+	if(opmap_set(m, '/', op_div)) error(ERR_MAPFULL);
+	if(opmap_set(m, 'p', op_p)) error(ERR_MAPFULL);
+	if(opmap_set(m, 'f', op_f)) error(ERR_MAPFULL);
+	if(opmap_set(m, 'c', op_c)) error(ERR_MAPFULL);
+	if(opmap_set(m, 'd', op_d)) error(ERR_MAPFULL);
+	if(opmap_set(m, 'r', op_r)) error(ERR_MAPFULL);
 }
 
 // # ---------------------------------------------------------------------------

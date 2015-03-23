@@ -68,7 +68,7 @@ size_t calculate_rgb_size(WORD bpp, int32_t width, int32_t height)
 #define DIVROUNDUP(a,b) (((a)+((b)-1))/(b))
 	size_t w = ABS(width);
 	size_t h = ABS(height);
-	size_t rs = MXT_DIVROUNDUP(bpp * w, sizeof(DWORD) * 8) * 4;
+	size_t rs = DIVROUNDUP(bpp * w, sizeof(DWORD) * 8) * 4;
 	size_t ts = rs * h;
 #undef DIVROUNDUP
 #undef ABS
