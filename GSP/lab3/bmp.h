@@ -63,6 +63,18 @@ typedef struct
 	DWORD important_colors;
 } __attribute__((packed)) BITMAPINFOHEADER;
 
+typedef struct
+{
+	BITMAPFILEHEADER header;
+	struct
+	{
+		void *header;
+		RGBA *pallet;
+		BYTE *raw;
+		size_t cc, fs;
+	} dib;
+} BITMAP;
+
 enum
 {
 	BI_RGB,
@@ -76,6 +88,19 @@ enum
 	BI_CMYKRLE8,
 	BI_CMYKTLE4
 }
+
+enum
+{
+	BMP_RGB16 = 2,
+	BMP_RGB24 = 3,
+	BMP_RGBA = 4
+}
+
+int read_bmp_file(BITMAP *, FILE *);
+int bmp_expand(BITMAP *, void **, int);
+int bmp_compress(BITMAP *, const void *, int);
+int write_bmp_file(const BITMAP *, FILE *);
+void free_bmp(BITMAP *);
 
 #endif
 
