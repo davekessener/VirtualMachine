@@ -2,6 +2,9 @@
 #include <malloc.h>
 #include <assert.h>
 
+/* einfache lineare suche fuer die
+   groessenordnung des problems angemessen
+*/
 uint opmap_find(const opmap_t *m, char k)
 {
 	uint i;
@@ -24,12 +27,16 @@ void opmap_set(opmap_t *m, char k, op_fn v)
 {
 	uint i = opmap_find(m, k);
 
+	/* wenn der key 'k' bereits in der map ist
+	   wird die assozierte value ersetzt.
+	*/
 	if(i)
 	{
 		m->ops[i - 1] = v;
 	}
 	else
 	{
+		/* wenn buffer voll, reallocieren */
 		if(m->i == m->c)
 		{
 			m->ids = realloc(m->ids, (m->c = 2 * m->c + 1) * sizeof(char));
