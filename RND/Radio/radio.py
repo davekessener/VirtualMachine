@@ -67,6 +67,8 @@ class MPD:
 				f.write('%d|%s|%s\n' % (t.slot, t.name, t.url))
 
 	def load(self, fn):
+		self._tracks = []
+		self._idx = 0
 		with open(fn, 'r') as f:
 			for l in f.readlines():
 				td = l[:-1].split('|')
@@ -74,21 +76,22 @@ class MPD:
 				if slot > self._idx:
 					self._idx = slot
 				self._tracks.append(Track(slot, td[1], td[2]))
+		return self._tracks
 
 	def getCurrent(self):
+		tag = nbt.TAG_Compound()
 		m = MPD._PTRN.match(call(['mpc', 'current']))
-		s = STR_EMPTY
+		tag.setInt(STR_TRACK_SLOT, self._current.slot if self._current else 0)
 		if m:
-			s = m.group(1)
-			if self._current:
-				s = '%s: %s' % (self._current.name, s)
-		return s
+			tag.setString(STR_TRACK_NAME, m.group(1))
+		return tag
 
 	def getPlaylist(self):
 		return nbt.TAG_List([t.writeToNBT() for t in self._tracks])
 
 	def addTrack(self, track):
 		self._tracks.append(Track(self.nextID(), *track))
+		return self._tracks[-1]
 
 	def play(self, slot):
 		track = next((t for t in self._tracks if t.slot == slot))
@@ -97,6 +100,7 @@ class MPD:
 		call(['mpc', 'play'])
 #		call(['mpc', 'volume', str(self.volume)])
 		self._current = track
+		return track
 
 	@property
 	def volume(self):
@@ -148,12 +152,18 @@ class RadioServer:
 		{
 			'quit' : lambda: self._listener.quit(),
 			'save' : lambda: self._mpd.save(SAVE_FILE),
-			'load' : lambda: self._mpd.load(SAVE_FILE)
+			'load' : lambda: self.load(SAVE_FILE)
 		}.get(cmd.lower(), lambda: sys.stdout.write('ERR: Unknown command!\n'))()
+
+	def load(self, fn):
+		ts = self._mpd.load(fn)
+		self._listener.log('Reading from \'%s\' ...' % fn)
+		for t in ts:
+			self._listener.log('Added @%02d: %20s [%60s]' % (t.slot, t.name, t.url if len(t.url) < 60 else t.url[:56] + ' ...'))
 
 	def getStatus(self):
 		t = nbt.TAG_Compound()
-		t.setString(STR_MPD_CURRENT, self._mpd.getCurrent())
+		t.setCompoundTag(STR_MPD_CURRENT, self._mpd.getCurrent())
 		t.setTagList(STR_MPD_TRACKS, self._mpd.getPlaylist())
 		t.setInt(STR_MPD_VOLUME, self._mpd.volume)
 		return t
@@ -161,19 +171,23 @@ class RadioServer:
 	def addTrack(self, tag):
 		name = tag.getString(STR_TRACK_NAME)
 		url = tag.getString(STR_TRACK_URL)
-		self._mpd.addTrack((name, url))
+		slot = self._mpd.addTrack((name, url)).slot
+		self._listener.log('Added station \'%s\' @%d' % (name, slot))
 		return self.getStatus()
 
 	def playTrack(self, tag):
-		self._mpd.play(tag.getInt(STR_TRACK_SLOT))
+		track = self._mpd.play(tag.getInt(STR_TRACK_SLOT))
+		self._listener.log('Playing now \'%s\'' % track.name)
 		return self.getStatus()
 
 	def stop(self):
 		self._mpd.stop()
+		self._listener.log('Stopped playback.')
 		return self.getStatus()
 
 	def setVolume(self, tag):
 		self._mpd.volume = tag.getString(STR_MPD_VOLUME)
+		self._listener.log('Volume set to %d' % self._mpd.volume)
 		return self.getStatus()
 
 def UnknownRequest():
@@ -192,7 +206,10 @@ class RadioClient:
 	
 	def getStatus(self):
 		v, r = self.client.communicate(STR_ACT_STATUS)
-		current = r.getString(STR_MPD_CURRENT)
+		c = r.getCompoundTag(STR_MPD_CURRENT)
+		current = None
+		if c.getInt(STR_TRACK_SLOT) > 0:
+			current = (c.getInt(STR_TRACK_SLOT), c.getString(STR_TRACK_NAME))
 		tracks = [Track(tag=t) for t in r.getTagList(STR_MPD_TRACKS)]
 		volume = r.getInt(STR_MPD_VOLUME)
 		return (current, tracks, volume)

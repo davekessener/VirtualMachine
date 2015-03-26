@@ -2,3 +2,4 @@
 2|N-JOY|http://ndr-n-joy-mp3.akacast.akamaistream.net/7/665/273752/v1/gnl.akacast.akamaistream.net/ndr_n-joy_mp3
 3|NDR Kultur|http://ndr-ndrkultur-mp3.akacast.akamaistream.net/7/527/273758/v1/gnl.akacast.akamaistream.net/ndr_ndrkultur_mp3
 4|NDR Info|http://ndr-ndrinfo-nds-mp3.akacast.akamaistream.net/7/250/273753/v1/gnl.akacast.akamaistream.net/ndr_ndrinfo_nds_mp3
+5|92.9 The Eagle|http://icy2.abacast.com/threeeagles-lnkktglfm-32

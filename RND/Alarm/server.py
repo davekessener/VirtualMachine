@@ -65,6 +65,7 @@ class Listener:
 		self._factory = factory
 		self._addr = addr
 		self._running = False
+		self._prompt = False
 
 	def start(self):
 		self._running = True
@@ -74,12 +75,9 @@ class Listener:
 			ssock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 			ssock.bind(self._addr)
 			ssock.listen(5)
-			prompt = True
+			self._prompt = True
 			while self._running:
-				if prompt:
-					sys.stdout.write('[Server]: $ ')
-					sys.stdout.flush()
-					prompt = False
+				self.prompt()
 				ins, outs, exs = select.select([ssock, sys.stdin], [], [])
 				for s in ins:
 					if s == ssock:
@@ -88,7 +86,7 @@ class Listener:
 						clients.append(ClientResponder((cs, addr), self._factory))
 					elif s == sys.stdin:
 						cmd = sys.stdin.readline()[:-1]
-						prompt = True
+						self._prompt = True
 						if cmd and len(cmd) > 0:
 							self._factory.execute(cmd)
 				time.sleep(0.1)
@@ -99,6 +97,18 @@ class Listener:
 		for client in clients:
 			client.join()
 		sys.stdout.write('\n')
+
+	def log(self, data):
+		if not self._prompt:
+			sys.stdout.write('\n')
+		print(data)
+		self._prompt = True
+
+	def prompt(self):
+		if self._prompt:
+			sys.stdout.write('[Server]: $ ')
+			sys.stdout.flush()
+			self._prompt = False
 
 	def quit(self):
 		self._running = False

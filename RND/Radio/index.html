@@ -4,8 +4,7 @@
 		<script>
 			function addslashes(str)
 			{
-				return str
-					.replace(
+				return str;
 			}
 			function sendAJAX(file, handler, errhandler)
 			{
@@ -38,8 +37,13 @@
 				xmlhttp.open("GET", file, true);
 				xmlhttp.send();
 			}
+			function manual_update(content)
+			{
+				document.getElementById("current").innerHTML = content;
+			}
 			function play_track(slot)
 			{
+				manual_update("--buffering--");
 				sendAJAX("play.php?slot=" + slot, function(text) { setTimeout(get_status, 1500); }, function()
 				{
 					alert("Failed to play " + slot);
@@ -47,6 +51,7 @@
 			}
 			function stop_music()
 			{
+				manual_update("--stopped--");
 				sendAJAX("play.php", function(text) { setTimeout(get_status, 1500); });
 			}
 			function add_track()
