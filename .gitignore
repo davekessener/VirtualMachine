@@ -18,6 +18,7 @@
 !*.json
 !*.lisp
 !*.lsp
+!*.cl
 !*.mk
 !*.s
 !*.b
