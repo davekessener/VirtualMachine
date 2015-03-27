@@ -115,6 +115,21 @@ class Listener:
 
 # ------------------------------------------------------------------------------
 
+def SSTag(s):
+	tag = nbt.TAG_Compound()
+	tag.setString(server.STR_ACTION, s)
+	return tag
+
+def UnknownRequest():
+	return SSTag(STR_ERR_UNKNOWN)
+
+def InvalidTag(e):
+	tag = SSTag(STR_ERR_INVALID)
+	tag.setString(server.STR_ERRMSG, str(e))
+	return tag
+
+# ------------------------------------------------------------------------------
+
 class VersionedClient:
 	def __init__(self, addr, version):
 		self.addr, self.version = addr, version

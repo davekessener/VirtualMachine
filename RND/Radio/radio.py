@@ -143,10 +143,10 @@ class RadioServer:
 				STR_ACT_PLAY : lambda: self.playTrack(tag.getCompoundTag(server.STR_DATA)),
 				STR_ACT_STOP : lambda: self.stop(),
 				STR_ACT_VOLUME : lambda: self.setVolume(tag.getCompoundTag(server.STR_DATA))
-			}.get(tag.getString(server.STR_ACTION), lambda: UnknownRequest())())
+			}.get(tag.getString(server.STR_ACTION), lambda: server.UnknownRequest())())
 			responder.sendPacket(t)
 		except Exception as e:
-			responder.sendPacket(InvalidTag(e))
+			responder.sendPacket(server.InvalidTag(e))
 
 	def execute(self, cmd):
 		{
@@ -190,14 +190,6 @@ class RadioServer:
 		self._listener.log('Volume set to %d' % self._mpd.volume)
 		return self.getStatus()
 
-def UnknownRequest():
-	return SSTag(STR_ERR_UNKNOWN)
-
-def InvalidTag(e):
-	tag = SSTag(STR_ERR_INVALID)
-	tag.setString(server.STR_ERRMSG, str(e))
-	return tag
-
 # ------------------------------------------------------------------------------
 
 class RadioClient:
@@ -230,11 +222,6 @@ class RadioClient:
 		v, r = self.client.communicate(STR_ACT_STOP)
 
 # ------------------------------------------------------------------------------
-
-def SSTag(s):
-	tag = nbt.TAG_Compound()
-	tag.setString(server.STR_ACTION, s)
-	return tag
 
 class MPC:
 	def __init__(self, addr):
