@@ -60,6 +60,8 @@ class ClientResponder(threading.Thread):
 	def sendPacket(self, tag):
 		SendPacket(self._clientsocket, tag)
 
+# ==============================================================================
+
 class Listener:
 	def __init__(self, factory, addr):
 		self._factory = factory
@@ -144,7 +146,9 @@ class VersionedClient:
 
 	def accept(self, tag):
 		if not tag.hasTag(STR_ACTION):
-			return (tag.getString(STR_VERSION), tag.getCompoundTag(STR_DATA))
+			v = tag.getString(STR_VERSION) if tag.hasTag(STR_VERSION) else ''
+			d = tag.getCompoundTag(STR_DATA) if tag.hasTag(STR_DATA) else None
+			return (v, d)
 		else:
 			e = tag.getString(STR_ACTION)
 			if tag.hasTag(STR_ERRMSG):
