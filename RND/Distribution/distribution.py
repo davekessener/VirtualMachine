@@ -30,6 +30,16 @@ def GetIP():
 			ip = 'localhost'
 	return ip
 
+def GetPort():
+	try:
+		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		s.bind(('', 0))
+		ip, port = s.getsockname()
+		s.close()
+	except: Exception as e:
+		port = 0
+	return port
+
 def Register(name, addr):
 	host, port = addr
 	tag = server.SSTag(STR_ACT_ADD)
@@ -37,14 +47,13 @@ def Register(name, addr):
 	payload.setString(STR_NAME, name)
 	if host != 'localhost':
 		tag.setString(STR_HOST, GetIP())
+		tag.setInt(STR_PORT, GetPort())
 	tag.setCompoundTag(server.STR_DATA, payload)
 	r = server.Communicate(addr, tag)
 	return (r.getString(STR_HOST), r.getInt(STR_PORT))
 
-class DistributedListener:
-	def __init__(self, factory, name, addr):
-		self._addr = Register(name, addr)
-		self._listener = Listener(factory, 
+def DistributedListener(factory, name, addr):
+	return Listener(factory, Register(name, addr))
 
 # ==============================================================================
 
