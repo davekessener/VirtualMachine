@@ -13,6 +13,8 @@ STR_DATA = 'data'
 STR_ERR_OUTDATED = 'outdated server'
 STR_ERR_MISSING = 'versioning required'
 STR_ERRMSG = 'error'
+STR_ERR_INVALID = 'invalid'
+STR_ERR_UNKNOWN = 'unknown request'
 
 class Connect:
 	def __init__(self, addr):
@@ -35,8 +37,8 @@ def SendPacket(cs, tag):
 def ReceivePacket(cs):
 	return nbt.NBTBase.Read(cs)
 
-def Communicate(server, tag):
-	with Connect(server) as cs:
+def Communicate(addr, tag):
+	with Connect(addr) as cs:
 		SendPacket(cs, tag)
 		return ReceivePacket(cs)
 	
@@ -119,22 +121,30 @@ class Listener:
 
 def SSTag(s):
 	tag = nbt.TAG_Compound()
-	tag.setString(server.STR_ACTION, s)
+	tag.setString(STR_ACTION, s)
 	return tag
 
-def UnknownRequest():
-	return SSTag(STR_ERR_UNKNOWN)
+def DataTag(payload):
+	tag = nbt.TAG_Compound()
+	tag.setCompoundTag(STR_DATA, payload)
+	return tag
+
+def UnknownRequest(e):
+	tag = SSTag(STR_ERR_UNKNOWN)
+	tag.setString(STR_ERRMSG, str(e))
+	return tag
 
 def InvalidTag(e):
 	tag = SSTag(STR_ERR_INVALID)
-	tag.setString(server.STR_ERRMSG, str(e))
+	tag.setString(STR_ERRMSG, str(e))
 	return tag
 
 # ------------------------------------------------------------------------------
 
 class VersionedClient:
-	def __init__(self, addr, version):
+	def __init__(self, addr, version, transfer = Communicate):
 		self.addr, self.version = addr, version
+		self.transfer = transfer
 	
 	def communicate(self, action, data = None):
 		tag = nbt.TAG_Compound()
@@ -142,7 +152,7 @@ class VersionedClient:
 		tag.setString(STR_VERSION, self.version)
 		if data:
 			tag.setCompoundTag(STR_DATA, data)
-		return self.accept(Communicate(self.addr, tag))
+		return self.accept(self.transfer(self.addr, tag))
 
 	def accept(self, tag):
 		if not tag.hasTag(STR_ACTION):

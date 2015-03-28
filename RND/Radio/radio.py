@@ -1,8 +1,10 @@
 import sys
-import nbt
-import server
 import re
 import subprocess
+
+import nbt
+import server
+import distribute
 
 STR_ERR_INVALID = 'invalid tag'
 STR_ERR_UNKNOWN = 'unknown request'
@@ -22,6 +24,8 @@ STR_SUCCESS = 'success'
 
 VERSION = '1.0'
 SAVE_FILE = 'playlist.txt'
+
+STR_RADIOSERVER = 'radioserver'
 
 def call(args):
 	return subprocess.check_output(args, stderr = subprocess.STDOUT)
@@ -126,24 +130,25 @@ class MPD:
 
 # ------------------------------------------------------------------------------
 
-class RadioServer:
+class Server:
 	def __init__(self, addr):
 		self._mpd = MPD()
 		self._vr = server.VersionedResponder(self)
 		self._vr.addVersion((VERSION, self))
-		self._listener = server.Listener(self._vr, addr)
+		self._listener = distribute.Listener(self._vr, STR_RADIOSERVER, addr)
 		self._listener.start()
 	
 	def __call__(self, addr, tag, responder):
 		try:
 			t = nbt.TAG_Compound()
+			act = tag.getString(server.STR_ACTION)
 			t.setCompoundTag(server.STR_DATA, {
 				STR_ACT_STATUS : lambda: self.getStatus(),
 				STR_ACT_ADD : lambda: self.addTrack(tag.getCompoundTag(server.STR_DATA)),
 				STR_ACT_PLAY : lambda: self.playTrack(tag.getCompoundTag(server.STR_DATA)),
 				STR_ACT_STOP : lambda: self.stop(),
 				STR_ACT_VOLUME : lambda: self.setVolume(tag.getCompoundTag(server.STR_DATA))
-			}.get(tag.getString(server.STR_ACTION), lambda: server.UnknownRequest())())
+			}.get(act, lambda: server.UnknownRequest(act))())
 			responder.sendPacket(t)
 		except Exception as e:
 			responder.sendPacket(server.InvalidTag(e))
@@ -192,9 +197,9 @@ class RadioServer:
 
 # ------------------------------------------------------------------------------
 
-class RadioClient:
+class Client:
 	def __init__(self, addr):
-		self.client = server.VersionedClient(addr, VERSION)
+		self.client = server.VersionedClient(addr, VERSION, distribute.MakeRerouter(STR_RADIOSERVER))
 	
 	def getStatus(self):
 		v, r = self.client.communicate(STR_ACT_STATUS)
@@ -221,43 +226,8 @@ class RadioClient:
 	def stop(self):
 		v, r = self.client.communicate(STR_ACT_STOP)
 
-# ------------------------------------------------------------------------------
-
-class MPC:
-	def __init__(self, addr):
-		self.client = server.VersionedClient(addr, VERSION)
-
-	def printStatus(self, s):
-		print(s.getString(STR_MPD_CURRENT))
-		for t in s.getTagList(STR_MPD_TRACKS):
-			track = Track(tag=t)
-			print('#%02d: %10s [@\'%s\']' % (track.slot, track.name, track.url))
-		print('Volume %d%%' % s.getInt(STR_MPD_VOLUME))
-
-	def getStatus(self):
-		v, r = self.client.communicate(STR_ACT_STATUS)
-		self.printStatus(r)
-
-	def addTrack(self, track):
-		name, url = track
-		tag = nbt.TAG_Compound()
-		tag.setString(STR_TRACK_NAME, name)
-		tag.setString(STR_TRACK_URL, url)
-		v, r = self.client.communicate(STR_ACT_ADD, tag)
-		self.printStatus(r)
-
-	def play(self, slot):
-		tag = nbt.TAG_Compound()
-		tag.setInt(STR_TRACK_SLOT, slot)
-		v, r = self.client.communicate(STR_ACT_PLAY, tag)
-		self.printStatus(r)
-
-	def stop(self):
-		v, r = self.client.communicate(STR_ACT_STOP)
-		self.printStatus(r)
-
 # ==============================================================================
 
 if __name__ == '__main__':
-	radio = RadioServer(('localhost', 8888))
+	radio = Server(('localhost', 8888))
 

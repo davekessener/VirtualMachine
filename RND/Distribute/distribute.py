@@ -1,20 +1,31 @@
-import server
+import sys
 import socket
+
+import nbt
+import server
 
 STR_ACT_ADD = "add"
 STR_ACT_REROUTE = "reroute"
 STR_NAME = "name"
 STR_PORT = "port"
 STR_HOST = "host"
+
 DEFAULT_HOST = "localhost"
 DEFAULT_PORT = 8000
 
-def Reroute(tag, name, addr):
+IP_GOOGLE_DNS = '8.8.8.8'
+
+def Reroute(name, addr, tag):
 	t = nbt.TAG_Compound()
 	t.setCompoundTag(server.STR_DATA, tag)
-	t.setString(server.STR_ACTION, STR_REROUTE)
+	t.setString(server.STR_ACTION, STR_ACT_REROUTE)
 	t.setString(STR_NAME, name)
-	return server.Communicate(addr, tag)
+	return server.Communicate(addr, t)
+
+def MakeRerouter(name):
+	def action(addr, tag):
+		return Reroute(name, addr, tag)
+	return action
 
 # ==============================================================================
 
@@ -36,7 +47,7 @@ def GetPort():
 		s.bind(('', 0))
 		ip, port = s.getsockname()
 		s.close()
-	except: Exception as e:
+	except Exception as e:
 		port = 0
 	return port
 
@@ -50,49 +61,62 @@ def Register(name, addr):
 		tag.setInt(STR_PORT, GetPort())
 	tag.setCompoundTag(server.STR_DATA, payload)
 	r = server.Communicate(addr, tag)
-	return (r.getString(STR_HOST), r.getInt(STR_PORT))
+	if not r.hasTag(server.STR_ACTION):
+		tag = r.getCompoundTag(server.STR_DATA)
+		return (tag.getString(STR_HOST), tag.getInt(STR_PORT))
+	else:
+		raise Exception('ERR(%s): Trying to register \'%s\': \'%s\'' % \
+			(r.getString(server.STR_ACTION), name, r.getString(server.STR_ERRMSG) if r.hasTag(server.STR_ERRMSG) else ''))
 
-def DistributedListener(factory, name, addr):
-	return Listener(factory, Register(name, addr))
+def Listener(factory, name, addr):
+	return server.Listener(factory, Register(name, addr))
 
 # ==============================================================================
 
-class DistributingServer:
+class Server:
 	def __init__(self, addr):
 		self._port = DEFAULT_PORT
+		self._servers = {}
 		self._listener = server.Listener(self, addr)
 		self._listener.start()
 
 	def __call__(self, addr, tag, responder):
 		try:
-			t = nbt.TAG_Compound()
-			t.setCompoundTag(server.STR_DATA, {
-				STR_ACT_ADD : lambda: self.addServer(t.getTagCompound(server.STR_DATA)),
-				STR_ACT_REROUTE : lambda: self.reroute(t)
-			}.get(tag.getString(server.STR_ACTION), lambda: server.UnknownRequest())())
-			responder.sendPacket(t)
+			act = tag.getString(server.STR_ACTION)
+			responder.sendPacket({
+				STR_ACT_ADD : lambda: server.DataTag(self.addServer(tag.getCompoundTag(server.STR_DATA))),
+				STR_ACT_REROUTE : lambda: self.reroute(tag)
+			}.get(act, lambda: server.UnknownRequest(act))())
 		except Exception as e:
 			responder.sendPacket(server.InvalidTag(e))
 
 	def execute(self, cmd):
 		{
 			"quit" : lambda: self._listener.quit()
-		}.get(cmd, lambda: print("Unknown command!"))()
+		}.get(cmd, lambda: sys.stdout.write("Unknown command!\n"))()
 	
 	def addServer(self, tag):
 		name = tag.getString(STR_NAME)
-		host = tag.getString(STR_HOST) if tag.hasTag(STR_HOST) else DEFAULT_HOST
-		port = tag.getInt(STR_PORT) if tag.hasTag(STR_PORT) else self.nextPort(host)
-		addr = (host, port)
 		if name in self._servers:
-			if addr != self._servers[name]:
-				raise Exception("A service already has that name!")
-		elif addr in self._servers.values():
+			addr = self._servers[name]
+			host, port = addr
+			del self._servers[name]
+			if tag.hasTag(STR_HOST):
+				host = tag.getString(STR_HOST)
+				if host != addr[0]:
+					port = tag.getInt(STR_PORT) if tag.hasTag(STR_PORT) else self.nextPort(host)
+			if tag.hasTag(STR_PORT):
+				port = tag.getInt(STR_PORT)
+		else:
+			host = tag.getString(STR_HOST) if tag.hasTag(STR_HOST) else DEFAULT_HOST
+			port = tag.getInt(STR_PORT) if tag.hasTag(STR_PORT) else self.nextPort(host)
+		addr = (host, port)
+		if addr in self._servers.values():
 			raise Exception("Service '%s' already reroutes to %s:%d!" % \
 				(next(x for x in self._servers if self._servers[x] == addr), host, port))
 		else:
 			self._servers[name] = addr
-			return DistributingServer.Registered(name, addr)
+			return Server.Registered(name, addr)
 	
 	def reroute(self, tag):
 		name = tag.getString(STR_NAME)
@@ -112,11 +136,9 @@ class DistributingServer:
 	@staticmethod
 	def Registered(name, addr):
 		host, port = addr
-		t = nbt.TAG_Compound()
 		tag = nbt.TAG_Compound()
 		tag.setString(STR_NAME, name)
 		tag.setString(STR_HOST, host)
 		tag.setInt(STR_PORT, port)
-		t.setCompoundTag(server.STR_DATA, tag)
-		return t
+		return tag
 
