@@ -74,8 +74,24 @@
 				{
 					var elems = text.split("\n");
 					document.getElementById("current").innerHTML = elems[0];
-					setTimeout(refresh_current, 5000);
+					schedule_refresh(5000);
 				});
+			}
+			function schedule_refresh(timeout)
+			{
+				setTimeout(refresh_current, timeout);
+			}
+			function add_volume(volume_change)
+			{
+				var v = "%2B" + volume_change;
+				if(volume_change < 0) { v = "%2D" + (-volume_change); }
+				sendAJAX("volume.php?volume=" + v);
+				schedule_refresh(1000);
+			}
+			function set_volume(volume)
+			{
+				sendAJAX("volume.php?volume=" + volume);
+				schedule_refresh(1000);
 			}
 			function get_status()
 			{
@@ -104,7 +120,15 @@
 					result += "<td><input id=\"new_name\" type=\"text\" value=\"" + tmp_nn + "\"/></td>";
 					result += "<td><input style=\"width:100%;\" id=\"new_url\" type=\"text\" value=\"" + tmp_nu + "\" /></td></tr>";
 					result += "</table>";
-					result += "<p>Volume: " + elems[2] + "%</p>";
+					result += "<p>";
+					result += "<input type=\"submit\" onclick=\"set_volume(0)\" value=\"-\" />";
+					result += "<input type=\"submit\" onclick=\"add_volume(-5)\" value=\"<<\" />";
+					result += "<input type=\"submit\" onclick=\"add_volume(-1)\" value=\"<\" />";
+					result += "Volume: " + elems[2] + "%";
+					result += "<input type=\"submit\" onclick=\"add_volume(1)\" value=\">\" />";
+					result += "<input type=\"submit\" onclick=\"add_volume(5)\" value=\">>\" />";
+					result += "<input type=\"submit\" onclick=\"set_volume(100)\" value=\"+\" />";
+					result += "</p>";
 					result += "<input type=\"submit\" onclick=\"stop_music()\" value=\"STOP\" />";
 					result += "<input type=\"submit\" onclick=\"get_status()\" value=\"Refresh\" />";
 					document.getElementById("displayDiv").innerHTML = result;

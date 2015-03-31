@@ -108,7 +108,7 @@ class MPD:
 
 	@property
 	def volume(self):
-		return self.volume
+		return int(self.volume)
 
 	@volume.setter
 	def volume(self, v):
@@ -192,7 +192,7 @@ class Server:
 
 	def setVolume(self, tag):
 		self._mpd.volume = tag.getString(STR_MPD_VOLUME)
-		self._listener.log('Volume set to %d' % self._mpd.volume)
+		self._listener.log('Volume set to %s' % str(self._mpd.volume))
 		return self.getStatus()
 
 # ------------------------------------------------------------------------------
@@ -225,6 +225,11 @@ class Client:
 
 	def stop(self):
 		v, r = self.client.communicate(STR_ACT_STOP)
+
+	def setVolume(self, v):
+		tag = nbt.TAG_Compound()
+		tag.setString(STR_MPD_VOLUME, str(v))
+		v, r = self.client.communicate(STR_ACT_VOLUME, tag)
 
 # ==============================================================================
 
