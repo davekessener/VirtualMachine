@@ -26,6 +26,7 @@
 !*.schema
 !*.chip
 !*.poke
+!*.m3u
 !makefile
 !aux
 ML/*

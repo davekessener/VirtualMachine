@@ -85,7 +85,7 @@ class MPD:
 	def getCurrent(self):
 		tag = nbt.TAG_Compound()
 		m = MPD._PTRN.match(call(['mpc', 'current']))
-		tag.setInt(STR_TRACK_SLOT, self._current.slot if self._current else 0)
+		tag.setInt(STR_TRACK_SLOT, self._current.slot if self._current and m else 0)
 		if m:
 			tag.setString(STR_TRACK_NAME, m.group(1))
 		return tag

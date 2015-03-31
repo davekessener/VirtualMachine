@@ -2,7 +2,7 @@
 
 import radio
 
-rc = radio.RadioClient(('alarmpi.loc', 8888))
+rc = radio.Client(('radio.pi', 8888))
 c, t, v = rc.getStatus()
 if c:
 	s, n = c
