@@ -1,4 +1,4 @@
-package TCP;
+package tcp;
 
 public class Version
 {

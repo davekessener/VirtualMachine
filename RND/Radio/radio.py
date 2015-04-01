@@ -70,8 +70,9 @@ class MPD:
 		call(['mpc', 'clear'])
 
 	def volume(self, v):
+		av = 55 + 45 * (float(v) / 100.0)
 		try:
-			call(['mpc', 'volume', str(v)])
+			call(['mpc', 'volume', str(av)])
 		except Exception as e:
 			pass
 
