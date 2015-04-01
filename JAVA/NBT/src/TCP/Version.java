@@ -29,7 +29,7 @@ public class Version
 		int[] v = new int[] {0, 0, 0, 0};
 		String[] p = s.split("\\.");
 		
-		for(int i = 0 ; i < p.length ; ++i)
+		for(int i = 0 ; i < Math.min(p.length, v.length) ; ++i)
 		{
 			v[i] = Integer.parseInt(p[i]);
 		}
