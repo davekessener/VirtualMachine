@@ -55,10 +55,33 @@ class Track:
 		self.url = tag.getString(STR_TRACK_URL)
 		self.slot = tag.getInt(STR_TRACK_SLOT)
 
+# ------------------------------------------------------------------------------
+
 class MPD:
+	def current(self):
+		return call(['mpc', 'current'])
+
+	def play(self, track):
+		call(['mpc', 'add', track])
+		call(['mpc', 'play'])
+
+	def stop(self):
+		call(['mpc', 'stop'])
+		call(['mpc', 'clear'])
+
+	def volume(self, v):
+		try:
+			call(['mpc', 'volume', str(v)])
+		except Exception as e:
+			pass
+
+# ------------------------------------------------------------------------------
+
+class MusicProxy:
 	_PTRN = re.compile('[^:]*:[ \\t]*(.*)\\n')
 
 	def __init__(self):
+		self._music = MPD()
 		self._idx = 0
 		self._tracks = []
 		self.volume = 100
@@ -84,7 +107,7 @@ class MPD:
 
 	def getCurrent(self):
 		tag = nbt.TAG_Compound()
-		m = MPD._PTRN.match(call(['mpc', 'current']))
+		m = MusicProxy._PTRN.match(self._music.current())
 		tag.setInt(STR_TRACK_SLOT, self._current.slot if self._current and m else 0)
 		if m:
 			tag.setString(STR_TRACK_NAME, m.group(1))
@@ -100,9 +123,8 @@ class MPD:
 	def play(self, slot):
 		track = next((t for t in self._tracks if t.slot == slot))
 		self.stop()
-		call(['mpc', 'add', track.url])
-		call(['mpc', 'play'])
-#		call(['mpc', 'volume', str(self.volume)])
+		self._music.play(track.url)
+		self._music.volume(self.volume)
 		self._current = track
 		return track
 
@@ -116,12 +138,11 @@ class MPD:
 				'+' : lambda: self.volume + int(v[1:]),
 				'-' : lambda: self.volume - int(v[1:])
 			}.get(v[0], lambda: int(v))()
-		self.volume = min(100, max(0, u))
-#		call(['mpc', 'volume', str(self.volume)])
+		self.volume = min(100, max(0, int(u)))
+		self._music.volume(self.volume)
 
 	def stop(self):
-		call(['mpc', 'stop'])
-		call(['mpc', 'clear'])
+		self._music.stop()
 		self._current = None
 
 	def nextID(self):
@@ -132,7 +153,7 @@ class MPD:
 
 class Server:
 	def __init__(self, addr):
-		self._mpd = MPD()
+		self._mpd = MusicProxy()
 		self._vr = server.VersionedResponder(self)
 		self._vr.addVersion((VERSION, self))
 		self._listener = distribute.Listener(self._vr, STR_RADIOSERVER, addr)
@@ -155,10 +176,14 @@ class Server:
 
 	def execute(self, cmd):
 		{
-			'quit' : lambda: self._listener.quit(),
+			'quit' : lambda: self.quit(),
 			'save' : lambda: self._mpd.save(SAVE_FILE),
 			'load' : lambda: self.load(SAVE_FILE)
 		}.get(cmd.lower(), lambda: sys.stdout.write('ERR: Unknown command!\n'))()
+
+	def quit(self):
+		self._mpd.stop()
+		self._listener.quit()
 
 	def load(self, fn):
 		ts = self._mpd.load(fn)
