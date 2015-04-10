@@ -1,1 +1,1 @@
-../Alarm/nbt.py
+../../NBT/spec/py/nbt.py
