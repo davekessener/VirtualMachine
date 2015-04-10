@@ -82,8 +82,9 @@ void *wrapper_straight(wrapper_t *in, size_t v, void *d)
 void *wrapper_read(wrapper_t *in, size_t v, void *d)
 {
 	BYTE *buf = d ? (BYTE *) d : malloc(v);
-
 	BYTE *e = buf + v, *b = buf;
+
+	if(v == 1) return wrapper_straight(in, v, buf);
 
 	while(b != e)
 	{
@@ -165,9 +166,9 @@ NBT_Array *read_array(wrapper_t *in, size_t v)
 	return tag;
 }
 
-NBT_TAGS *read_list(wrapper_t *in)
+NBT_LIst *read_list(wrapper_t *in)
 {
-	NBT_TAGS *tag = malloc(sizeof(NBT_TAGS));
+	NBT_List *tag = malloc(sizeof(NBT_List));
 
 	BYTE id;
 	DWORD l;
@@ -175,34 +176,51 @@ NBT_TAGS *read_list(wrapper_t *in)
 	wrapper_read(in, sizeof(id), &id);
 	wrapper_read(in, sizeof(l), &l);
 
+	tag->id = id;
 	tag->i = tag->c = l;
-	tag->tags = NULL;
+	tag->payloads = NULL;
 
 	if(l)
 	{
 		uint i;
 
-		tag->tags = malloc(l * sizeof(NBT_ptr));
+		tag->tags = malloc(l * sizeof(void *));
 
 		for(i = 0 ; i < l ; ++i)
 		{
-			
+			tag->tags[i] = read_payload(id, in);
 		}
 	}
+
+	return tag;
 }
 
-NBT_TAGS *read_compound(wrapper_t *in)
+NBT_Compound *read_compound(wrapper_t *in)
 {
-	NBT_TAGS *tag = malloc(sizeof(NBT_TAGS));
+	NBT_Compound *tag = malloc(sizeof(NBT_Compound));
 
 	tag->i = tag->c = 0;
 	tag->tags = NULL;
 
-	if(in)
+	while(1)
 	{
+		NBTTag *nbt = read_tag(in);
+
+		if(!nbt) break;
+
+		push_tag(tag, nbt);
 	}
 
 	return tag;
+}
+
+NBTTag *read_tag(wrapper_t *in)
+{
+	BYTE id;
+
+	wrapper_read(in, sizeof(id), &id);
+
+	return id ? nbt_create(id, in) : NULL;
 }
 
 void *read_payload(BYTE id, wrapper_t *in)
@@ -225,16 +243,35 @@ void *read_payload(BYTE id, wrapper_t *in)
 	return NULL;
 }
 
-NBTTag *read_nbt_from_file(FILE *);
-NBTTag *read_nbt(const BYTE *);
+NBTTag *read_nbt_from_file(FILE *f)
+{
+	wrapper_t w;
+
+	w.content.file = f;
+	w.type = FILE_WRAPPER;
+
+	return read_tag(&w);
+}
+
+NBTTag *read_nbt(const BYTE *s)
+{
+	wrapper_t w;
+
+	w.content.data = s;
+	w.type = STREAM_WRAPPER;
+
+	return read_tag(&w);
+}
 
 NBTTag *nbt_create(BYTE id, const char *name)
 {
 	NBTTag *tag = malloc(sizeof(NBTTag));
 
 	tag->id = id;
-	tag->name = strcpy(name);
+	tag->name = name ? strcpy(name) : read_name(in);
 	tag->tag = read_payload(id, NULL);
+
+	return tag;
 }
 
 void write_nbt_to_file(FILE *, const NBTTag *);

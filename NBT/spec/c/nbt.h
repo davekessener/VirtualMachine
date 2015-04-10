@@ -24,7 +24,14 @@ typedef struct
 {
 	NBT_ptr *tags;
 	uint i, c;
-} NBT_TAGS;
+} NBT_Compound;
+
+typedef struct
+{
+	BYTE id;
+	void **payloads;
+	uint i, c;
+} NBT_List;
 
 typedef struct
 {
