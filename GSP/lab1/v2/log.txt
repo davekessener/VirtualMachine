@@ -38,3 +38,13 @@ q
 Goodbye.
 dave@localhost:~/Git/VirtualMachine/GSP/lab1/v2$ exit
 
+Script started on Tue 07 Apr 2015 10:48:46 PM CEST
+]0;dave@D42413: ~/Desktop/VM/GSP/lab1/v2dave@D42413:~/Desktop/VM/GSP/lab1/v2$ make
+gcc -c -Wall -ggdb -gdwarf-3 -O0 io.c -o io.o
+gcc -c -Wall -ggdb -gdwarf-3 -O0 main.c -o main.o
+gcc -c -Wall -ggdb -gdwarf-3 -O0 stack.c -o stack.o
+gcc io.o main.o stack.o -o lab1 
+]0;dave@D42413: ~/Desktop/VM/GSP/lab1/v2dave@D42413:~/Desktop/VM/GSP/lab1/v2$ exit
+exit
+
+Script done on Tue 07 Apr 2015 10:48:51 PM CEST

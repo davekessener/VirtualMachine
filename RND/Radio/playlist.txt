@@ -1,3 +1,4 @@
+Volume:100
 1|NDR2|http://ndr-ndr2-nds-mp3.akacast.akamaistream.net/7/400/252763/v1/gnl.akacast.akamaistream.net/ndr_ndr2_nds_mp3
 2|N-JOY|http://ndr-n-joy-mp3.akacast.akamaistream.net/7/665/273752/v1/gnl.akacast.akamaistream.net/ndr_n-joy_mp3
 3|NDR Kultur|http://ndr-ndrkultur-mp3.akacast.akamaistream.net/7/527/273758/v1/gnl.akacast.akamaistream.net/ndr_ndrkultur_mp3

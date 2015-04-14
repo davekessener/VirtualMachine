@@ -3,7 +3,7 @@
 import radio
 import sys
 
-rc = radio.Client(('radio.pi', 8888))
+rc = radio.Client(('daveserver.no-ip.biz', 8888))
 rc.setVolume(sys.argv[1])
 print("Changed volume to '%s'" % sys.argv[1])
 

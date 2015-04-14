@@ -22,6 +22,9 @@ STR_MPD_VOLUME = 'volume'
 STR_EMPTY = '--stopped--'
 STR_SUCCESS = 'success'
 
+VOLUME_MIN = 65
+VOLUME_STEP = 100 - VOLUME_MIN
+
 VERSION = '1.0'
 SAVE_FILE = 'playlist.txt'
 
@@ -70,9 +73,9 @@ class MPD:
 		call(['mpc', 'clear'])
 
 	def volume(self, v):
-		av = 55 + 45 * (float(v) / 100.0)
+		av = int(VOLUME_MIN + VOLUME_STEP * (float(v) / 100.0))
 		try:
-			call(['mpc', 'volume', ('%d' % int(av))])
+			call(['mpc', 'volume', str(av)])
 		except Exception as e:
 			pass
 
@@ -85,12 +88,13 @@ class MusicProxy:
 		self._music = MPD()
 		self._idx = 0
 		self._tracks = []
-		self.volume = 100
+		self._volume = 100
 		self._current = None
 		self.stop()
 
 	def save(self, fn):
 		with open(fn, 'w') as f:
+			f.write('Volume:%d\n' % self._volume)
 			for t in self._tracks:
 				f.write('%d|%s|%s\n' % (t.slot, t.name, t.url))
 
@@ -98,6 +102,7 @@ class MusicProxy:
 		self._tracks = []
 		self._idx = 0
 		with open(fn, 'r') as f:
+			self._volume = int(f.readline()[:-1].split(':')[1])
 			for l in f.readlines():
 				td = l[:-1].split('|')
 				slot = int(td[0])
@@ -125,22 +130,20 @@ class MusicProxy:
 		track = next((t for t in self._tracks if t.slot == slot))
 		self.stop()
 		self._music.play(track.url)
-		self._music.volume(self.volume)
+		self._music.volume(self._volume)
 		self._current = track
 		return track
 
-	@property
-	def volume(self):
-		return int(self.volume)
+	def getVolume(self):
+		return self._volume
 
-	@volume.setter
-	def volume(self, v):
+	def setVolume(self, v):
 		u = {
-				'+' : lambda: self.volume + int(v[1:]),
-				'-' : lambda: self.volume - int(v[1:])
+				'+' : lambda: self._volume + int(v[1:]),
+				'-' : lambda: self._volume - int(v[1:])
 			}.get(v[0], lambda: int(v))()
-		self.volume = min(100, max(0, int(u)))
-		self._music.volume(self.volume)
+		self._volume = min(100, max(0, int(u)))
+		self._music.volume(self._volume)
 
 	def stop(self):
 		self._music.stop()
@@ -196,7 +199,7 @@ class Server:
 		t = nbt.TAG_Compound()
 		t.setCompoundTag(STR_MPD_CURRENT, self._mpd.getCurrent())
 		t.setTagList(STR_MPD_TRACKS, self._mpd.getPlaylist())
-		t.setInt(STR_MPD_VOLUME, self._mpd.volume)
+		t.setInt(STR_MPD_VOLUME, self._mpd._volume)
 		return t
 
 	def addTrack(self, tag):
@@ -217,8 +220,8 @@ class Server:
 		return self.getStatus()
 
 	def setVolume(self, tag):
-		self._mpd.volume = tag.getString(STR_MPD_VOLUME)
-		self._listener.log('Volume set to %s' % str(self._mpd.volume))
+		self._mpd.setVolume(tag.getString(STR_MPD_VOLUME))
+		self._listener.log('Volume set to %s' % str(self._mpd.getVolume()))
 		return self.getStatus()
 
 # ------------------------------------------------------------------------------

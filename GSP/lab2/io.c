@@ -5,6 +5,13 @@
 #define MXT_SETBIT(p,b,v)	p|=(v)<<(b)
 #define MXT_GETBIT(p,b)		(((p)>>(b))&1)
 
+#define MXT_BITMASK_COUNT	0x00ff
+#define MXT_BITMASK_LED		0x0001
+#define MXT_BITMASK_ERROR	0x0001
+
+#define MXT_GENSETBIT(c,v) MXT_SETBIT(MXT_PORT_ ## c, MXT_BIT_ ## c, (v) & MXT_BITMASK_ ## c)
+#define MXT_GENGETBIT(c) MXT_GETBIT(MXT_PORT_ ## c, MXT_BIT_ ## c)
+
 void io_init(void)
 {
 	Init_TI_Board();
@@ -12,12 +19,12 @@ void io_init(void)
 
 void io_set_counter(uint c)
 {
-	MXT_SETBIT(MXT_PORT_COUNT, MXT_BIT_COUNT, c);
+	MXT_GENSETBIT(COUNT, c);
 }
 
 void io_set_fwd_led(int fwd)
 {
-	MXT_SETBIT(MXT_PORT_LED, MXT_BIT_LED, fwd);
+	MXT_GENSETBIT(LED, fwd);
 }
 
 void io_set_rotation(int r)
@@ -36,16 +43,16 @@ void io_set_rotation(int r)
 
 void io_set_error(int e)
 {
-	MXT_SETBIT(MXT_PORT_ERROR, MXT_BIT_ERROR, e);
+	MXT_GENSETBIT(ERROR, e);
 }
 
 int io_get_reset(void)
 {
-	return MXT_GETBIT(MXT_PORT_RESET, MXT_BIT_RESET);
+	return MXT_GENGETBIT(RESET);
 }
 
 int io_get_error_reset(void)
 {
-	return MXT_GETBIT(MXT_PORT_ERRRESET, MXT_BIT_ERRRESET);
+	return MXT_GENGETBIT(ERRRESET);
 }
 
