@@ -1,5 +1,5 @@
 # Generated Sept. 29th, 2014
-CC=g++-4.7
+CC=g++
 SRC=Evaluator.cc InfToPost.cc Parser.cc Tokenizer.cc main.cc 
 OBJ=Evaluator.cc.o InfToPost.cc.o Parser.cc.o Tokenizer.cc.o main.cc.o 
 CFLAGS=
