@@ -81,7 +81,7 @@ typedef Analysis
 		>,
 		MakeTypeList
 		<
-			MakeTypeList<Production<3>, Production<3>, Production<2>>
+			MakeTypeList<Production<3>, Production<2>>
 		>,
 		MakeTypeList
 		<
