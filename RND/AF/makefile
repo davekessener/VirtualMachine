@@ -1,9 +1,9 @@
 CC=g++
-CFLAGS=-std=gnu++14 -Wall -Wno-unused-local-typedefs -ggdb -gdwarf-3
+CFLAGS=-std=gnu++11 -Wall -Wno-unused-local-typedefs -ggdb -gdwarf-3
 LIBS=
 SRC=$(wildcard *.cc)
 OBJ=$(SRC:.cc=.o)
-HEAD=$(wildcard *.{h,hpp})
+HEAD=$(wildcard *.h)
 TARGET=table
 
 %.o: %.cc $(HEAD)

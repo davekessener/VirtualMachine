@@ -59,17 +59,22 @@ using lex::Empty;
 using io::Reader;
 using io::Writer;
 
-typedef String<'D', 'E', 'A'> Var0;
-typedef String<'\n', '^'> Var1;
-typedef String<'F', 'R', 'O', 'M'> Var2;
-typedef String<':'> Var3;
-typedef String<'T', 'O'> Var4;
-typedef String<'>'> Var5;
-typedef String<'W', 'I', 'T', 'H'> Var6;
-typedef String<','> Var7;
-typedef String<'|'> Var8;
-typedef String<'[', 'a', '-', 'z', 'A', '-', 'Z', ']', '[', 'a', '-', 'z', 'A', '-', 'Z', '0', '-', '9', ']', '*'> Var9;
-typedef String<'[', 'a', '-', 'z', 'A', '-', 'Z', '0', '-', '9', ']'> Var10;
+typedef String<'<'> Var0;
+typedef String<'D', 'E', 'A'> Var1;
+typedef String<'\n', '^'> Var2;
+typedef String<'F', 'R', 'O', 'M'> Var3;
+typedef String<':'> Var4;
+typedef String<'T', 'O'> Var5;
+typedef String<'>'> Var6;
+typedef String<'W', 'I', 'T', 'H'> Var7;
+typedef String<','> Var8;
+typedef String<'|'> Var9;
+typedef String<'I', 'N', 'I', 'T', 'I', 'A', 'L'> Var10;
+typedef String<'*'> Var11;
+typedef String<'A', 'C', 'C', 'E', 'P', 'T', 'I', 'N', 'G'> Var12;
+typedef String<'%'> Var13;
+typedef String<'[', 'a', '-', 'z', 'A', '-', 'Z', ']', '[', 'a', '-', 'z', 'A', '-', 'Z', '0', '-', '9', ']', '*'> Var14;
+typedef String<'[', 'a', '-', 'z', 'A', '-', 'Z', '0', '-', '9', ']'> Var15;
 
 typedef Analysis
 <
@@ -77,7 +82,7 @@ typedef Analysis
 	<
 		MakeTypeList
 		<
-			MakeTypeList<Production<1>, End>
+			MakeTypeList<Production<1>, Print<Var0>, End>
 		>,
 		MakeTypeList
 		<
@@ -90,7 +95,7 @@ typedef Analysis
 		>,
 		MakeTypeList
 		<
-			MakeTypeList<Literal<Var0>, Print<Var1>, Production<5>, Production<4>>
+			MakeTypeList<Literal<Var1>, Print<Var2>, Production<5>, Production<4>>
 		>,
 		MakeTypeList
 		<
@@ -99,7 +104,7 @@ typedef Analysis
 		>,
 		MakeTypeList
 		<
-			MakeTypeList<Literal<Var2>, Print<Var3>, Production<11>, Production<7>, Production<6>>
+			MakeTypeList<Literal<Var3>, Print<Var4>, Production<12>, Production<11>, Production<7>, Production<6>>
 		>,
 		MakeTypeList
 		<
@@ -108,7 +113,7 @@ typedef Analysis
 		>,
 		MakeTypeList
 		<
-			MakeTypeList<Literal<Var4>, Print<Var5>, Production<11>, Literal<Var6>, Production<9>, Production<8>>
+			MakeTypeList<Literal<Var5>, Print<Var6>, Production<12>, Literal<Var7>, Production<9>, Production<8>>
 		>,
 		MakeTypeList
 		<
@@ -117,20 +122,26 @@ typedef Analysis
 		>,
 		MakeTypeList
 		<
-			MakeTypeList<Production<12>, Production<10>>
+			MakeTypeList<Production<13>, Production<10>>
 		>,
 		MakeTypeList
 		<
-			MakeTypeList<Literal<Var7>, Print<Var8>, Production<9>, Production<10>>,
+			MakeTypeList<Literal<Var8>, Print<Var9>, Production<9>, Production<10>>,
 			MakeTypeList<Empty>
 		>,
 		MakeTypeList
 		<
-			MakeTypeList<Match<Var9>, PrintID>
+			MakeTypeList<Literal<Var10>, Print<Var11>>,
+			MakeTypeList<Literal<Var12>, Print<Var13>>,
+			MakeTypeList<Empty>
 		>,
 		MakeTypeList
 		<
-			MakeTypeList<Match<Var10>, PrintID>
+			MakeTypeList<Match<Var14>, PrintID>
+		>,
+		MakeTypeList
+		<
+			MakeTypeList<Match<Var15>, PrintID>
 		>
 	>
 >
