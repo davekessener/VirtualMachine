@@ -9,9 +9,9 @@ try
 {
 	std::vector<std::string> args(argv + 1, argv + argc);
 
-	using namespace AF;
+	using namespace AF::DEA;
 
-	DEABuilder makedea;
+	Builder makedea;
 
 	makedea.addState("0");
 	makedea.addState("1");
@@ -37,14 +37,9 @@ try
 	makedea.setInitialState("0");
 	makedea.makeStateAccepting("5");
 
-	auto make_reader = [](void) -> Reader_ptr
-	{
-		return makeReader(std::istream_iterator<std::string>(std::cin), std::istream_iterator<std::string>());
-	};
-
 	auto dea = makedea.generate();
 
-	dea = DEAReader::Generate(make_reader());
+	dea = DEA::Read(std::cin);
 
 	auto test = [&dea](const char *s)
 	{

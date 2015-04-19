@@ -67,8 +67,8 @@ typedef String<':'> Var4;
 typedef String<'T', 'O'> Var5;
 typedef String<'>'> Var6;
 typedef String<'W', 'I', 'T', 'H'> Var7;
-typedef String<','> Var8;
-typedef String<'|'> Var9;
+typedef String<'|'> Var8;
+typedef String<','> Var9;
 typedef String<'I', 'N', 'I', 'T', 'I', 'A', 'L'> Var10;
 typedef String<'*'> Var11;
 typedef String<'A', 'C', 'C', 'E', 'P', 'T', 'I', 'N', 'G'> Var12;
@@ -113,7 +113,7 @@ typedef Analysis
 		>,
 		MakeTypeList
 		<
-			MakeTypeList<Literal<Var5>, Print<Var6>, Production<12>, Literal<Var7>, Production<9>, Production<8>>
+			MakeTypeList<Literal<Var5>, Print<Var6>, Production<12>, Literal<Var7>, Print<Var8>, Production<9>, Production<8>>
 		>,
 		MakeTypeList
 		<
@@ -126,7 +126,7 @@ typedef Analysis
 		>,
 		MakeTypeList
 		<
-			MakeTypeList<Literal<Var8>, Print<Var9>, Production<9>, Production<10>>,
+			MakeTypeList<Literal<Var9>, Print<Var8>, Production<9>, Production<10>>,
 			MakeTypeList<Empty>
 		>,
 		MakeTypeList

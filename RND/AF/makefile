@@ -1,6 +1,6 @@
 CC=g++
-CFLAGS=-std=gnu++11 -Wall -Wno-unused-local-typedefs -ggdb -gdwarf-3
-LIBS=
+CFLAGS=-std=gnu++11 -Wall -Wno-unused-local-typedefs -ggdb -gdwarf-3 -I/home/dave/include
+LIBS=-L/home/dave/include/lib
 SRC=$(wildcard *.cc)
 OBJ=$(SRC:.cc=.o)
 HEAD=$(wildcard *.h)

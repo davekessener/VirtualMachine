@@ -2,8 +2,9 @@
 #include <functional>	
 #include <cassert>
 #include "DEA.h"
+#include "Reader.h"
 
-namespace AF {
+namespace AF { namespace DEA {
 
 namespace
 {
@@ -21,6 +22,11 @@ namespace
 
 		return true;
 	}
+}
+
+DEA DEA::Read(std::istream& in)
+{
+	return Reader::Generate(in);
 }
 
 // # ===========================================================================
@@ -120,17 +126,17 @@ StateTable DEA::generateTable(void) const
 
 // # ===========================================================================
 
-void DEABuilder::addState(State q)
+void Builder::addState(State q)
 {
 	auto f = Q_.emplace(std::move(q)).second; assert(f);
 }
 
-void DEABuilder::addSymbol(Symbol a)
+void Builder::addSymbol(Symbol a)
 {
 	auto f = S_.emplace(std::move(a)).second; assert(f);
 }
 
-void DEABuilder::addRelation(State q, Symbol a, State p)
+void Builder::addRelation(State q, Symbol a, State p)
 {
 	if(!contains(Q_, q)) addState(q);
 	if(!contains(Q_, p)) addState(p);
@@ -138,14 +144,14 @@ void DEABuilder::addRelation(State q, Symbol a, State p)
 	auto f = d_.emplace(std::make_pair(std::move(q), std::move(a)), std::move(p)).second; assert(f);
 }
 
-void DEABuilder::setInitialState(State q)
+void Builder::setInitialState(State q)
 {
 	if(!contains(Q_, q)) addState(q);
 
 	q0_ = std::move(q);
 }
 
-void DEABuilder::makeStateAccepting(State q)
+void Builder::makeStateAccepting(State q)
 {
 	if(!contains(Q_, q)) addState(q);
 
@@ -154,7 +160,7 @@ void DEABuilder::makeStateAccepting(State q)
 	F_.emplace(std::move(q));
 }
 
-void DEABuilder::fillDelta(const State &x)
+void Builder::fillDelta(const State &x)
 {
 	assert(contains(Q_, x));
 
@@ -172,21 +178,21 @@ void DEABuilder::fillDelta(const State &x)
 	}
 }
 
-DEA DEABuilder::generate(void) const &
+DEA Builder::generate(void) const &
 {
 	check();
 
-	return DEA(DEABuilder(*this));
+	return DEA(Builder(*this));
 }
 
-DEA DEABuilder::generate(void) &&
+DEA Builder::generate(void) &&
 {
 	check();
 
 	return DEA(std::move(*this));
 }
 
-void DEABuilder::check(void) const
+void Builder::check(void) const
 {
 	assert(contains(Q_, q0_));
 	assert(!Q_.empty());
@@ -196,52 +202,5 @@ void DEABuilder::check(void) const
 	assert(d_.size() == Q_.size() * S_.size());
 }
 
-// # ===========================================================================
-
-void read_relation(DEABuilder&, Reader_ptr, const std::string&);
-
-void read_fr(DEABuilder& dea, Reader_ptr reader, const std::string& from, const std::string& to)
-{
-	dea.addRelation(from, reader->read(), to);
-
-	std::string cmd = reader->read();
-	
-	if(cmd == "|") read_fr(dea, reader, from, to);
-	else if(cmd == ">") read_fr(dea, reader, from, reader->read());
-	else if(cmd == ":") read_relation(dea, reader, reader->read());
-}
-
-void read_relation(DEABuilder& dea, Reader_ptr reader, const std::string& from)
-{
-	std::string cmp = reader->read();
-
-	if(cmp == "*")
-	{
-		dea.setInitialState(from);
-		read_relation(dea, reader, from);
-	}
-	else if(cmp == "%")
-	{
-		dea.makeStateAccepting(from);
-		read_relation(dea, reader, from);
-	}
-	else if(cmp == ">")
-	{
-		read_fr(dea, reader, from, reader->read());
-	}
-	else throw cmp;
-}
-
-DEA DEAReader::Generate(Reader_ptr reader)
-{
-	DEABuilder dea;
-
-	reader->read();
-	reader->read();
-	read_relation(dea, reader, reader->read());
-
-	return dea.generate();
-}
-
-}
+} }
 
