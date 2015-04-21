@@ -128,12 +128,12 @@ StateTable DEA::generateTable(void) const
 
 void Builder::addState(State q)
 {
-	auto f = Q_.emplace(std::move(q)).second; assert(f);
+	auto f = Q_.emplace(std::move(q)).second; //assert(f);
 }
 
 void Builder::addSymbol(Symbol a)
 {
-	auto f = S_.emplace(std::move(a)).second; assert(f);
+	auto f = S_.emplace(std::move(a)).second; //assert(f);
 }
 
 void Builder::addRelation(State q, Symbol a, State p)
@@ -141,7 +141,7 @@ void Builder::addRelation(State q, Symbol a, State p)
 	if(!contains(Q_, q)) addState(q);
 	if(!contains(Q_, p)) addState(p);
 	if(!contains(S_, a)) addSymbol(a);
-	auto f = d_.emplace(std::make_pair(std::move(q), std::move(a)), std::move(p)).second; assert(f);
+	auto f = d_.emplace(std::make_pair(std::move(q), std::move(a)), std::move(p)).second; //assert(f);
 }
 
 void Builder::setInitialState(State q)

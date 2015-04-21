@@ -1,5 +1,6 @@
 #include <iterator>
 #include <map>
+#include <vector>
 #include <dav/io.hpp>
 #include "Reader.h"
 
@@ -10,6 +11,9 @@
 #define MXT_STR_TARGET ">"
 #define MXT_STR_SYMBOL "|"
 #define MXT_STR_END "<"
+
+#define MXT_STR_TABLE ":"
+#define MXT_STR_LE ";"
 
 template<typename T, typename ... TT>
 std::unique_ptr<T> make_unique(TT&& ... args)
@@ -36,6 +40,8 @@ class Reader::Impl
 		void read_Recipient(In_t&);
 		void read_Symbol(In_t&);
 		void read_End(In_t&);
+	private:
+		void readTable(In_t&);
 	private:
 		Builder buf_;
 		State from_, to_;
@@ -67,7 +73,14 @@ DEA Reader::Impl::generate(In_t&& reader)
 
 	try
 	{
-		read_DEA(reader);
+		if(reader.top() == MXT_STR_TABLE)
+		{
+			readTable(reader);
+		}
+		else
+		{
+			read_DEA(reader);
+		}
 	}
 	catch(const std::exception& e)
 	{
@@ -139,6 +152,55 @@ void Reader::Impl::read_End(In_t& reader)
 {
 	assert(reader.top() == MXT_STR_END);
 	reader.pop();
+}
+
+// # ===========================================================================
+
+void Reader::Impl::readTable(In_t& reader)
+{
+	assert(reader.top() == MXT_STR_TABLE);
+
+	std::vector<Symbol> sigma;
+
+	while(true)
+	{
+		reader.pop();
+		if(reader.top() == MXT_STR_TABLE) break;
+		sigma.push_back(reader.top());
+	}
+
+	reader.pop();
+
+	while(reader.top() != MXT_STR_END)
+	{
+		State s = reader.top();
+		reader.pop();
+
+		buf_.addState(s);
+
+		if(reader.top() == MXT_STR_TARGET)
+		{
+			buf_.setInitialState(s);
+			reader.pop();
+		}
+		else if(reader.top() == MXT_STR_INITIAL)
+		{
+			buf_.makeStateAccepting(s);
+			reader.pop();
+		}
+
+		auto i = sigma.cbegin();
+
+		while(reader.top() != MXT_STR_LE)
+		{
+			assert(i != sigma.cend());
+			buf_.addRelation(s, *i, State(reader.top()));
+			++i;
+			reader.pop();
+		}
+
+		reader.pop();
+	}
 }
 
 // # ===========================================================================

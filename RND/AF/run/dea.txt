@@ -1,0 +1,45 @@
+PARSER DEA
+VAR IDS = "[a-zA-Z0-9][a-zA-Z0-9]*"
+BEGIN
+	RULE E  = E1 E
+			= E2 E
+			= FINAL
+	RULE E1 = O1 FE
+	RULE FE = O1 FE
+			= EMPTY
+	RULE O1 = OP "{" PRINT(":") O2 "}" PRINT(":") O3 F1 "]" PRINT("<")
+	RULE OP = "["
+	RULE F1 = O3 F1
+			= EMPTY
+	RULE O2 = SY F2
+	RULE F2 = "," O2
+			= EMPTY
+	RULE O3 = ST SY F3 ";" PRINT(";")
+	RULE F3 = SY F3
+			= EMPTY
+	RULE ST = "*" SY PRINT("*")
+			= ">" SY PRINT(">")
+			= SY
+	RULE SY = ID(R$IDS) PRINT
+
+	RULE E2 = O1 PRINT("<")
+	RULE Q1 = Q2 H1
+	RULE H1 = Q2 H1
+			= EMPTY
+	RULE Q2 = "DEA" PRINT("^") Q3 H2
+	RULE H2 = Q3 H2
+			= EMPTY
+	RULE Q3 = "FROM" PRINT(":") SY Q6 Q4 H3
+	RULE H3 = Q3
+			= EMPTY
+	RULE Q4 = "TQ" PRINT(">") SY "WITH" PRINT("|") Q5 H4
+	RULE H4 = Q4
+			= EMPTY
+	RULE Q5 = SY H5
+	RULE H5 = "," PRINT("|") Q5 H5
+			= EMPTY
+	RULE Q6 = "INITIAL" PRINT("*")
+			= "ACCEPTING" PRINT("%")
+			= EMPTY
+END
+

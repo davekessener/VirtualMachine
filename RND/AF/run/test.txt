@@ -1,6 +1,11 @@
-DEA
-	FROM p0 TO p1 WITH a,b,c
-	FROM p1 TO p0 WITH a
-			TO p2 WITH b,c
-	FROM p2 TO p0 WITH a,b,c
+[{0,1}
+>A B E;
+ B C F;
+*C D H;
+ D E H;
+ E F I;
+*F G B;
+ G H B;
+ H I C;
+*I A E;]
 
