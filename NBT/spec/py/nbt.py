@@ -208,11 +208,11 @@ class TAG_List(NBTBase):
 		return self._value.__iter__()
 
 	def addTag(self, tag):
-		if self._eid == 0:
+		if self._eid == 0 or not self._value:
 			self._eid = tag.getID()
 		elif self._eid != tag.getID():
 			raise Exception('Error: Tag is of invalid type: %d -> %d' % (tag.getID(), self._eid))
-		self._values.append(tag)
+		self._value.append(tag)
 
 	def read_data(self, s):
 		self._eid = NumberTag.ReadNumber(s, 'B')
