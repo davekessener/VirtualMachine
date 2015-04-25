@@ -22,6 +22,7 @@
 !*.mk
 !*.s
 !*.b
+!*.l
 !*.doc
 !*.schema
 !*.chip
