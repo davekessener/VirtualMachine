@@ -16,21 +16,29 @@ npunc	[(]
 
 [ \t]+	;
 
-<INITIAL>{word}		{ ECHO; BEGIN WORD; }
-<INITIAL>{punc}		{ ECHO; BEGIN PUNC; }
-<INITIAL>{npunc}	{ ECHO; BEGIN NPUNC; }
+<INITIAL>{
+{word}		{ ECHO; BEGIN WORD; }
+{punc}		{ ECHO; BEGIN PUNC; }
+{npunc}	{ ECHO; BEGIN NPUNC; }
+}
 
 \n					{ ECHO; BEGIN INITIAL; }
 
-<WORD>{word}		{ printf(" %s", yytext); }
-<WORD>{punc}		{ ECHO; BEGIN PUNC; }
-<WORD>{npunc}		{ printf(" %s", yytext); BEGIN NPUNC; }
+<WORD>{
+{word}		{ printf(" %s", yytext); }
+{punc}		{ ECHO; BEGIN PUNC; }
+{npunc}		{ printf(" %s", yytext); BEGIN NPUNC; }
+}
 
-<PUNC>{word}		{ printf(" %s", yytext); BEGIN WORD; }
-<PUNC>{punc}		{ ECHO; }
-<PUNC>{npunc}		{ printf(" %s", yytext); BEGIN NPUNC; }
+<PUNC>{
+{word}		{ printf(" %s", yytext); BEGIN WORD; }
+{punc}		{ ECHO; }
+{npunc}		{ printf(" %s", yytext); BEGIN NPUNC; }
+}
 
-<NPUNC>{word}		{ ECHO; BEGIN WORD; }
-<NPUNC>{punc}		{ printf(" %s", yytext); BEGIN PUNC; }
-<NPUNC>{npunc}		{ ECHO; }
+<NPUNC>{
+{word}		{ ECHO; BEGIN WORD; }
+{punc}		{ printf(" %s", yytext); BEGIN PUNC; }
+{npunc}		{ ECHO; }
+}
 
