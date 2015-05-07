@@ -2,14 +2,6 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-//Die in den Testfällen verwendeten assert-Anweisungen werden über
-//einen sogenannten statischen Import bereitgestellt, zum Beispiel:
-//import static org.junit.Assert.assertEquals;
-//
-//Um die Annotation @Test verwenden zu können, muss diese
-//importiert werden, zum Beispiel:
-//import org.junit.Test;
-
 public class CDTest extends AbstractMediumTest
 {
     private static final String BEZEICHNUNG = "CD";
@@ -28,26 +20,32 @@ public class CDTest extends AbstractMediumTest
         return BEZEICHNUNG;
     }
     
-    // Alle Testmethoden erhalten die Annotation @Test. Dafür müssen diese nicht
-    // mehr mit test im Namen beginnen. Dies wird jedoch aus Gewohnheit
-    // oft weiter verwendet.
     @Test
     @Override
     public void testKonstruktor()
     {
+        CD cd = (CD) getMedium();
+        
         super.testKonstruktor();
-        assertEquals(LAENGE, ((CD) getMedium1()).getSpiellaenge());
-        assertEquals(INTERPRET, ((CD) getMedium1()).getInterpret());
+        
+        assertEquals(LAENGE, cd.getSpiellaenge());
+        assertEquals(INTERPRET, cd.getInterpret());
     }
 
     @Test
     @Override
     public void testSetter()
     {
+        CD cd = (CD) getMedium();
+        final String int2 = "Interpret2";
+        final int sl = 99;
+        
         super.testSetter();
-        ((CD) getMedium1()).setInterpret("Interpret2");
-        assertEquals(((CD) getMedium1()).getInterpret(), "Interpret2");
-        ((CD) getMedium1()).setSpiellaenge(99);
-        assertEquals(((CD) getMedium1()).getSpiellaenge(), 99);
+        
+        cd.setInterpret(int2);
+        assertEquals(cd.getInterpret(), int2);
+
+        cd.setSpiellaenge(sl);
+        assertEquals(cd.getSpiellaenge(), sl);
     }
 }

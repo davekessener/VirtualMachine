@@ -212,6 +212,7 @@ class AusleihWerkzeug
                 .getSelectedMedien();
         Kunde selectedKunde = _kundenAuflisterWerkzeug.getSelectedKunde();
         Datum heute = Datum.heute();
+
         try
         {
             _verleihService.verleiheAn(selectedKunde, selectedMedien, heute);

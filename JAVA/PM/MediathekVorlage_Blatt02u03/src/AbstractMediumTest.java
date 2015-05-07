@@ -62,9 +62,9 @@ public abstract class AbstractMediumTest
     @Test
     public void testEquals()
     {
-        assertFalse("Mehrere Exemplare der gleichen CD sind ungleich",
+        assertFalse("Mehrere Exemplare des gleichen Mediums(" + getMedienBezeichnung() + ") sind ungleich",
                 _m1.equals(_m2));
-        assertTrue("Dasselbe Exemplare der gleichen CD ist gleich",
+        assertTrue("Dasselbe Exemplare des gleichen Mediums(" + getMedienBezeichnung() + ") ist gleich",
                 _m1.equals(_m1));
     }
 
@@ -74,6 +74,5 @@ public abstract class AbstractMediumTest
         assertNotNull(_m1.getFormatiertenString());
     }
     
-    protected Medium getMedium1() { return _m1; }
-    protected Medium getMedium2() { return _m2; }
+    protected Medium getMedium() { return _m1; }
 }
