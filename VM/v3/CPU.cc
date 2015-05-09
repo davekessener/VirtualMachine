@@ -4,6 +4,11 @@
 
 namespace vm {
 
+/* registers 0x00 - 0x0f : r0 - r15 : user registers
+   registers 0x10 - 0x1f : s0 - s15 : system registers
+   registers 0x20 - 0x2f : t0 - t15 : temp registers
+*/
+
 #define SP reg[0 + 0x10]
 #define IX reg[1 + 0x10]
 #define A  reg[2 + 0x10]

@@ -1,0 +1,2 @@
+.equ hi hello
+
