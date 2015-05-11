@@ -7,7 +7,7 @@
 	typedef const char *cstr_t;
 	cstr_t ids[0x100];
 	cstr_t equs[0x100];
-	size_t i, line;
+	size_t i, line = 1;
 	cstr_t id;
 
 	FILE *infs[0x100];
@@ -26,9 +26,11 @@
 	void loadfile(cstr_t);
 	void doabort(void);
 
+	char *lowerdup(cstr_t);
+
 	void yyerror(cstr_t s) { }
 
-	#define MXT_TOLOWER(c) (((c)>='a'&&(c)<='z')?(c):((c)+'a'-'A'))
+	#define MXT_TOLOWER(c) (((c)>='A'&&(c)<='Z')?((c)+'a'-'A'):(c))
 %}
 
 a [aA]
@@ -58,7 +60,7 @@ x [xX]
 y [yY]
 z [zZ]
 
-id			[a-zA-Z0-9_]+
+id			[a-zA-Z_][a-zA-Z0-9_]*
 equ			\.{e}{q}{u}
 inc			\.{i}{n}{c}
 db			\.{d}[bBwWdDqQ]
@@ -80,6 +82,8 @@ num		{ch}|{int}|{oct}|{hex}|{bin}
 var		%{id}
 mlbl	::[a-zA-Z0-9_]+
 
+%s CONTENT
+
 %s EQU
 %s EQU_REST
 %s EQU_END
@@ -94,63 +98,71 @@ mlbl	::[a-zA-Z0-9_]+
 
 %%
 
-
 <INITIAL>{
+[ \t\n]+	;
+.			{ yyless(0); BEGIN CONTENT; }
+.			{ fprintf(stderr, "WFT\n"); doabort(); }
+}
+
+<CONTENT>{
 {inc}		{ BEGIN INC; }
 {db}		{ BEGIN DB; yylval.i = MXT_TOLOWER(yytext[2]); return T_DB; }
 {defmacro}	{ BEGIN MACRO; return T_DEFMACRO; }
 {equ}		{ BEGIN EQU; }
-{label}/[ \t]*{comment}?\n	{ yylval.s = strdup(yytext); return T_LBL; }
-{id}		{ cstr_t t = substitute(yytext); if(t) { yylval.s = strdup(t); BEGIN EXPR; return T_ID; } }
+{label}/[ \t]*{comment}?\n	{ yylval.s = lowerdup(yytext); return T_LBL; }
+{id}		{ cstr_t t = substitute(yytext); if(t) { yylval.s = lowerdup(t); BEGIN EXPR; return T_ID; } }
 {comment}	;
 [ \t]+		;
 .			{ fprintf(stderr, "ERR: %s: invalid character %c @%d!\n", cfn, *yytext, line); doabort(); }
-\n			{ ++line; return '\n'; }
+\n			{ BEGIN INITIAL; ++line; return '\n'; }
 }
 
 <MACRO>{
-{id}		{ yylval.s = strdup(yytext); return T_ID; }
+{id}		{ yylval.s = lowerdup(yytext); return T_ID; }
 ,			{ return ','; }
-{var}		{ yylval.s = strdup(yytext); return T_VAR; }
+{var}		{ yylval.s = lowerdup(yytext); return T_VAR; }
+[ \t]+		;
 \n			{ BEGIN MACRO_BODY; ++line; return '\n'; }
 }
 
 <MACRO_BODY>{
-{id}			{ cstr_t t = substitute(yytext); if(t) { yylval.s = strdup(t); return T_ID; } }
-{var}			{ yylval.s = strdup(yytext); return T_VAR; }
+{id}			{ cstr_t t = substitute(yytext); if(t) { yylval.s = lowerdup(t); return T_ID; } }
+{var}			{ yylval.s = lowerdup(yytext); return T_VAR; }
 {op}			{ return *yytext; }
 {num}			{ yylval.i = evalnum(yytext); return T_NUM; }
-{mlbl}|{label}	{ yylval.s = strdup(yytext); return T_LBL; }
+{mlbl}|{label}	{ yylval.s = lowerdup(yytext); return T_LBL; }
 {cur}			{ return *yytext; }
 {comment}		;
-\n				{ ++line; return '\n'; }
-{endmacro}		{ BEGIN INITIAL; return T_ENDMACRO; }
+[ \t]+			;
+\n[ \t\n]*		{ line += yyleng; return '\n'; }
+{endmacro}		{ BEGIN CONTENT; return T_ENDMACRO; }
 }
 
 <EXPR>{
-{id}		{ cstr_t t = substitute(yytext); if(t) { yylval.s = strdup(t); return T_ID; } }
+{id}		{ cstr_t t = substitute(yytext); if(t) { yylval.s = lowerdup(t); return T_ID; } }
 {op}		{ return *yytext; }
 {num}		{ yylval.i = evalnum(yytext); return T_NUM; }
-{label}		{ yylval.s = strdup(yytext); return T_LBL; }
+{label}		{ yylval.s = lowerdup(yytext); return T_LBL; }
 {cur}		{ return *yytext; }
 {comment}	;
+[ \t]+		;
 \n			{ BEGIN INITIAL; ++line; return '\n'; }
 }
 
 <INC>{
-\"[^\"]+\"	{ yytext[yyleng - 1] = '\0'; loadfile(yytext + 1); }
+\"[^\"]+\"	{ yytext[yyleng - 1] = '\0'; loadfile(yytext + 1); BEGIN INITIAL; }
 [ \t]+		;
-.			{ fprintf(stderr, "ERR: %s: expected quoted filename @%d\n", cfn, line); doabort(); }
-\n			{ BEGIN INITIAL; }
+.|\n		{ fprintf(stderr, "ERR: %s: expected quoted filename @%d\n", cfn, line); doabort(); }
 }
 
 <DB>{
 {num}		{ yylval.i = evalnum(yytext); return T_NUM; }
-{label}		{ yylval.s = strdup(yytext); return T_LBL; }
+{label}		{ yylval.s = lowerdup(yytext); return T_LBL; }
 \"			{ BEGIN STR; }
 {cur}		{ return *yytext; }
 [, \t]+		;
 \n			{ BEGIN INITIAL; ++line; return '\n'; }
+.			{ fprintf(stderr, "ERR: %s: invalid character '%c' @%d\n", cfn, *yytext, line); doabort(); }
 }
 
 <STR>{
@@ -161,13 +173,13 @@ mlbl	::[a-zA-Z0-9_]+
 }
 
 <EQU>{
-{id}	{ id = strdup(yytext); BEGIN EQU_REST; }
+{id}	{ id = lowerdup(yytext); BEGIN EQU_REST; }
 [ \t]+	;
 \n		{ fprintf(stderr, "ERR: %s: incomplete .equ @%d\n", cfn, line); doabort(); }
 }
 
 <EQU_REST>{
-[^ \t\n](.*[^ \t\n])?	{ insert(id, strdup(yytext)); BEGIN EQU_END; }
+[^ \t\n](.*[^ \t\n])?	{ insert(id, lowerdup(yytext)); BEGIN EQU_END; }
 [ \t]+	 			;
 \n		{ fprintf(stderr, "ERR: %s: incomplete .equ @%d\n", cfn, line); doabort(); }
 }
@@ -184,9 +196,9 @@ int yywrap(void)
 {
 	if(f_i)
 	{
-		fclose(yyin);
+		yypop_buffer_state();
 		free((void *)cfn);
-		yyin = infs[--f_i];
+		fclose(infs[--f_i]);
 		line = inls[--l_i];
 		cfn  = inns[--n_i];
 		return 0;
@@ -213,7 +225,6 @@ void loadfile(cstr_t fn)
 		if(strcmp(incs[j], fn) == 0)
 		{
 			fprintf(stderr, "Warning: Cyclic dependency of '%s'!\n", fn);
-			return;
 		}
 	}
 
@@ -225,11 +236,14 @@ void loadfile(cstr_t fn)
 		doabort();
 	}
 
-	infs[f_i++] = yyin;
 	incs[i_i++] = strdup(fn);
+
+	infs[f_i++] = f;
 	inls[l_i++] = line;
-	yyin = f;
-	line = 0;
+	inns[n_i++] = cfn;
+	yypush_buffer_state(yy_create_buffer(f, YY_BUF_SIZE));
+	line = 1;
+	cfn = strdup(fn);
 }
 
 void insert(cstr_t id, cstr_t equ)
@@ -247,35 +261,17 @@ void insert(cstr_t id, cstr_t equ)
 	++i;
 }
 
-cstr_t get(cstr_t id)
+char *lowerdup(cstr_t s)
 {
-	size_t j;
-	for(j = 0 ; j < i ; ++j)
+	size_t l = strlen(s);
+	char *r = malloc(++l);
+
+	while(l--)
 	{
-		if(strcmp(ids[j], id) == 0) return equs[j];
+		r[l] = MXT_TOLOWER(s[l]);
 	}
 
-	return NULL;
-}
-
-cstr_t substitute(cstr_t id)
-{
-	cstr_t s = get(id);
-
-	if(!s)
-	{
-		return id;
-	}
-	else
-	{
-		size_t p = strlen(s);
-		while(p)
-		{
-			unput(s[--p]);
-		}
-
-		return NULL;
-	}
+	return r;
 }
 
 void doabort(void)
@@ -336,4 +332,36 @@ int evalnum(cstr_t s)
 
 	return v;
 }
+
+cstr_t get(cstr_t id)
+{
+	size_t j;
+	for(j = 0 ; j < i ; ++j)
+	{
+		if(strcmp(ids[j], id) == 0) return equs[j];
+	}
+
+	return NULL;
+}
+
+cstr_t substitute(cstr_t id)
+{
+	cstr_t s = get(id);
+
+	if(!s)
+	{
+		return id;
+	}
+	else
+	{
+		size_t p = strlen(s);
+		while(p)
+		{
+			unput(s[--p]);
+		}
+
+		return NULL;
+	}
+}
+
 

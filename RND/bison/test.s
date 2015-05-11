@@ -17,7 +17,7 @@
 	ld r0,199
 	mul r0,A
 	jne A,BL,:end
-.dw msg, '\0'
+.dw :msg, '\0'
 .db 0,1,'\n','\\','\''
 :end
 	hlt
