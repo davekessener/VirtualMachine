@@ -1,3 +1,7 @@
+%{
+	#define SPACE printf(" ")
+%}
+
 %s	WORD
 %s	PUNC
 %s	NPUNC
@@ -14,31 +18,30 @@ punc	[.,:;?!)]
 npunc	[(]
 %%
 
-[ \t]+	;
+[ \t]+		;
+\n			{ ECHO; BEGIN INITIAL; }
 
 <INITIAL>{
 {word}		{ ECHO; BEGIN WORD; }
 {punc}		{ ECHO; BEGIN PUNC; }
-{npunc}	{ ECHO; BEGIN NPUNC; }
+{npunc}		{ ECHO; BEGIN NPUNC; }
 }
 
-\n					{ ECHO; BEGIN INITIAL; }
-
 <WORD>{
-{word}		{ printf(" %s", yytext); }
+{word}		{ SPACE; ECHO; }
 {punc}		{ ECHO; BEGIN PUNC; }
-{npunc}		{ printf(" %s", yytext); BEGIN NPUNC; }
+{npunc}		{ SPACE; ECHO; BEGIN NPUNC; }
 }
 
 <PUNC>{
-{word}		{ printf(" %s", yytext); BEGIN WORD; }
+{word}		{ SPACE; ECHO; BEGIN WORD; }
 {punc}		{ ECHO; }
-{npunc}		{ printf(" %s", yytext); BEGIN NPUNC; }
+{npunc}		{ SPACE; ECHO; BEGIN NPUNC; }
 }
 
 <NPUNC>{
 {word}		{ ECHO; BEGIN WORD; }
-{punc}		{ printf(" %s", yytext); BEGIN PUNC; }
+{punc}		{ SPACE; ECHO; BEGIN PUNC; }
 {npunc}		{ ECHO; }
 }
 
