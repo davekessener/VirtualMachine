@@ -9,9 +9,9 @@ var		[a-z]
 
 %%
 
-{number}	{ yylval = atof(yytext); return T_NUM; }
+{number}	{ yylval.d = atof(yytext); return T_NUM; }
 {ops}		{ return *yytext; }
-{var}		{ yylval = *yytext - 'a'; return T_VAR; }
+{var}		{ yylval.i = *yytext - 'a'; return T_VAR; }
 \n			{ return '\n'; }
 [ \t]+		;
 .			{ fprintf(stderr, "ERR: Unrecognized character: '%c'!\n", *yytext); exit(1); }

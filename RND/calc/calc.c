@@ -40,7 +40,7 @@ void printcell(CELL *c, size_t ident)
 		case C_EXPRLIST:
 			printf("LIST\n");
 			printcell(c->left, ident + 4);
-			if(c->right) printcell(c->right, ident + 2);
+			if(c->right) printcell(c->right, ident);
 			break;
 		case C_BINOP:
 			printf("BINOP (%c)\n", c->data.binop);
@@ -61,7 +61,6 @@ void printcell(CELL *c, size_t ident)
 
 void eval(CELL *c)
 {
-	printf("Eval called\n");
 	memset(sbuf, ' ', MXT_BUFSIZE);
 	sbuf[MXT_BUFSIZE] = '\0';
 	printcell(c, 0);
@@ -97,7 +96,6 @@ CELL *function(uint v, CELL *vars)
 CELL *number(double d)
 {
 	CELL *c = new_cell();
-	printf("a number %lf\n", d);
 
 	c->id = C_NUM;
 	c->data.num = d;
@@ -137,11 +135,13 @@ CELL *expr_list(CELL *e, CELL *cdr)
 
 CELL *append(CELL *car, CELL *cdr)
 {
-	CELL *c = cdr;
+	CELL *c = car;
 
-	while(cdr->right) cdr = cdr->right;
+	if(!car) return cdr;
 
-	cdr->right = car;
+	while(car->right) car = car->right;
+
+	car->right = cdr;
 
 	return c;
 }
