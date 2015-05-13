@@ -23,6 +23,7 @@
 !*.s
 !*.b
 !*.l
+!*.y
 !*.doc
 !*.schema
 !*.chip
