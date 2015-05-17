@@ -59,11 +59,93 @@ void printcell(CELL *c, size_t ident)
 	}
 }
 
+const char *generate_lisp(CELL *c)
+{
+	static char *fs;
+	char buf[MXT_BUFSIZE];
+
+	if(fs) { free(fs); fs = NULL; }
+
+	if(!c) return fs = strdup("");
+
+	switch(c->id)
+	{
+		case C_NONE:
+			fprintf(stderr, "ERR: Empty cell.!\n");
+			exit(1);
+			break;
+		case C_NUM:
+			snprintf(buf, MXT_BUFSIZE, "%g", c->data.num);
+			fs = strdup(buf);
+			break;
+		case C_VAR:
+			snprintf(buf, MXT_BUFSIZE, "%c", c->data.id + 'a');
+			fs = strdup(buf);
+			break;
+		case C_ASSIGN:
+			{
+				int f = 0;
+				if(c->left->id == C_CALL)
+				{
+					snprintf(buf, MXT_BUFSIZE, "(defun %c (", c->left->data.id + 'a');
+					strcat(buf, generate_lisp(c->left->right));
+					strcat(buf, ") ");
+				}
+				else
+				{
+					snprintf(buf, MXT_BUFSIZE, "(setq '%c ", c->left->data.id + 'a');
+				}
+				strcat(buf, generate_lisp(c->right));
+				strcat(buf, ")");
+				free(fs);
+				fs = strdup(buf);
+			}
+			break;
+		case C_EXPRLIST:
+			{
+				CELL *p = c;
+				buf[0] = '\0';
+				int f = 0;
+				while(p)
+				{
+					if(f) strcat(buf, " "); f = 1;
+					strcat(buf, generate_lisp(p->left));
+					p = p->right;
+				}
+				free(fs);
+				fs = strdup(buf);
+			}
+			break;
+		case C_BINOP:
+			snprintf(buf, MXT_BUFSIZE, "(%c ", c->data.binop);
+			strcat(buf, generate_lisp(c->left));
+			strcat(buf, " ");
+			strcat(buf, generate_lisp(c->right));
+			strcat(buf, ")");
+			free(fs);
+			fs = strdup(buf);
+			break;
+		case C_NEG:
+			snprintf(buf, MXT_BUFSIZE, "(- %s)", generate_lisp(c->right));
+			free(fs);
+			fs = strdup(buf);
+			break;
+		case C_CALL:
+			snprintf(buf, MXT_BUFSIZE, "(%c %s)", c->data.id + 'a', generate_lisp(c->right));
+			free(fs);
+			fs = strdup(buf);
+			break;
+	}
+
+	return fs;
+}
+
 void eval(CELL *c)
 {
 	memset(sbuf, ' ', MXT_BUFSIZE);
 	sbuf[MXT_BUFSIZE] = '\0';
-	printcell(c, 0);
+//	printcell(c, 0);
+	printf("%s\n", generate_lisp(c));
 }
 
 CELL *assign(CELL *f, CELL *b)
