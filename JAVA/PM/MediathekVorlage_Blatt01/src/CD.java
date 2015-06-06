@@ -5,7 +5,7 @@
  * @author SE2-Team, PR2-Team
  * @version WiSe 2014
  */
-class CD implements Medium
+public class CD implements Medium
 {
     /**
      * Der Interpret der CD

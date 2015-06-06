@@ -8,7 +8,7 @@ import java.util.Comparator;
  * @author SE2-Team, PR2-Team
  * @version WiSe 2014
  */
-class AusleiheMedienFormatiererComparator implements
+public class AusleiheMedienFormatiererComparator implements
         Comparator<AusleiheMedienFormatierer>, Serializable
 {
 

@@ -8,12 +8,12 @@ import java.util.List;
  * 
  * MedienbestandService ist ein ObservableService, als solcher bietet er die
  * Möglichkeit über Änderungen am Medienbestand zu informieren. Beobachter
- * müssen das Interface ServiceObserver implementieren.
+ * müssen das public interface ServiceObserver implementieren.
  * 
  * @author SE2-Team, PR2-Team
  * @version WiSe 2014
  */
-interface MedienbestandService extends ObservableService
+public interface MedienbestandService extends ObservableService
 {
 
     /**

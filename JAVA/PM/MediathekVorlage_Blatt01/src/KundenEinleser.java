@@ -18,7 +18,7 @@ import java.util.StringTokenizer;
  * @author SE2-Team, PR2-Team
  * @version WiSe 2014
  */
-class KundenEinleser
+public class KundenEinleser
 {
 
     /**

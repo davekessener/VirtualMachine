@@ -8,7 +8,7 @@ import javax.swing.JTextArea;
  * @author SE2-Team, PR2-Team
  * @version WiSe 2014
  */
-class KundenDetailAnzeigerWerkzeug
+public class KundenDetailAnzeigerWerkzeug
 {
     private KundenDetailAnzeigerUI _ui;
 

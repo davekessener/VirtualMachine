@@ -11,7 +11,7 @@ import javax.swing.JPanel;
  * @author SE2-Team, PR2-Team
  * @version WiSe 2014
  */
-class AusleihWerkzeug
+public class AusleihWerkzeug
 {
 
     /**

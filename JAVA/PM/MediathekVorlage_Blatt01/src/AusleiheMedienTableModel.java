@@ -12,7 +12,7 @@ import javax.swing.table.AbstractTableModel;
  * @author SE2-Team, PR2-Team
  * @version WiSe 2014
  */
-class AusleiheMedienTableModel extends AbstractTableModel
+public class AusleiheMedienTableModel extends AbstractTableModel
 {
     private static final long serialVersionUID = 1L;
 

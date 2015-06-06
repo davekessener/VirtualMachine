@@ -10,7 +10,7 @@ import javax.swing.JTextArea;
  * @author SE2-Team, PR2-Team
  * @version WiSe 2014
  */
-class MedienDetailAnzeigerWerkzeug
+public class MedienDetailAnzeigerWerkzeug
 {
     private MedienDetailAnzeigerUI _ui;
 

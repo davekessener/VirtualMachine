@@ -14,7 +14,7 @@ import javax.swing.border.TitledBorder;
  * @author SE2-Team, PR2-Team
  * @version WiSe 2014
  */
-class MedienDetailAnzeigerUI
+public class MedienDetailAnzeigerUI
 {
     private JPanel _hauptPanel;
     private JTextArea _medienAnzeigerTextArea;

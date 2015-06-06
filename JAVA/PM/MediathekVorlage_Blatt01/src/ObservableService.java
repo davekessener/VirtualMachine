@@ -1,11 +1,11 @@
 /**
- * Das interface für beobachtbare Services. Definiert Operationen zum An- und
+ * Das public interface für beobachtbare Services. Definiert Operationen zum An- und
  * Abmelden von Beobachtern.
  * 
  * @author SE2-Team, PR2-Team
  * @version WiSe 2014
  */
-interface ObservableService
+public interface ObservableService
 {
 
     /**

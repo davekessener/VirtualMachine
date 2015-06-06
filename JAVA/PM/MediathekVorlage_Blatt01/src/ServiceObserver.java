@@ -1,11 +1,11 @@
 /**
- * Interface für Beobachter, die sich für Änderungen eines ObservableService
+ * public interface für Beobachter, die sich für Änderungen eines ObservableService
  * interessieren.
  * 
  * @author SE2-Team, PR2-Team
  * @version WiSe 2014
  */
-interface ServiceObserver
+public interface ServiceObserver
 {
 
     /**

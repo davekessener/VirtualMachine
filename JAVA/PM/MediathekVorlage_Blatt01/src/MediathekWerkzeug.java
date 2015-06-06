@@ -7,7 +7,7 @@ import java.awt.event.ActionListener;
  * @author SE2-Team, PR2-Team
  * @version WiSe 2014
  */
-class MediathekWerkzeug
+public class MediathekWerkzeug
 {
     /**
      * Die UI der Mediathek.

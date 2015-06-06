@@ -10,7 +10,7 @@ import java.util.regex.Pattern;
  * @author SE2-Team, PR2-Team
  * @version WiSe 2014
  */
-final class PLZ
+final public class PLZ
 {
     // der benutzte reguläre Ausdruck zur Überprüfung der Gültigkeit von
     // Postleitzahlen.

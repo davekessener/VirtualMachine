@@ -8,7 +8,7 @@ import java.util.Comparator;
  * @author SE2-Team, PR2-Team
  * @version WiSe 2014
  */
-class MedienComparator implements Comparator<Medium>, Serializable
+public class MedienComparator implements Comparator<Medium>, Serializable
 {
 
     private static final long serialVersionUID = 1L;

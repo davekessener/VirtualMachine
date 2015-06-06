@@ -6,12 +6,12 @@ import java.util.List;
  * 
  * KundenstammService ist ein ObservableService, als solcher bietet er die
  * Möglichkeit über Änderungen am Kundenstamm zu informieren. Beobachter müssen
- * das Interface ServiceObserver implementieren.
+ * das public interface ServiceObserver implementieren.
  * 
  * @author SE2-Team, PR2-Team
  * @version WiSe 2014
  */
-interface KundenstammService extends ObservableService
+public interface KundenstammService extends ObservableService
 {
 
     /**

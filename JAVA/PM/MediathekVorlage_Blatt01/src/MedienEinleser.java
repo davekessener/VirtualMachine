@@ -17,7 +17,7 @@ import java.util.regex.Pattern;
  * @author SE2-Team, PR2-Team
  * @version WiSe 2014
  */
-class MedienEinleser
+public class MedienEinleser
 {
 
     // Dieses Pattern dient der Überprüfung eines Datums

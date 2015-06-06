@@ -4,7 +4,7 @@
  * @author SE2-Team, PR2-Team
  * @version WiSe 2014
  */
-class AusleiheMedienFormatierer
+public class AusleiheMedienFormatierer
 {
 
     private final Medium _medium;

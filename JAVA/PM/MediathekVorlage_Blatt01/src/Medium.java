@@ -6,7 +6,7 @@
  * @author SE2-Team, PR2-Team
  * @version WiSe 2014
  */
-interface Medium
+public interface Medium
 {
     /**
      * 

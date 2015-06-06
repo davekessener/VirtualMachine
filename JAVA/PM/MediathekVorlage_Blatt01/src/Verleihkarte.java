@@ -11,7 +11,7 @@
  * @author SE2-Team, PR2-Team
  * @version WiSe 2014
  */
-class Verleihkarte
+public class Verleihkarte
 {
 
     // Eigenschaften einer Verleihkarte

@@ -7,7 +7,7 @@ import java.io.IOException;
  * @author SE2-Team, PR2-Team
  * @version WiSe 2014
  */
-class DateiLeseException extends IOException
+public class DateiLeseException extends IOException
 {
 
     private static final long serialVersionUID = 1L;

@@ -15,7 +15,7 @@ import javax.swing.table.JTableHeader;
  * @author SE2-Team, PR2-Team
  * @version WiSe 2014
  */
-class KundenauflisterUI
+public class KundenauflisterUI
 {
     private KundenTableModel _kundenTableModel;
     private JPanel _hauptPanel;

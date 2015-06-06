@@ -15,7 +15,7 @@ import javax.swing.JSplitPane;
  * @author SE2-Team, PR2-Team
  * @version WiSe 2014
  */
-class AusleiheUI
+public class AusleiheUI
 {
     // UI-Komponenten
     private JButton _ausleihButton;

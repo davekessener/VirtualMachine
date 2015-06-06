@@ -8,7 +8,7 @@ import java.util.List;
  * @author SE2-Team, PR2-Team
  * @version WiSe 2014
  */
-class KundenstammServiceImpl extends AbstractObservableService implements
+public class KundenstammServiceImpl extends AbstractObservableService implements
         KundenstammService
 {
 

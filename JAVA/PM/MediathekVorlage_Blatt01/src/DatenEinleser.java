@@ -11,7 +11,7 @@ import java.util.Map.Entry;
  * @author SE2-Team, PR2-Team
  * @version WiSe 2014
  */
-class DatenEinleser
+public class DatenEinleser
 {
 
     /**

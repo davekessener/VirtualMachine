@@ -6,7 +6,7 @@
  * @version WiSe 2014
  * 
  */
-class DVD implements Medium
+public class DVD implements Medium
 {
     /**
      * Die Laufzeit des Hauptteils der DVD (in Minuten).

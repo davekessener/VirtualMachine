@@ -1,0 +1,15 @@
+{
+    "payment.total" : "Total:",
+    "payment.cash" : "Cash:",
+    "payment.change" : "Change:",
+    "kasse.beenden" : "Quit",
+    "platzverkauf.verkaufen" : "Sell",
+    "platzverkauf.gesamtpreis" : "Total:",
+    "platzverkauf.stornieren" : "Return",
+    "platzverkauf.reihe" : "Row",
+    "vorstellungsauswahl.vorstellung" : "Showing:",
+    "langchoice.query" : "Please select a language.",
+    "ok" : "OK",
+    "cancel" : "Cancel"
+}
+

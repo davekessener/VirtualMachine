@@ -4,13 +4,13 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Diese Klasse implementiert das Interface VerleihService. Siehe dortiger
+ * Diese Klasse implementiert das public interface VerleihService. Siehe dortiger
  * Kommentar.
  * 
  * @author SE2-Team, PR2-Team
  * @version WiSe 2014
  */
-class VerleihServiceImpl extends AbstractObservableService implements
+public class VerleihServiceImpl extends AbstractObservableService implements
         VerleihService
 {
     /**

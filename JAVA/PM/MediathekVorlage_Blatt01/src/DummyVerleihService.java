@@ -3,13 +3,13 @@ import java.util.List;
 import java.util.Random;
 
 /**
- * Diese Klasse implementiert das Interface VerleihService. Es handelt sich
+ * Diese Klasse implementiert das public interface VerleihService. Es handelt sich
  * lediglich um eine Dummy-Implementation, um die GUI zu testen.
  * 
  * @author GUI-Team
  * @version WiSe 2014
  */
-class DummyVerleihService extends AbstractObservableService implements
+public class DummyVerleihService extends AbstractObservableService implements
         VerleihService
 {
     // Generator für Zufallszahlen und zufällige boolsche Werte

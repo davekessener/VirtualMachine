@@ -8,12 +8,12 @@ import java.util.List;
  * 
  * VerleihService ist ein ObservableService, als solcher bietet er die
  * Möglichkeit über Verleihvorgänge zu informieren. Beobachter müssen das
- * Interface ServiceObserver implementieren.
+ * public interface ServiceObserver implementieren.
  * 
  * @author SE2-Team, PR2-Team
  * @version WiSe 2014
  */
-interface VerleihService extends ObservableService
+public interface VerleihService extends ObservableService
 {
     /**
      * Verleiht Medien an einen Kunden. Dabei wird für jedes Medium eine neue

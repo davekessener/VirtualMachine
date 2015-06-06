@@ -2,13 +2,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Eine abstrakt Implementation des ObservableService Interfaces, die die
+ * Eine abstrakt Implementation des ObservableService public interfaces, die die
  * Verwaltung und Benachrichtigung der Beobachter bereitstellt.
  * 
  * @author SE2-Team, PR2-Team
  * @version WiSe 2014
  */
-abstract class AbstractObservableService implements ObservableService
+abstract public class AbstractObservableService implements ObservableService
 {
 
     /**

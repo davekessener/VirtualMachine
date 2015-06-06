@@ -13,7 +13,7 @@ import javax.swing.event.ListSelectionListener;
  * @author SE2-Team, PR2-Team
  * @version WiSe 2014
  */
-class KundenauflisterWerkzeug extends ObservableSubWerkzeug
+public class KundenauflisterWerkzeug extends ObservableSubWerkzeug
 {
     private KundenauflisterUI _ui;
     private KundenstammService _kundenstamm;

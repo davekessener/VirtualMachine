@@ -15,7 +15,7 @@ import javax.swing.event.ListSelectionListener;
  * @author SE2-Team, PR2-Team
  * @version WiSe 2014
  */
-class AusleiheMedienauflisterWerkzeug extends ObservableSubWerkzeug
+public class AusleiheMedienauflisterWerkzeug extends ObservableSubWerkzeug
 {
     private AusleiheMedienauflisterUI _ui;
     private MedienbestandService _medienbestand;

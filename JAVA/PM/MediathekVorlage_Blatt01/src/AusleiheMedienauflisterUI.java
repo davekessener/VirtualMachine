@@ -17,7 +17,7 @@ import javax.swing.table.TableColumn;
  * @author SE2-Team, PR2-Team
  * @version WiSe 2014
  */
-class AusleiheMedienauflisterUI
+public class AusleiheMedienauflisterUI
 {
     private AusleiheMedienTableModel _ausleiheMedienTableModel;
     private JPanel _hauptPanel;

@@ -8,7 +8,7 @@ import javax.swing.SwingUtilities;
  * @author SE2-Team, PR2-Team
  * @version WiSe 2014
  */
-class StartUpMediathek_Blatt01
+public class StartUpMediathek_Blatt01
 {
 
     private static final File KUNDEN_DATEI = new File(
