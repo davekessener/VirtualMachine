@@ -30,7 +30,7 @@ public class Connection
 //            con_ = ods.getConnection(user, password);
 
 //            Logger.Log("Connected to '" + url.toString() + "' @" + user + ":" + password + ".");
-            DriverManager.setLoginTimeout(10);
+            DriverManager.setLoginTimeout(5);
             con_ = DriverManager.getConnection(url.toString(), user, password);
         }
         catch(SQLException e)

@@ -24,6 +24,7 @@
     	"test" :
     	{
     	    "S:initialization" : "Testing connection ...",
+    	    "S:connect" : "Connecting ...",
     	    "S:success" : "Success!",
     	    "S:failure" : "Failure."
     	},
@@ -35,6 +36,10 @@
     	    "E:sid" : "Invalid SID",
     	    "E:unknown" : "An unknown error occured."
     	}
+    },
+    "connection" :
+    {
+        "S:default" : "Connection"
     },
     "E:errortitle" : "Connection Error",
     "E:connectivity" : "Couldn't connect. Try again later.",

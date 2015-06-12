@@ -3,7 +3,6 @@ package viewer.tools.connection;
 import viewer.literals.language.Literals;
 import viewer.literals.language.Strings;
 import viewer.tools.ui.NumericField;
-import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.HPos;
@@ -19,8 +18,6 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.RowConstraints;
-import javafx.scene.layout.StackPane;
-import javafx.scene.paint.Color;
 
 class ConnectUI
 {
@@ -28,9 +25,6 @@ class ConnectUI
     private Button connect_, test_;
     private TextField name_, server_, sid_, user_, password_;
     private NumericField port_;
-    private Label indicator_;
-    private Button cancel_;
-    private Node form_;
     
     public ConnectUI()
     {
@@ -59,59 +53,11 @@ class ConnectUI
         test_.setOnAction(h);
     }
     
-    public void registerCancel(EventHandler<ActionEvent> h)
-    {
-        cancel_.setOnAction(h);
-    }
-    
     // # ---------------------------------------------------------------------
-    
-    public void enableUILater(boolean f) { Platform.runLater(() -> enableUI(f)); }
-    public void enableUI(boolean f)
-    {
-        form_.setDisable(!f);
-    }
-
-    public void setInfoLater(String s) { Platform.runLater(() -> setInfo(s)); }
-    public void setInfo(String s) { setInfo(s, Strings.C_DEFAULT); }
-    public void setInfoLater(String s, String c) { Platform.runLater(() -> setInfo(s, c)); }
-    public void setInfo(String s, String c)
-    {
-        indicator_.setText(Literals.Get(s));
-        indicator_.setTextFill(Color.web(Literals.Get(c)));
-    }
     
     // # ---------------------------------------------------------------------
     
     private Node createUI()
-    {
-        StackPane pane = new StackPane();
-        Node indicator = createIndicator();
-        form_ = createForm();
-        
-        pane.getChildren().addAll(indicator, form_);
-        
-        return pane;
-    }
-    
-    private Node createIndicator()
-    {
-        HBox pane = new HBox();
-        
-        pane.setSpacing(10);
-        pane.setPadding(new Insets(10, 10, 10, 10));
-        pane.setAlignment(Pos.BOTTOM_LEFT);
-
-        cancel_ = new Button("X");
-        indicator_ = new Label();
-        
-//        pane.getChildren().add(cancel_);
-        pane.getChildren().add(indicator_);
-        
-        return pane;
-    }
-    
-    private Node createForm()
     {
         GridPane grid = new GridPane();
         

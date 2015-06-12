@@ -19,7 +19,7 @@ public class ConnectionServiceTest
             URL haw = URL.Get("ora14.informatik.haw-hamburg.de", 1521, "inf14");
             String user = "abp403", password = Password.PASSWORD;
             
-            assertTrue(service.testConnection(haw, user, password).get());
+            assertTrue(service.doTestConnection(haw, user, password));
             
             id = service.establishConnection(id, haw, user, password).get();
             

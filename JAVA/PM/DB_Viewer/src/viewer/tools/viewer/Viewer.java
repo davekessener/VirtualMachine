@@ -24,6 +24,6 @@ public class Viewer
     
     private void registerHandlers()
     {
-        ui_.registerNewPageHandler(tab -> { new ConnectionManager(tab, service_); });
+        ui_.registerNewPageHandler(tab -> { tab.setContent((new ConnectionManager(service_)).getUI()); });
     }
 }
