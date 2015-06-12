@@ -41,7 +41,7 @@ public class Connection
     
     public int getID() { return id_; }
     
-    public boolean connected() throws ConnectionFailureException
+    public synchronized boolean connected() throws ConnectionFailureException
     { 
         try
         {
@@ -62,7 +62,7 @@ public class Connection
         }
     }
     
-    public void disconnect()
+    public synchronized void disconnect()
     {
         try
         {
@@ -77,7 +77,7 @@ public class Connection
         catch(ConnectionFailureException | SQLException e) { }
     }
     
-    public Relation query(String query) throws ConnectionFailureException
+    public synchronized Relation query(String query) throws ConnectionFailureException
     {
         assert connected() : "Precondition violated: connected()";
         

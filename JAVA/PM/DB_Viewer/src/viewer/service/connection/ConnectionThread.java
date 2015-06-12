@@ -1,12 +1,10 @@
 package viewer.service.connection;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.function.Consumer;
-
-import viewer.service.Logger;
 
 public class ConnectionThread implements Runnable
 {
@@ -20,7 +18,7 @@ public class ConnectionThread implements Runnable
         thread_ = null;
         running_ = false;
         tasks_ = new ArrayList<Thread>();
-        queue_ = new ArrayDeque<Promise>();
+        queue_ = new ConcurrentLinkedDeque<Promise>();
     }
     
     public void start()
@@ -36,35 +34,23 @@ public class ConnectionThread implements Runnable
     {
         while(running_)
         {
-            synchronized(queue_)
+            if(!queue_.isEmpty())
             {
-                if(!queue_.isEmpty())
-                {
-                    Thread t = new Thread(queue_.pop());
-                    
-                    tasks_.add(t);
-                    
-                    Logger.Log("Starting new Task.");
-                    
-                    t.start();
-                }
+                fulfill(queue_.pop());
             }
             
             Sleep(100);
         }
         
-        Logger.Log("Master thread done.");
-        
-        tasks_.forEach(CheckedConsumer(t -> t.join()));
+        tasks_.forEach(CheckedConsumer(t -> t.join(100)));
     }
     
     public void stop()
     {
-        Logger.Log("Stopping master thread ...");
-        
         try
         {
             running_ = false;
+            thread_.interrupt();
             thread_.join();
         }
         catch(InterruptedException e) { }
@@ -72,12 +58,16 @@ public class ConnectionThread implements Runnable
     
     public void register(Promise p)
     {
-        Logger.Log("Promise given.");
+        queue_.addLast(p);
+    }
+    
+    private void fulfill(Promise p)
+    {
+        Thread t = new Thread(p);
         
-        synchronized(queue_)
-        {
-            queue_.addLast(p);
-        }
+        tasks_.add(t);
+        
+        t.start();
     }
     
     public boolean isRunning() { return running_; }
@@ -88,24 +78,12 @@ public class ConnectionThread implements Runnable
         {
             Thread.sleep(ms);
         }
-        catch(InterruptedException e)
-        {
-        }
+        catch(InterruptedException e) { }
     }
     
     private static interface ConsumeChecked<T> { void accept(T t) throws Exception; }
     private static <T> Consumer<T> CheckedConsumer(ConsumeChecked<T> c)
     {
-        return new Consumer<T>() {
-            @Override
-            public void accept(T t)
-            {
-                try
-                {
-                    c.accept(t);
-                }
-                catch(Exception e) { }
-            }
-        };
+        return t -> { try { c.accept(t); } catch(Exception e) { } };
     }
 }

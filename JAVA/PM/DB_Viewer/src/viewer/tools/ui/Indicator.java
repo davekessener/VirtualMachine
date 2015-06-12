@@ -1,7 +1,5 @@
 package viewer.tools.ui;
 
-import javafx.scene.control.Alert;
-
 public interface Indicator
 {
     void setColor(String s);

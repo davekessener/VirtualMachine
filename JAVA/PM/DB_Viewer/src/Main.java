@@ -1,11 +1,9 @@
 import java.sql.SQLException;
 
-import viewer.service.Logger;
 import viewer.service.connection.ConnectionService;
 import viewer.tools.viewer.Viewer;
 import javafx.application.Application;
 import javafx.stage.Stage;
-
 
 public class Main extends Application
 {
@@ -19,8 +17,6 @@ public class Main extends Application
     @Override
     public void start(Stage primary) throws Exception
     {
-        Logger.Log("Starting program.");
-        
         (new Viewer(primary, service_ = new ConnectionService())).run();
     }
     

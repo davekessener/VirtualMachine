@@ -13,6 +13,7 @@
 !*.php
 !*.js
 !*.html
+!*.css
 !*.sh
 !*.txt
 !*.json

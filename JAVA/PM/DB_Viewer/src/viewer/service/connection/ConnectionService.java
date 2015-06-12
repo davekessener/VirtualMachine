@@ -1,7 +1,7 @@
 package viewer.service.connection;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import viewer.exception.ConnectionFailureException;
 import viewer.literals.URL;
@@ -15,7 +15,7 @@ public class ConnectionService implements AutoCloseable
     public ConnectionService()
     {
         thread_ = new ConnectionThread();
-        cons_ = new HashMap<String, Connection>();
+        cons_ = new ConcurrentHashMap<String, Connection>();
         
         thread_.start();
     }
@@ -51,10 +51,7 @@ public class ConnectionService implements AutoCloseable
         
         if(!c.connected()) throw new ConnectionFailureException(Connection.Failure.TIMEOUT);
         
-        synchronized(cons_)
-        {
-            cons_.put(name = nextName(name), c);
-        }
+        cons_.put(name = nextName(name), c);
         
         return name;
     }
@@ -66,14 +63,11 @@ public class ConnectionService implements AutoCloseable
     
     public void doCloseConnection(String name)
     {
-        synchronized(cons_)
+        if(cons_.containsKey(name))
         {
-            if(cons_.containsKey(name))
-            {
-                Connection c = cons_.get(name);
-                cons_.remove(name);
-                c.disconnect();
-            }
+            Connection c = cons_.get(name);
+            cons_.remove(name);
+            c.disconnect();
         }
     }
     
@@ -89,30 +83,16 @@ public class ConnectionService implements AutoCloseable
     
     public boolean knowsConnection(String name)
     {
-        synchronized(cons_)
-        {
-            return cons_.containsKey(name);
-        }
+        return cons_.containsKey(name);
     }
     
     public <T> Future<T> register(String name, ConnectionTask<T> task)
     {
-        assert knowsConnection(name) : "Precondition violated: knowsConnection(name)";
-        
-        return register(() -> 
-        {
-            Connection c;
+            assert knowsConnection(name) : "Precondition violated: knowsConnection(name)";
             
-            synchronized(cons_)
-            {
-                c = cons_.get(name);
-            }
+            Connection c = cons_.get(name);
             
-            synchronized(c)
-            {
-                return task.execute(c);
-            }
-        });
+            return register(() -> task.execute(c));
     }
     
     public Future<Void> register(VoidTask task)

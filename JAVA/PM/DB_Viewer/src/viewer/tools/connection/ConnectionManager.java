@@ -7,8 +7,8 @@ import viewer.literals.language.Literals;
 import viewer.literals.language.Strings;
 import viewer.service.connection.ConnectionService;
 import viewer.service.connection.VoidTask;
+import viewer.tools.ui.Alert;
 import javafx.scene.Node;
-import javafx.scene.control.Alert;
 
 public class ConnectionManager
 {

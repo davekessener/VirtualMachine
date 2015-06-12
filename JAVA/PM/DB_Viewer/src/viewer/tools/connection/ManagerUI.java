@@ -1,12 +1,12 @@
 package viewer.tools.connection;
 
 import viewer.literals.language.Literals;
+import viewer.tools.ui.Alert;
 import viewer.tools.ui.Indicator;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;

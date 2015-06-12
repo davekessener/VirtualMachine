@@ -1,7 +1,5 @@
 package viewer.service.connection;
 
-import viewer.service.Logger;
-
 class Promise implements Runnable
 {
     private Task<?> task_;
@@ -33,7 +31,6 @@ class Promise implements Runnable
     @Override
     public void run()
     {
-        Logger.Log("Promise is being fulfilled.");
         execute();
     }
     
