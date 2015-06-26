@@ -1,6 +1,7 @@
 package de.hawhh.informatik.sml.kino.startup;
 
 import javax.swing.SwingUtilities;
+
 import de.hawhh.informatik.sml.kino.fachwerte.Datum;
 import de.hawhh.informatik.sml.kino.fachwerte.FSK;
 import de.hawhh.informatik.sml.kino.fachwerte.Uhrzeit;
@@ -8,9 +9,8 @@ import de.hawhh.informatik.sml.kino.materialien.Film;
 import de.hawhh.informatik.sml.kino.materialien.Kino;
 import de.hawhh.informatik.sml.kino.materialien.Kinosaal;
 import de.hawhh.informatik.sml.kino.materialien.Vorstellung;
-import de.hawhh.informatik.sml.kino.werkzeuge.kasse.KassenWerkzeug;
-import de.hawhh.informatik.sml.kino.werkzeuge.langchooser.CancelException;
-import de.hawhh.informatik.sml.kino.werkzeuge.langchooser.LanguageChooserTool;
+import de.hawhh.informatik.sml.kino.service.KinoService;
+import de.hawhh.informatik.sml.kino.werkzeuge.newkasse.NewKasseWerkzeug;
 
 /**
  * Startet die Anwendung.
@@ -27,21 +27,13 @@ public class StartupKinoticketverkauf_Blatt03
      */
     public static void main(String[] args)
     {
-        final Kino kino = erzeugeKinoMitBeispieldaten();
+        final KinoService kino = new KinoService(erzeugeKinoMitBeispieldaten());
         
         SwingUtilities.invokeLater(new Runnable()
         {
             public void run()
             {
-                try
-                {
-                    (new LanguageChooserTool()).run();
-        
-                    new KassenWerkzeug(kino);
-                }
-                catch(CancelException e)
-                {
-                }
+                new NewKasseWerkzeug(kino);
             }
         });
     }

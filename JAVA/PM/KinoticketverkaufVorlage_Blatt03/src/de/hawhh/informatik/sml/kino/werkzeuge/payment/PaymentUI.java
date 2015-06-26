@@ -5,6 +5,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -39,10 +40,10 @@ class PaymentUI
      * @param cash ein <code>MoneyBuffer</code>-Object,
      *      das den eingegebenen gelbetrag haelt
      */
-    public PaymentUI(MoneyField cash)
+    public PaymentUI(Window w, MoneyField cash)
     {
         cash_ = cash;
-        frame_ = createDialog();
+        frame_ = createDialog(w);
     }
     
     /**
@@ -64,9 +65,9 @@ class PaymentUI
         frame_.setVisible(true);
     }
     
-    private JDialog createDialog()
+    private JDialog createDialog(Window w)
     {
-        JDialog frame = new JDialog(null, "", Dialog.ModalityType.APPLICATION_MODAL);
+        JDialog frame = new JDialog(w, "", Dialog.ModalityType.DOCUMENT_MODAL);
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.getContentPane().setLayout(new GridBagLayout());
 

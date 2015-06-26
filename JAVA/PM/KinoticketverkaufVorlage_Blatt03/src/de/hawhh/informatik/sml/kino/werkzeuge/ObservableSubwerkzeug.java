@@ -1,7 +1,8 @@
 package de.hawhh.informatik.sml.kino.werkzeuge;
 
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Basisklasse für Subwerkzeuge, die ihr Kontextwerkzeug bei Änderungen
@@ -30,7 +31,7 @@ public abstract class ObservableSubwerkzeug
      */
     public ObservableSubwerkzeug()
     {
-        _alleBeobachter = new HashSet<SubwerkzeugObserver>();
+        _alleBeobachter = Collections.newSetFromMap(new ConcurrentHashMap<SubwerkzeugObserver, Boolean>());
     }
 
     /**
@@ -42,6 +43,7 @@ public abstract class ObservableSubwerkzeug
     public void registriereBeobachter(SubwerkzeugObserver beobachter)
     {
         assert beobachter != null : "Vorbedingung verletzt: beobachter != null";
+
         _alleBeobachter.add(beobachter);
     }
 

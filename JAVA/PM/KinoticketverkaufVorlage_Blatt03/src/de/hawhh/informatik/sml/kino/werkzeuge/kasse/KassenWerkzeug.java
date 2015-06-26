@@ -2,10 +2,11 @@ package de.hawhh.informatik.sml.kino.werkzeuge.kasse;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+
 import de.hawhh.informatik.sml.kino.fachwerte.Datum;
-import de.hawhh.informatik.sml.kino.materialien.Kino;
 import de.hawhh.informatik.sml.kino.materialien.Tagesplan;
 import de.hawhh.informatik.sml.kino.materialien.Vorstellung;
+import de.hawhh.informatik.sml.kino.service.KinoService;
 import de.hawhh.informatik.sml.kino.werkzeuge.SubwerkzeugObserver;
 import de.hawhh.informatik.sml.kino.werkzeuge.datumsauswaehler.DatumAuswaehlWerkzeug;
 import de.hawhh.informatik.sml.kino.werkzeuge.platzverkauf.PlatzVerkaufsWerkzeug;
@@ -22,7 +23,7 @@ import de.hawhh.informatik.sml.kino.werkzeuge.vorstellungsauswaehler.Vorstellung
 public class KassenWerkzeug
 {
     // Das Material dieses Werkzeugs
-    private Kino _kino;
+    private KinoService kino_;
 
     // UI dieses Werkzeugs
     private KassenWerkzeugUI _ui;
@@ -39,14 +40,14 @@ public class KassenWerkzeug
      * 
      * @require kino != null
      */
-    public KassenWerkzeug(Kino kino)
+    public KassenWerkzeug(KinoService kino)
     {
         assert kino != null : "Vorbedingung verletzt: kino != null";
 
-        _kino = kino;
+        kino_ = kino;
 
         // Subwerkzeuge erstellen
-        _platzVerkaufsWerkzeug = new PlatzVerkaufsWerkzeug();
+        _platzVerkaufsWerkzeug = new PlatzVerkaufsWerkzeug(kino_);
         _datumAuswaehlWerkzeug = new DatumAuswaehlWerkzeug();
         _vorstellungAuswaehlWerkzeug = new VorstellungsAuswaehlWerkzeug();
 
@@ -110,7 +111,7 @@ public class KassenWerkzeug
      */
     private void setzeTagesplanFuerAusgewaehltesDatum()
     {
-        Tagesplan tagesplan = _kino.getTagesplan(getAusgewaehltesDatum());
+        Tagesplan tagesplan = kino_.getKino().getTagesplan(getAusgewaehltesDatum());
         _vorstellungAuswaehlWerkzeug.setTagesplan(tagesplan);
     }
 

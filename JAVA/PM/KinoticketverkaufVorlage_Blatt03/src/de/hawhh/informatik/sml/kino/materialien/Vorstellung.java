@@ -1,6 +1,7 @@
 package de.hawhh.informatik.sml.kino.materialien;
 
 import java.util.Set;
+
 import de.hawhh.informatik.sml.kino.fachwerte.Datum;
 import de.hawhh.informatik.sml.kino.fachwerte.Money;
 import de.hawhh.informatik.sml.kino.fachwerte.Platz;
@@ -23,8 +24,6 @@ public class Vorstellung
     private Uhrzeit _endzeit;
     private Datum _datum;
     private int _preis;
-    private boolean[][] _verkauft;
-    private int _anzahlVerkauftePlaetze;
 
     /**
      * Erstellt eine neue Vorstellung.
@@ -65,9 +64,6 @@ public class Vorstellung
         _endzeit = endzeit;
         _datum = datum;
         _preis = preis;
-        _verkauft = new boolean[kinosaal.getAnzahlReihen()][kinosaal
-                .getAnzahlSitzeProReihe()];
-        _anzahlVerkauftePlaetze = 0;
     }
 
     /**
@@ -140,7 +136,7 @@ public class Vorstellung
      * 
      * @require platz != null
      */
-    public boolean hatPlatz(Platz platz)
+    public synchronized boolean hatPlatz(Platz platz)
     {
         assert platz != null : "Vorbedingung verletzt: platz != null";
 
@@ -155,7 +151,7 @@ public class Vorstellung
      * 
      * @return true, falls alle Plätze existieren, false sonst.
      */
-    public boolean hatPlaetze(Set<Platz> plaetze)
+    public synchronized boolean hatPlaetze(Set<Platz> plaetze)
     {
         assert plaetze != null : "Vorbedingung verletzt: plaetze != null";
 
@@ -177,167 +173,12 @@ public class Vorstellung
      * @require plaetze != null
      * @require hatPlaetze(plaetze)
      */
-    public Money getPreisFuerPlaetze(Set<Platz> plaetze)
+    public synchronized Money getPreisFuerPlaetze(Set<Platz> plaetze)
     {
         assert plaetze != null : "Vorbedingung verletzt: plaetze != null";
         assert hatPlaetze(plaetze) : "Vorbedingung verletzt: hatPlaetze(plaetze)";
 
         return Money.Get(_preis * plaetze.size());
-    }
-
-    /**
-     * Gibt an, ob ein bestimmter Platz bereits verkauft ist.
-     * 
-     * @param platz der Sitzplatz.
-     * 
-     * @return <code>true</code>, falls der Platz verkauft ist,
-     *         <code>false</code> sonst.
-     * 
-     * @require platz != null
-     * @require hatPlatz(platz)
-     */
-    public boolean istPlatzVerkauft(Platz platz)
-    {
-        assert platz != null : "Vorbedingung verletzt: platz != null";
-        assert hatPlatz(platz) : "Vorbedingung verletzt: hatPlatz(platz)";
-
-        return _verkauft[platz.getReihe()][platz.getSitz()];
-    }
-
-    /**
-     * Verkauft einen Platz.
-     * 
-     * @param platz der Sitzplatz.
-     * 
-     * @require platz != null
-     * @require hatPlatz(platz)
-     * @require !istPlatzVerkauft(reihe, sitz)
-     * 
-     * @ensure istPlatzVerkauft(reihe, sitz)
-     */
-    public void verkaufePlatz(Platz platz)
-    {
-        assert platz != null : "Vorbedingung verletzt: platz != null";
-        assert hatPlatz(platz) : "Vorbedingung verletzt: hatPlatz(platz)";
-        assert !istPlatzVerkauft(platz) : "Vorbedingung verletzt: !istPlatzVerkauft(platz)";
-
-        _verkauft[platz.getReihe()][platz.getSitz()] = true;
-        _anzahlVerkauftePlaetze++;
-    }
-
-    /**
-     * Storniert einen Platz.
-     * 
-     * @param platz der Sitzplatz.
-     * 
-     * @require platz != null
-     * @require hatPlatz(reihe, sitz)
-     * @require istPlatzVerkauft(reihe, sitz)
-     * 
-     * @ensure !istPlatzVerkauft(reihe, sitz)
-     */
-    public void stornierePlatz(Platz platz)
-    {
-        assert platz != null : "Vorbedingung verletzt: platz != null";
-        assert hatPlatz(platz) : "Vorbedingung verletzt: hatPlatz(platz)";
-        assert istPlatzVerkauft(platz) : "Vorbedingung verletzt: istPlatzVerkauft(platz)";
-
-        _verkauft[platz.getReihe()][platz.getSitz()] = false;
-        _anzahlVerkauftePlaetze--;
-    }
-
-    /**
-     * Gibt die Anzahl verkaufter Plätze zurück.
-     */
-    public int getAnzahlVerkauftePlaetze()
-    {
-        return _anzahlVerkauftePlaetze;
-    }
-
-    /**
-     * Verkauft die gegebenen Plätze.
-     * 
-     * @require plaetze != null
-     * @require hatPlaetze(plaetze)
-     * @require sindVerkaufbar(plaetze)
-     * 
-     * @ensure alle angegebenen Plätze sind verkauft
-     */
-    public void verkaufePlaetze(Set<Platz> plaetze)
-    {
-        assert plaetze != null : "Vorbedingung verletzt: plaetze != null";
-        assert hatPlaetze(plaetze) : "Vorbedingung verletzt: hatPlaetze(plaetze)";
-        assert sindVerkaufbar(plaetze) : "Vorbedingung verletzt: sindVerkaufbar(plaetze)";
-
-        for (Platz platz : plaetze)
-        {
-            verkaufePlatz(platz);
-        }
-    }
-
-    /**
-     * Prüft, ob die gegebenen Plätze alle verkauft werden können. Dafür wird
-     * geschaut, ob keiner der gegebenen Plätze bisher verkauft ist.
-     * 
-     * Liefert true, wenn alle Plätze verkaufbar sind, sonst false.
-     * 
-     * @require plaetze != null
-     * @require hatPlaetze(plaetze)
-     */
-    public boolean sindVerkaufbar(Set<Platz> plaetze)
-    {
-        assert plaetze != null : "Vorbedingung verletzt: plaetze != null";
-        assert hatPlaetze(plaetze) : "Vorbedingung verletzt: hatPlaetze(plaetze)";
-
-        boolean result = true;
-        for (Platz platz : plaetze)
-        {
-            result &= !istPlatzVerkauft(platz);
-        }
-        return result;
-    }
-
-    /**
-     * Storniert die gegebenen Plätze.
-     * 
-     * @require plaetze != null
-     * @require hatPlaetze(plaetze)
-     * @require sindStornierbar(plaetze)
-     * 
-     * @ensure alle angegebenen Plätze sind storniert
-     */
-    public void stornierePlaetze(Set<Platz> plaetze)
-    {
-        assert plaetze != null : "Vorbedingung verletzt: plaetze != null";
-        assert hatPlaetze(plaetze) : "Vorbedingung verletzt: hatPlaetze(plaetze)";
-        assert sindStornierbar(plaetze) : "Vorbedingung verletzt: sindStornierbar(plaetze)";
-
-        for (Platz platz : plaetze)
-        {
-            stornierePlatz(platz);
-        }
-    }
-
-    /**
-     * Prüft, ob die gegebenen Plätze alle stornierbar sind. Dafür wird
-     * geschaut, ob jeder gegebene Platz verkauft ist.
-     * 
-     * Liefert true, wenn alle Plätze stornierbar sind, sonst false.
-     * 
-     * @require plaetze != null
-     * @require hatPlaetze(plaetze)
-     */
-    public boolean sindStornierbar(Set<Platz> plaetze)
-    {
-        assert plaetze != null : "Vorbedingung verletzt: plaetze != null";
-        assert hatPlaetze(plaetze) : "Vorbedingung verletzt: hatPlaetze(plaetze)";
-
-        boolean result = true;
-        for (Platz platz : plaetze)
-        {
-            result &= istPlatzVerkauft(platz);
-        }
-        return result;
     }
 
     @Override

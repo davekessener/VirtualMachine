@@ -44,7 +44,7 @@ public class KassenWerkzeugUI
             JPanel datumAuswaehlPanel, JPanel vorstellungAuswaehlPanel)
     {
         _frame = new JFrame(TITEL);
-        _frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        _frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         _frame.getContentPane().setLayout(new BorderLayout());
 
         JComponent topPanel = erstelleUeberschriftPanel();

@@ -1,9 +1,12 @@
 package de.hawhh.informatik.sml.kino.materialien;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
+
 import de.hawhh.informatik.sml.kino.fachwerte.Datum;
 
 /**
@@ -15,6 +18,7 @@ import de.hawhh.informatik.sml.kino.fachwerte.Datum;
 public class Kino
 {
     private List<Kinosaal> _kinosaele;
+    private List<Vorstellung> _vorstellungen;
 
     // Die Vorstellungspläne, sortiert nach Tagen.
     private SortedMap<Datum, Tagesplan> _tagesplaene;
@@ -41,6 +45,7 @@ public class Kino
 
         _kinosaele = new ArrayList<Kinosaal>(saele.length);
         _tagesplaene = new TreeMap<Datum, Tagesplan>();
+        _vorstellungen = Arrays.asList(vorstellungen);
 
         for (Kinosaal saal : saele)
         {
@@ -83,6 +88,16 @@ public class Kino
     public List<Kinosaal> getKinosaele()
     {
         return new ArrayList<Kinosaal>(_kinosaele);
+    }
+    
+    /**
+     * Gibt die Vorstellungen dieses Kinos zurueck.
+     * 
+     * @ensre result != null
+     */
+    public List<Vorstellung> getVorstellungen()
+    {
+        return Collections.unmodifiableList(_vorstellungen);
     }
 
     /**

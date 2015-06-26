@@ -5,10 +5,13 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
+
 import java.util.HashSet;
 import java.util.Set;
+
 import org.junit.Before;
 import org.junit.Test;
+
 import de.hawhh.informatik.sml.kino.fachwerte.Datum;
 import de.hawhh.informatik.sml.kino.fachwerte.FSK;
 import de.hawhh.informatik.sml.kino.fachwerte.Money;
@@ -83,124 +86,5 @@ public class VorstellungTest
         s.add(Platz.get(5, 7));
 
         assertEquals(Money.Get(3690), v.getPreisFuerPlaetze(s));
-    }
-
-    @Test
-    public void testeVerkaufen()
-    {
-        Vorstellung v = new Vorstellung(_kinoA, _hdR1, _16_45, _20_15,
-                _11_07_2008, 1230);
-        Platz platz = Platz.get(5, 5);
-        assertFalse(v.istPlatzVerkauft(platz));
-
-        v.verkaufePlatz(platz);
-        assertTrue(v.istPlatzVerkauft(platz));
-
-        v.stornierePlatz(platz);
-        assertFalse(v.istPlatzVerkauft(platz));
-    }
-
-    @Test
-    public void testeVerkaufenMehrere()
-    {
-        Vorstellung v = new Vorstellung(_kinoA, _hdR1, _16_45, _20_15,
-                _11_07_2008, 1230);
-
-        Platz platz1 = Platz.get(1, 1);
-        Platz platz2 = Platz.get(1, 2);
-
-        Set<Platz> plaetze = new HashSet<Platz>();
-        plaetze.add(platz1);
-        plaetze.add(platz2);
-
-        assertFalse(v.sindStornierbar(plaetze));
-
-        v.verkaufePlaetze(plaetze);
-        assertTrue(v.sindStornierbar(plaetze));
-
-        v.stornierePlaetze(plaetze);
-        assertFalse(v.sindStornierbar(plaetze));
-    }
-
-    @Test
-    public void testeSindVerkauft()
-    {
-        Vorstellung v = new Vorstellung(_kinoA, _hdR1, _16_45, _20_15,
-                _11_07_2008, 1230);
-
-        Platz platz1 = Platz.get(1, 1);
-        Platz platz2 = Platz.get(1, 2);
-        Platz platz3 = Platz.get(3, 3);
-
-        Set<Platz> allePlaetze = new HashSet<Platz>();
-        allePlaetze.add(platz1);
-        allePlaetze.add(platz2);
-        allePlaetze.add(platz3);
-
-        Set<Platz> zweiPlaetze = new HashSet<Platz>();
-        zweiPlaetze.add(platz1);
-        zweiPlaetze.add(platz2);
-
-        assertFalse(v.sindStornierbar(allePlaetze));
-        assertFalse(v.sindStornierbar(zweiPlaetze));
-
-        v.verkaufePlaetze(zweiPlaetze);
-
-        assertTrue(v.sindStornierbar(zweiPlaetze));
-        assertFalse(v.sindStornierbar(allePlaetze));
-    }
-
-    @Test
-    public void testeSindNichtVerkauft()
-    {
-        Vorstellung v = new Vorstellung(_kinoA, _hdR1, _16_45, _20_15,
-                _11_07_2008, 1230);
-
-        Platz platz1 = Platz.get(1, 1);
-        Platz platz2 = Platz.get(1, 2);
-        Platz platz3 = Platz.get(3, 3);
-        Platz platz4 = Platz.get(3, 4);
-
-        Set<Platz> allePlaetze = new HashSet<Platz>();
-        allePlaetze.add(platz1);
-        allePlaetze.add(platz2);
-        allePlaetze.add(platz3);
-        allePlaetze.add(platz4);
-
-        Set<Platz> plaetze1und2 = new HashSet<Platz>();
-        plaetze1und2.add(platz1);
-        plaetze1und2.add(platz2);
-
-        Set<Platz> plaetze3und4 = new HashSet<Platz>();
-        plaetze3und4.add(platz3);
-        plaetze3und4.add(platz4);
-
-        assertTrue(v.sindVerkaufbar(allePlaetze));
-        assertTrue(v.sindVerkaufbar(plaetze1und2));
-        assertTrue(v.sindVerkaufbar(plaetze3und4));
-
-        v.verkaufePlaetze(plaetze1und2);
-
-        assertFalse(v.sindVerkaufbar(plaetze1und2));
-        assertTrue(v.sindVerkaufbar(plaetze3und4));
-        assertFalse(v.sindVerkaufbar(allePlaetze));
-    }
-
-    @Test
-    public void testeGibAnzahlVerkauftePlaetze()
-    {
-        Vorstellung v = new Vorstellung(_kinoA, _hdR1, _16_45, _20_15,
-                _11_07_2008, 1230);
-
-        assertEquals(0, v.getAnzahlVerkauftePlaetze());
-        for (int i = 1; i <= 5; i++)
-        {
-            for (int j = 1; j <= 6; j++)
-            {
-                Platz platz = Platz.get(i, j);
-                v.verkaufePlatz(platz);
-            }
-        }
-        assertEquals(30, v.getAnzahlVerkauftePlaetze());
     }
 }

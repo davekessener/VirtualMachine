@@ -2,6 +2,8 @@ package de.hawhh.informatik.sml.kino.materialien;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+
 import de.hawhh.informatik.sml.kino.fachwerte.Platz;
 
 /**
@@ -114,6 +116,26 @@ public class Kinosaal
         
         return ((platz.getReihe() >= 0) && (platz.getReihe() < _anzahlReihen))
                 && ((platz.getSitz() >= 0) && (platz.getSitz() < _anzahlSitzeProReihe));
+    }
+
+    /**
+     * Prüft, ob alle angegebenen Sitzplätze in diesem Kinosaal vorhanden
+     * sind.
+     * 
+     * @param plaetze die Sitzplätze.
+     * 
+     * @return true, falls alle Plätze existieren, false sonst.
+     */
+    public synchronized boolean hatPlaetze(Set<Platz> plaetze)
+    {
+        assert plaetze != null : "Vorbedingung verletzt: plaetze != null";
+
+        boolean result = true;
+        for (Platz p : plaetze)
+        {
+            result &= hatPlatz(p);
+        }
+        return result;
     }
 
     @Override

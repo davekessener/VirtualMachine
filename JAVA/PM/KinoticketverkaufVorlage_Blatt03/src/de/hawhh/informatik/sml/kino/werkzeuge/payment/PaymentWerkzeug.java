@@ -1,9 +1,19 @@
 package de.hawhh.informatik.sml.kino.werkzeuge.payment;
 
+import java.awt.Window;
+import java.util.Set;
+
+import javax.swing.JOptionPane;
+
 import de.hawhh.informatik.sml.kino.fachwerte.Locale;
 import de.hawhh.informatik.sml.kino.fachwerte.Money;
+import de.hawhh.informatik.sml.kino.fachwerte.Platz;
 import de.hawhh.informatik.sml.kino.materialien.MoneyBuffer;
+import de.hawhh.informatik.sml.kino.materialien.Vorstellung;
+import de.hawhh.informatik.sml.kino.service.KinoService;
 import de.hawhh.informatik.sml.kino.werkzeuge.MoneyFormat;
+import de.hawhh.informatik.sml.kino.werkzeuge.SubwerkzeugObserver;
+import de.hawhh.informatik.sml.kino.werkzeuge.SynchroException;
 
 /**
  * das <code>PaymentWerkzeug</code> zur eingabe eines
@@ -14,8 +24,11 @@ import de.hawhh.informatik.sml.kino.werkzeuge.MoneyFormat;
  * @author dave
  *
  */
-public class PaymentWerkzeug
+public class PaymentWerkzeug implements SubwerkzeugObserver
 {
+    private KinoService kino_;
+    private Vorstellung vorstellung_;
+    private Set<Platz> plaetze_;
     private Money price_;
     private MoneyBuffer cash_;
     private PaymentUI ui_;
@@ -29,16 +42,20 @@ public class PaymentWerkzeug
      * initialisierung mit preis.
      * @param price zu zahlender geldbetrag
      */
-    public PaymentWerkzeug(Money price) { this(price, Locale.GetDefault()); }
-    public PaymentWerkzeug(Money price, Locale loc)
+    public PaymentWerkzeug(Window w, KinoService k, Vorstellung v, Set<Platz> p)
     {
-        price_ = price;
+        kino_ = k;
+        vorstellung_ = v;
+        plaetze_ = p;
+        price_ = vorstellung_.getPreisFuerPlaetze(p);
         cash_ = new MoneyBuffer();
-        ui_ = new PaymentUI(new MoneyField(cash_, loc));
+        loc_ = Locale.GetDefault();
+        ui_ = new PaymentUI(w, new MoneyField(cash_, loc_));
         returnValue_ = false;
-        loc_ = loc;
         
-        ui_.setPrice((new MoneyFormat(price_, loc)).toString());
+        kino_.registerObserver(vorstellung_, this);
+        
+        ui_.setPrice((new MoneyFormat(price_, loc_)).toString());
         registerListeners();
         cashChanged();
     }
@@ -132,6 +149,37 @@ public class PaymentWerkzeug
     private void close(boolean f)
     {
         ui_.dispose();
+        kino_.removeObserver(vorstellung_, this);
+        
+        if(f)
+        {
+            try
+            {
+                kino_.verkaufePlaetze(vorstellung_, plaetze_);
+            }
+            catch(SynchroException e)
+            {
+                f = false;
+                showError();
+            }
+        }
+        
         returnValue_ = f;
+    }
+
+    @Override
+    public void reagiereAufAenderung()
+    {
+        if(!kino_.sindVerkaufbar(vorstellung_, plaetze_))
+        {
+            showError();
+            close(false);
+        }
+    }
+    
+    private void showError()
+    {
+        JOptionPane.showMessageDialog(null, "Plaetze wurden bereits von einem " +
+                "anderen Terminal gekauft.", "Synchronization Problem", JOptionPane.ERROR_MESSAGE);
     }
 }
