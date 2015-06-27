@@ -1,0 +1,66 @@
+// $ANTLR 2.7.7 (20111217): "xl.g" -> "XLParser.java"$
+
+import java.io.File;
+import java.io.InputStream;
+import java.io.FileInputStream;
+
+public interface XLLexerTokenTypes {
+	int EOF = 1;
+	int NULL_TREE_LOOKAHEAD = 3;
+	int WS = 4;
+	int COMMENT = 5;
+	int INTLIT = 6;
+	int CHARLIT = 7;
+	int STRINGLIT = 8;
+	int IDENT = 9;
+	int DOT = 10;
+	int BECOMES = 11;
+	int COLON = 12;
+	int SEMI = 13;
+	int COMMA = 14;
+	int EQUALS = 15;
+	int LBRACKET = 16;
+	int RBRACKET = 17;
+	int DOTDOT = 18;
+	int LPAREN = 19;
+	int RPAREN = 20;
+	int NOT_EQUALS = 21;
+	int LT = 22;
+	int LTE = 23;
+	int GT = 24;
+	int GTE = 25;
+	int PLUS = 26;
+	int MINUS = 27;
+	int TIMES = 28;
+	int DIV = 29;
+	int LITERAL_program = 30;
+	int LITERAL_begin = 31;
+	int LITERAL_end = 32;
+	int LITERAL_var = 33;
+	int LITERAL_constant = 34;
+	int LITERAL_type = 35;
+	int LITERAL_array = 36;
+	int LITERAL_of = 37;
+	int LITERAL_record = 38;
+	int LITERAL_Integer = 39;
+	int LITERAL_Boolean = 40;
+	int LITERAL_procedure = 41;
+	int COLOR = 42;
+	int LITERAL_exit = 43;
+	int LITERAL_when = 44;
+	int LITERAL_return = 45;
+	int LITERAL_if = 46;
+	int LITERAL_then = 47;
+	int LITERAL_elsif = 48;
+	int LITERAL_else = 49;
+	int LITERAL_while = 50;
+	int LITERAL_loop = 51;
+	int LITERAL_put = 52;
+	int LITERAL_get = 53;
+	int LITERAL_newLine = 54;
+	int LITERAL_skipLine = 55;
+	int LITERAL_not = 56;
+	int LITERAL_mod = 57;
+	int LITERAL_and = 58;
+	int LITERAL_or = 59;
+}
