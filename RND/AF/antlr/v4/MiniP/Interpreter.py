@@ -43,6 +43,13 @@ class Interpreter(MiniPVisitor):
 		while self.visit(ctx.expr()):
 			for s in ctx.statement():
 				self.visit(s)
+	
+	def visitRepeatStatement(self, ctx):
+		while True:
+			for s in ctx.statement():
+				self.visit(s)
+			if self.visit(ctx.expr()):
+				break
 
 	def visitReadStatement(self, ctx):
 		id = ctx.ID().getText()
