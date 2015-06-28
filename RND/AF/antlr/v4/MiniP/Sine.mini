@@ -1,0 +1,53 @@
+/* Sine script.
+ * Reads numbers 'x' from stdin
+ * and prints sin(x)
+ * Written in MiniP
+ */
+program
+	real x, sin, tmp;
+	integer sign, step, i;
+	real x2, pi, pi2;
+begin
+	pi := 3.14159265359;
+	pi2 := 2 * pi;
+
+	println('Sine calculator.');
+	println('(Enter 1 to quit.)');
+
+	repeat
+		println('Enter a number:');
+		read(x);
+
+		/* adjust x so x in (-pi, pi] */
+		while x < -pi do x := x + pi2; od;
+		while x >  pi do x := x - pi2; od;
+
+		sin := 0;
+
+		/* sin(0) == sin(pi) == 0
+		 * so skip calculation if neccessary
+		 */
+		if x && x <> pi then
+			tmp := x;
+			sign := 1;
+			step := 0;
+
+			x2 := x * x; /* square cached */
+
+			/* taylor series for sine curve:
+			 * sin(x) = x - x^3 / 3! + x^5 / 5! - x^7 / 7! + ...
+			 */
+			while tmp
+			do
+				sin := sin + sign * tmp;
+				step := step + 2;
+				sign := -sign;
+				tmp := tmp * x2 / (step * (step + 1));
+			od;
+		fi;
+
+		println('sin(x) = ');
+		println(sin);
+	until x == 1;
+end
+

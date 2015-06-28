@@ -28,6 +28,7 @@
 !*.y
 !*.g
 !*.g4
+!*.mini
 !*.doc
 !*.schema
 !*.chip
