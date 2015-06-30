@@ -107,3 +107,17 @@ expr
 	| ID #idExpr
 	;
 
+//  expr : orExpr (OR orExpr)* ;
+//  orExpr : andExpr (AND andExpr)* ;
+//  andExpr : eqExpr (op=(EQ|NE) eqExpr)* ;
+//  eqExpr : relExpr (op=(LT|LE|GT|GE) relExpr)* ;
+//  relExpr : addExpr (op=(PLUS|MINUS) addExpr)* ;
+//  addExpr : mulExpr (op=(MUL|DIV) mulExpr)* ;
+//  mulExpr : MINUS? unaryExpr ;
+//  unaryExpr
+//  	: '(' expr ')'
+//  	| STR
+//  	| val=(INT|REAL)
+//  	| ID
+//  	;
+
