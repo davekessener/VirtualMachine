@@ -16,7 +16,7 @@ ps(X,Y) :-
 	vp(U,V),
 	opp(V,Y).
 ps(X,Y) :-
-	opp(X,U),
+	pp(X,U),
 	np(U,V),
 	vp(V,Y).
 
