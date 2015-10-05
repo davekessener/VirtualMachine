@@ -70,10 +70,10 @@ public class ADList<T> extends TI_List<Node, T>
 	@Override
 	public abstract T retrieve(Node p)
 	{
-		if(p == null || p == head || p == tail)
+		if(p == null || p == tail || p.next == tail)
 			;// TODO ERROR
 
-		return p.elem;
+		return p.next.elem;
 	}
 
 	@Override
@@ -84,6 +84,8 @@ public class ADList<T> extends TI_List<Node, T>
 			Node n = l.head.next;
 			tail.elem = n.elem;
 			tail.next = n.next;
+			tail = l.tail;
+			t.tail = new Node();
 			t.head.next = t.tail;
 		}
 		else
