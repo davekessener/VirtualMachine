@@ -3,7 +3,7 @@ SRC=$(wildcard *.c)
 OBJ=$(SRC:.c=.o)
 HEAD=$(wildcard *.h)
 CFLAGS=-ggdb -O0
-LIBS=-lpthread -lrt
+LIBS=-pthread -lrt
 TARGET=lab2
 
 %.o: %.c $(HEAD)

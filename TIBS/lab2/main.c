@@ -25,7 +25,7 @@
 #define MXT_STR_PRODUCER2 "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 #define MXT_STR_RESETSTATUS "\r\e[6A"
 #define MXT_STR_INACTIVE "\e[7;31;40mINACTIVE\e[0m"
-#define MXT_STR_ACTIVE   "\e[1;32mACTIVE  \e[0m"
+#define MXT_STR_ACTIVE   "\e[1;32m ACTIVE \e[0m"
 
 #define MXT_IDLEN 10
 #define MXT_ID_P1 "Producer_1"
@@ -77,6 +77,7 @@ void TCTRL_sleep(TCTRL *, int);
 
 STATUS thread_status;
 pthread_mutex_t print_mtx = PTHREAD_MUTEX_INITIALIZER;
+pthread_t producer1Thread, producer2Thread, consumerThread, controlThread;
 
 void handle_sigusr1(int s)
 {
@@ -98,11 +99,10 @@ int main(int argc, char *argv[])
 				p2 = { .buf = &disp_buf, .sem = &thread_status.p2, .should_quit = &quit_now},
 				cs = { .buf = &disp_buf, .sem = &thread_status.c,  .should_quit = &quit_now},
 				ct = { .buf = NULL,      .sem = NULL,              .should_quit = &quit_now};
-	pthread_t producer1Thread, producer2Thread, consumerThread, controlThread;
 	int v;
 
-	PRODUCER_t p1_data = {.s = MXT_STR_PRODUCER1, .l = sizeof(MXT_STR_PRODUCER1)};
-	PRODUCER_t p2_data = {.s = MXT_STR_PRODUCER2, .l = sizeof(MXT_STR_PRODUCER2)};
+	PRODUCER_t p1_data = {.s = MXT_STR_PRODUCER1, .l = sizeof(MXT_STR_PRODUCER1) - 1};
+	PRODUCER_t p2_data = {.s = MXT_STR_PRODUCER2, .l = sizeof(MXT_STR_PRODUCER2) - 1};
 
 	p1.data = &p1_data;
 	p2.data = &p2_data;
@@ -208,13 +208,16 @@ void *doControlThread(void *p)
 				break;
 			case '1':
 				TCTRL_toggle(&thread_status.p1);
+				pthread_kill(producer1Thread, SIGUSR1);
 				break;
 			case '2':
 				TCTRL_toggle(&thread_status.p2);
+				pthread_kill(producer2Thread, SIGUSR1);
 				break;
 			case 'c':
 			case 'C':
 				TCTRL_toggle(&thread_status.c);
+				pthread_kill(consumerThread, SIGUSR1);
 				break;
 		}
 
