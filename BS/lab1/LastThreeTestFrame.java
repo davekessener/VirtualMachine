@@ -75,7 +75,7 @@ public class LastThreeTestFrame {
         // ...
         
         tail_.value = value;
-        tail_ = tail_.next = new Node(null, tail_.count - 1, null);
+        tail_ = tail_.next = new Node<>(null, tail_.count - 1, null);
         
         if(tail_.count < 0)
         {
