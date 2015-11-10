@@ -2,7 +2,7 @@
 #define DAV_BS_2_TERMINAL_H
 
 void initializeTerminal(void);
-int readTerminal(char *);
+char readTerminal(void);
 void restoreTerminal(void);
 
 #endif

@@ -1,3 +1,5 @@
+#include <errno.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <termios.h>
@@ -5,39 +7,60 @@
 #include <signal.h>
 #include <sys/select.h>
 #include "terminal.h"
+#include "system.h"
 
 struct termios old;
+int changed = 0;
+
+void interruptHandler(int);
 
 void initializeTerminal(void)
 {
 	struct termios new;
 
-	tcgetattr(fileno(stdin), &old);
+	sys_tcgetattr(fileno(stdin), &old);
 	new = old;
 	new.c_lflag &= ~ICANON & ~ECHO;
-	tcsetattr(fileno(stdin), TCSANOW, &new);
+	sys_tcsetattr(fileno(stdin), TCSANOW, &new);
+	changed = 1;
+
+	installSignalHandler(SIGINT, &interruptHandler);
 }
 
-int readTerminal(char *c)
+char readTerminal(void)
 {
-	int r;
+	char c;
 	fd_set set;
 
 	FD_ZERO(&set);
 	FD_SET(fileno(stdin), &set);
 
-	r = select(fileno(stdin) + 1, &set, NULL, NULL, NULL);
-
-	if(r > 0)
+	if(select(fileno(stdin) + 1, &set, NULL, NULL, NULL) < 0)
 	{
-		read(fileno(stdin), c, 1);
+		reportError("select", errno);
 	}
 
-	return r;
+	if(read(fileno(stdin), &c, 1) < 0)
+	{
+		reportError("read", errno);
+	}
+
+	return c;
 }
 
 void restoreTerminal(void)
 {
-	tcsetattr(fileno(stdin), TCSANOW, &old);
+	if(changed)
+	{
+		sys_tcsetattr(fileno(stdin), TCSANOW, &old);
+		changed = 0;
+	}
+}
+
+void interruptHandler(int s)
+{
+	restoreTerminal();
+	printf("\nGoodbye.\n");
+	exit(0);
 }
 

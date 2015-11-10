@@ -1,8 +1,10 @@
+#include <errno.h>
 #include <pthread.h>
 #include <semaphore.h>
 #include <stdlib.h>
 #include <string.h>
 #include "queue.h"
+#include "system.h"
 
 typedef int (* QueueRoutine)(QUEUE *);
 
@@ -40,12 +42,9 @@ int QR_new_SYNC(QUEUE *this)
 	Q_SYNC *ctrl = malloc(sizeof(Q_SYNC));
 	this->control = ctrl;
 
-	pthread_mutex_t mtx = PTHREAD_MUTEX_INITIALIZER;
-
-	memcpy(&ctrl->mtx, &mtx, sizeof(pthread_mutex_t));
-
-	sem_init(&ctrl->semFill, 0, this->capacity);
-	sem_init(&ctrl->semEmpty, 0, 0);
+	sys_pthread_mutex_init(&ctrl->mtx);
+	sys_sem_init(&ctrl->semFill, this->capacity);
+	sys_sem_init(&ctrl->semEmpty, 0);
 
 	return MXT_QUEUE_ERR_OK;
 }
@@ -67,9 +66,14 @@ int QR_pre_push_SYNC(QUEUE *this)
 	Q_SYNC *ctrl = (Q_SYNC *) this->control;
 	
 	if(sem_wait(&ctrl->semFill))
-		return MXT_QUEUE_ERR_SYNC;
+	{
+		if(errno == EINTR)
+			return MXT_QUEUE_ERR_SYNC;
+		else
+			reportError("sem_wait", errno);
+	}
 
-	pthread_mutex_lock(&ctrl->mtx);
+	sys_pthread_mutex_lock(&ctrl->mtx);
 
 	return MXT_QUEUE_ERR_OK;
 }
@@ -85,10 +89,9 @@ int QR_post_push_SYNC(QUEUE *this)
 {
 	Q_SYNC *ctrl = (Q_SYNC *) this->control;
 	
-	if(sem_post(&ctrl->semEmpty))
-		return MXT_QUEUE_ERR_SYNC;
+	sys_sem_post(&ctrl->semEmpty);
 
-	pthread_mutex_unlock(&ctrl->mtx);
+	sys_pthread_mutex_unlock(&ctrl->mtx);
 
 	return MXT_QUEUE_ERR_OK;
 }
@@ -114,9 +117,14 @@ int QR_pre_poll_SYNC(QUEUE *this)
 	Q_SYNC *ctrl = (Q_SYNC *) this->control;
 	
 	if(sem_wait(&ctrl->semEmpty))
-		return MXT_QUEUE_ERR_SYNC;
+	{
+		if(errno == EINTR)
+			return MXT_QUEUE_ERR_SYNC;
+		else
+			reportError("sem_wait", errno);
+	}
 
-	pthread_mutex_lock(&ctrl->mtx);
+	sys_pthread_mutex_lock(&ctrl->mtx);
 
 	return MXT_QUEUE_ERR_OK;
 }
@@ -132,10 +140,9 @@ int QR_post_poll_SYNC(QUEUE *this)
 {
 	Q_SYNC *ctrl = (Q_SYNC *) this->control;
 	
-	if(sem_post(&ctrl->semFill))
-		return MXT_QUEUE_ERR_SYNC;
+	sys_sem_post(&ctrl->semFill);
 
-	pthread_mutex_unlock(&ctrl->mtx);
+	sys_pthread_mutex_unlock(&ctrl->mtx);
 
 	return MXT_QUEUE_ERR_OK;
 }
@@ -155,8 +162,9 @@ int QR_delete_SYNC(QUEUE *this)
 {
 	Q_SYNC *ctrl = (Q_SYNC *) this->control;
 
-	sem_destroy(&ctrl->semFill);
-	sem_destroy(&ctrl->semEmpty);
+	sys_sem_destroy(&ctrl->semFill);
+	sys_sem_destroy(&ctrl->semEmpty);
+	sys_pthread_mutex_destroy(&ctrl->mtx);
 
 	free(ctrl);
 
@@ -178,7 +186,7 @@ int QR_size_ST(QUEUE *this)
 int QR_size_SYNC(QUEUE *this)
 {
 	int v;
-	sem_getvalue(&((Q_SYNC *) this->control)->semEmpty, &v);
+	sys_sem_getvalue(&((Q_SYNC *) this->control)->semEmpty, &v);
 	return v;
 }
 
