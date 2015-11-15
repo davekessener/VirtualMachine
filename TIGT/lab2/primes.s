@@ -1,7 +1,7 @@
 ; # ===========================================================================
 	AREA MyData, DATA, ALIGN = 2
 Base
-p_buf	FILL 125,-1,1 ; 997 bits needed -> 125 bytes
+p_buf	FILL 125,0xFF,1 ; 997 bits needed -> 125 bytes
 primes	SPACE 1024	; 1KB should be enough (256dw for 168 primes)
 
 ; # ===========================================================================
@@ -56,7 +56,7 @@ sieb	PROC
 
 	mov	r2,#2		; 2 is the first prime
 s_loop	mul	r12,r2,r2
-	tst	r12,r1
+	cmp	r12,r1
 	bge	sl_end
 
 	push	{r0,r1}
@@ -65,12 +65,12 @@ s_loop	mul	r12,r2,r2
 	mov	r12,r0
 	pop	{r0,r1}
 
-	tst	r12,#1
+	cmp	r12,#1
 	bne	sl_skip
 
-	ldr	r3,r2
+	mov	r3,r2
 sl_loop	mul	r12,r2,r3
-	tst	r12,r1
+	cmp	r12,r1
 	bge	sl_skip
 
 	push	{r0,r1}
@@ -86,7 +86,7 @@ sl_skip	add	r2,r2,#1
 
 sl_end	mov	r2,#2
 	mov	r3,#0
-c_loop	tst	r2,r1
+c_loop	cmp	r2,r1
 	bge	cl_end
 
 	mov	r12,r2
@@ -98,7 +98,7 @@ c_loop	tst	r2,r1
 	mov	r12,r0
 	pop	{r0,r1}
 
-	tst	r12,#1
+	cmp	r12,#1
 	bne	c_loop
 
 	add	r3,r3,#1
@@ -115,23 +115,23 @@ writep	PROC
 	push	{r3,lr}
 
 	mov	r3,#2
-w_loop	tst	r3,r2
+w_loop	cmp	r3,r2
 	bge	wl_end
 
 	push	{r0,r1}
 	mov	r1,r3
 	bl	getp
-	mov	r0,r12
+	mov	r12,r0
 	pop	{r0,r1}
 
-	tst	r12,#1
-	gne	w_skip
+	cmp	r12,#1
+	bne	w_skip
 
 	str	r3,[r1]
 	add	r1,r1,#4
-	add	r3,r3,#1
 
-w_skip	b w_loop
+w_skip	add	r3,r3,#1
+	b w_loop
 
 wl_end	pop	{r3,pc}
 	ENDP
