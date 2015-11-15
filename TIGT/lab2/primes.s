@@ -30,6 +30,7 @@ getp	PROC
 	push	{r2,r3,lr}
 	and	r2,r1,#31
 	lsr	r1,r1,#5
+	lsl	r1,r1,#2
 	ldr	r3,[r0,r1]
 	lsr	r0,r3,r2
 	and	r0,r0,#1
@@ -41,6 +42,7 @@ resetp	PROC
 	push	{r2,r3,lr}
 	and	r2,r1,#31
 	lsr	r1,r1,#5
+	lsl	r1,r1,#2
 	mov	r3,#1
 	lsl	r3,r3,r2
 	mvn	r3,r3
