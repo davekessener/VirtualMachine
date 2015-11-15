@@ -13,13 +13,13 @@ primes	SPACE 1024	; 1KB should be enough (256dw for 168 primes)
 main	PROC
 	bl	Init_TI_Board
 
-	ldr	r1,=p_buf
-	ldr	r2,#998
+	ldr	r0,=p_buf
+	mov	r1,#998
 	bl	sieb
 
-	ldr	r1,=p_buf
-	ldr	r2,=primes
-	ldr	r3,#998
+	ldr	r0,=p_buf
+	ldr	r1,=primes
+	mov	r2,#998
 	bl	writep
 
 m_end	b	m_end
@@ -27,86 +27,113 @@ m_end	b	m_end
 
 ; # ---------------------------------------------------------------------------
 getp	PROC
-	and	r6,r5,#31
-	lsr	r5,r5,#5
-	ldr	r0,[r1,r5]
-	lsr	r0,r0,r6
+	push	{r2,r3,lr}
+	and	r2,r1,#31
+	lsr	r1,r1,#5
+	ldr	r3,[r0,r1]
+	lsr	r0,r3,r2
 	and	r0,r0,#1
+	pop	{r2,r3,pc}
 	ENDP
 
 ; # ---------------------------------------------------------------------------
 resetp	PROC
-	and	r6,r5,#31
-	lsr	r5,r5,#5
-	ldr	r0,#1
-	lsl	r0,r0,r6
-	mvn	r0,r0
-	ldr	r6,[r1,r5]
-	and	r6,r6,r0
-	str	r6,[r1,r5]
+	push	{r2,r3,lr}
+	and	r2,r1,#31
+	lsr	r1,r1,#5
+	mov	r3,#1
+	lsl	r3,r3,r2
+	mvn	r3,r3
+	ldr	r2,[r0,r1]
+	and	r2,r2,r3
+	str	r2,[r0,r1]
+	pop	{r2,r3,pc}
 	ENDP
 
 ; # ---------------------------------------------------------------------------
 sieb	PROC
-	ldr	r3,#2		; 2 is the first prime
-s_loop	mul	r10,r3,r3
-	tst	r10,r2
+	push	{r2,r3,lr}
+
+	mov	r2,#2		; 2 is the first prime
+s_loop	mul	r12,r2,r2
+	tst	r12,r1
 	bge	sl_end
 
-	ldr	r5,r3
+	push	{r0,r1}
+	mov	r1,r2
 	bl	getp
-	tst	r0,#1
+	mov	r12,r0
+	pop	{r0,r1}
+
+	tst	r12,#1
 	bne	sl_skip
 
-	ldr	r4,r3
-sl_loop	mul	r5,r3,r4
-	tst	r5,r2
+	ldr	r3,r2
+sl_loop	mul	r12,r2,r3
+	tst	r12,r1
 	bge	sl_skip
 
+	push	{r0,r1}
+	mov	r1,r12
 	bl	resetp
+	pop	{r0,r1}
 
-	add	r4,r4,#1
+	add	r3,r3,#1
 	b	sl_loop
 
-sl_skip	add	r3,r3,#1
+sl_skip	add	r2,r2,#1
 	b	s_loop
 
-sl_end	ldr	r3,#2
-	ldr	r4,#0
-c_loop	tst	r3,r2
+sl_end	mov	r2,#2
+	mov	r3,#0
+c_loop	tst	r2,r1
 	bge	cl_end
 
-	ldr	r5,r3
-	add	r3,r3,#1
+	mov	r12,r2
+	add	r2,r2,#1
+
+	push	{r0,r1}
+	mov	r1,r12
 	bl	getp
-	tst	r0,#1
+	mov	r12,r0
+	pop	{r0,r1}
+
+	tst	r12,#1
 	bne	c_loop
 
-	add	r4,r4,#1
+	add	r3,r3,#1
 
 	b	c_loop
 
-cl_end	ldr	r0,r4
+cl_end	mov	r0,r3
+
+	pop	{r2,r3,pc}
 	ENDP
 
 ; # ---------------------------------------------------------------------------
 writep	PROC
-	ldr	r4,#2
-w_loop	tst	r4,r3
+	push	{r3,lr}
+
+	mov	r3,#2
+w_loop	tst	r3,r2
 	bge	wl_end
 
-	ldr	r5,r4
+	push	{r0,r1}
+	mov	r1,r3
 	bl	getp
-	tst	r0,#1
+	mov	r0,r12
+	pop	{r0,r1}
+
+	tst	r12,#1
 	gne	w_skip
 
-	str	r4,[r2]
-	add	r2,r2,#4
-	add	r4,r4,#1
+	str	r3,[r1]
+	add	r1,r1,#4
+	add	r3,r3,#1
 
 w_skip	b w_loop
 
-wl_end	nop
+wl_end	pop	{r3,pc}
 	ENDP
 
 	END
