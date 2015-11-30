@@ -63,6 +63,8 @@ int main(int argc, char *argv[])
 
 	cleanup(mmu);
 
+	free(mmu);
+
 	printf("\nGoodbye.\n");
 
 	return EXIT_SUCCESS;
@@ -93,8 +95,6 @@ void cleanup(mmanager_t *mmanager)
 	close_file(mmanager->pagefile);
 	close_file(mmanager->logfile);
 	close_vmem(mmanager->vmem);
-
-	free(mmanager);
 }
 
 // # ---------------------------------------------------------------------------
