@@ -1,4 +1,5 @@
 #include "vmaccess.h"
+#include "mmanage.h"
 #include "debug.h"
 #include "vmem.h"
 
@@ -38,8 +39,27 @@ void load_page(struct vmem_struct *vmem, int idx)
 		sem_wait(&vmem->adm.sema);
 	}
 
-	++pe->count;
+	pe->flags |= PTF_REF;
 	++vmem->adm.g_count;
+
+#if VMEM_ALGO == VMEM_ALGO_AGING
+	if(!(vmem->adm.g_count % MXT_AGINGINT))
+	{
+		int i;
+		for(i = 0 ; i < VMEM_NFRAMES ; ++i)
+		{
+			int p = vmem->pt.framepage[i];
+
+			if(p == MXT_VIDX)
+				continue;
+
+			struct pt_entry *e = &vmem->pt.entries[p];
+
+			e->count = ((e->flags & PTF_REF) ? (1 << (MXT_AGINGW - 1)) : 0) | (e->count >> 1);
+			e->flags &= ~PTF_REF;
+		}
+	}
+#endif
 }
 
 int vmem_read(int address)

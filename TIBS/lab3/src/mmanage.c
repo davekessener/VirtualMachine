@@ -1,21 +1,13 @@
 #include <errno.h>
 #include "vmem.h"
 #include "debug.h"
+#include "mmanage.h"
 
 #define MXT_PFNAME "./pagefile.bin"
 #define MXT_LOGFNAME "./logfile.txt"
 #define MXT_PFF "w+b"
 #define MXT_LOGF "w"
 
-#define MXT_ALGO_FIFO 0
-#define MXT_ALGO_CLOCK 1
-#define MXT_ALGO_AGING 2
-
-#ifndef VMEM_ALGO
-#	define VMEM_ALGO MXT_ALGO_FIFO
-#endif
-
-#define MXT_VIDX -1
 
 struct logevent {
     int req_pageno;
@@ -180,9 +172,13 @@ void read_page(mmanager_t *mmanager, int frame, int page)
 	fseek(pf, page * VMEM_PAGESIZE * sizeof(int), SEEK_SET);
 	fread(mmanager->vmem->data + frame * VMEM_PAGESIZE, VMEM_PAGESIZE * sizeof(int), 1, pf);
 
-	pt->entries[page].flags |= PTF_PRESENT;
+	pt->entries[page].flags |= PTF_PRESENT | PTF_REF;
 	pt->entries[page].frame = frame;
 	pt->framepage[frame] = page;
+
+#if VMEM_ALGO == VMEM_ALGO_AGING
+	pt->entries[page].count = 1 << (MXT_AGINGW - 1);
+#endif
 }
 
 void write_page(mmanager_t *mmanager, int frame, int page)
@@ -213,20 +209,39 @@ void call_logger(FILE *lf, int req, int rep, int al, int pf, int g)
 // # ---------------------------------------------------------------------------
 
 int get_next_frame(struct vmem_struct *vmem)
+#define INCTO(v,l) (((v)+1)%(l))
 {
-	int r = MXT_VIDX;
+	int r = vmem->adm.next_alloc_idx;
 
-#if VMEM_ALGO == MXT_ALGO_FIFO
-	r = vmem->adm.next_alloc_idx;
-	vmem->adm.next_alloc_idx = (r + 1) % VMEM_NFRAMES;
-#elif VMEM_ALGO == MXT_ALGO_CLOCK
-#elif VMEM_ALGO == MXT_ALGO_AGING
+#if VMEM_ALGO == VMEM_ALGO_FIFO
+	vmem->adm.next_alloc_idx = INCTO(r, VMEM_NFRAMES);
+#elif VMEM_ALGO == VMEM_ALGO_CLOCK
+	int p;
+	while((p = vmem->pt.framepage[r]) != MXT_VIDX && (vmem->pt.entries[p].flags & PTF_REF))
+	{
+		vmem->pt.entries[p].flags &= ~PTF_REF;
+		r = INCTO(r, VMEM_NFRAMES);
+	}
+	vmem->adm.next_alloc_idx = INCTO(r, VMEM_NFRAMES);
+#elif VMEM_ALGO == VMEM_ALGO_AGING
+	int i, a, p;
+	for(i = 0, r = MXT_VIDX ; i < VMEM_NFRAMES ; ++i)
+	{
+		if((p = vmem->pt.framepage[i]) == MXT_VIDX)
+			return i;
+		else if(r == MXT_VIDX || vmem->pt.entries[p].count <= a)
+		{
+			r = i;
+			a = vmem->pt.entries[p].count;
+		}
+	}
 #else
 	fatal("Error; invalid page replacemenet algorithm defined.");
 #endif
 
 	return r;
 }
+#undef INCTO
 
 // # ---------------------------------------------------------------------------
 

@@ -9,14 +9,17 @@ MM_OBJ=$(MM_SRC:.c=.o)
 VM_SRC=vmaccess.c vmappl.c debug.c
 VM_OBJ=$(VM_SRC:.c=.o)
 
-CFLAGS+=-DDEBUG -DVMEM_PAGESIZE=8 -DVMEM_ALGO=0
+TM_SRC=vmaccess.c vmtest.c debug.c
+TM_OBJ=$(TM_SRC:.c=.o)
+
+CFLAGS+=-DDEBUG -DVMEM_PAGESIZE=64 -DVMEM_ALGO=2
 
 %.o: %.c $(HEAD)
 	$(CC) -c $(CFLAGS) $< -o $@
 
 .PHONY: all clean
 
-all: mmanage vmappl
+all: mmanage vmappl test
 
 mmanage: $(MM_OBJ)
 	$(CC) $(MM_OBJ) -o mmanage $(LDFLAGS)
@@ -24,9 +27,9 @@ mmanage: $(MM_OBJ)
 vmappl: $(VM_OBJ)
 	$(CC) $(VM_OBJ) -o vmappl $(LDFLAGS)
 
-test: vmtest.o vmaccess.o debug.o
-	$(CC) vmtest.o vmaccess.o debug.o  -o vmtest $(LDFLAGS)
+test: $(TM_OBJ)
+	$(CC) $(TM_OBJ)  -o vmtest $(LDFLAGS)
 
 clean:
-	rm -f mmanage *.o
+	rm -f mmanage vmappl vmtest *.o
 
