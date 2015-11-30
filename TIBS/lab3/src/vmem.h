@@ -22,14 +22,18 @@
 #define TRUE (!FALSE)
 
 
-#define SHMKEY          1234
+#define SHMKEY          42413
 
 typedef unsigned int Bmword;    /* Frame bitmap */
+
+//#define VMEM_PAGESIZE       8   /* Items per page */
+#ifndef VMEM_PAGESIZE
+#	define VMEM_PAGESIZE 8
+#endif
 
 /* Sizes */
 #define VMEM_VIRTMEMSIZE 1024   /* Process address space / items */
 #define VMEM_PHYSMEMSIZE  128   /* Physical memory / items */
-#define VMEM_PAGESIZE       8   /* Items per page */
 #define VMEM_NPAGES     (VMEM_VIRTMEMSIZE / VMEM_PAGESIZE)      /* Total number of pages */
 #define VMEM_NFRAMES (VMEM_PHYSMEMSIZE / VMEM_PAGESIZE) /* Number of available frames */
 #define VMEM_LASTBMMASK (~0U << (VMEM_NFRAMES % (sizeof(Bmword) * 8)))

@@ -4,7 +4,7 @@
 
 #define MXT_PFNAME "./pagefile.bin"
 #define MXT_LOGFNAME "./logfile.txt"
-#define MXT_PFF "a+b"
+#define MXT_PFF "w+b"
 #define MXT_LOGF "w"
 
 #define MXT_ALGO_FIFO 0
@@ -63,11 +63,15 @@ void handle_int(mmanager_t *);
 
 int main(int argc, char *argv[])
 {
+	mmu = malloc(sizeof(*mmu));
+
 	initialize(mmu);
 
 	run(mmu);
 
 	cleanup(mmu);
+
+	printf("\nGoodbye.\n");
 
 	return EXIT_SUCCESS;
 }
@@ -97,6 +101,8 @@ void cleanup(mmanager_t *mmanager)
 	close_file(mmanager->pagefile);
 	close_file(mmanager->logfile);
 	close_vmem(mmanager->vmem);
+
+	free(mmanager);
 }
 
 // # ---------------------------------------------------------------------------
@@ -113,7 +119,7 @@ FILE *init_file(const char *fn, const char *s)
 
 struct vmem_struct *init_vmem(void)
 {
-	int shm_id = shmget(SHMKEY, SHMSIZE, IPC_CREAT);
+	int shm_id = shmget(SHMKEY, SHMSIZE, 0644 | IPC_CREAT);
 
 	if(shm_id == -1)
 		fatal("Error reserving shared memory!");
@@ -234,11 +240,14 @@ void handle_pf(mmanager_t *mmanager)
 	{
 		int r = get_next_frame(vmem);
 
+		++adm->pf_count;
+
+		call_logger(mmanager->logfile, adm->req_pageno, pt->framepage[r], r, adm->pf_count, adm->g_count);
+
 		write_page(mmanager, r, pt->framepage[r]);
 		read_page(mmanager, r, adm->req_pageno);
-
-		call_logger(mmanager->logfile, adm->req_pageno, r, 0, adm->pf_count, adm->g_count);
 	}
+	else debug("Called to load page %i which is already present!", adm->req_pageno);
 
 	sem_post(&vmem->adm.sema);
 }
