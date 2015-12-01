@@ -12,7 +12,9 @@ VM_OBJ=$(VM_SRC:.c=.o)
 TM_SRC=vmaccess.c vmtest.c debug.c
 TM_OBJ=$(TM_SRC:.c=.o)
 
-CFLAGS+=-DDEBUG -DVMEM_PAGESIZE=64 -DVMEM_ALGO=2
+CFLAGS+=-DDEBUG
+CFLAGS+=-DVMEM_PAGESIZE=8
+CFLAGS+=-DVMEM_ALGO=0
 
 %.o: %.c $(HEAD)
 	$(CC) -c $(CFLAGS) $< -o $@

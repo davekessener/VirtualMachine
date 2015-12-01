@@ -28,7 +28,7 @@ typedef void (*sighandler_t)(int);
 
 // # ---------------------------------------------------------------------------
 
-mmanager_t *mmu;
+mmanager_t mmu;
 
 // # ---------------------------------------------------------------------------
 
@@ -43,7 +43,7 @@ void init_signals(void);
 void close_file(FILE *);
 void close_vmem(struct vmem_struct *);
 
-int register_sig(sighandler_t, int);
+void register_sig(sighandler_t, int);
 void sighandler(int);
 void logger(FILE *, struct logevent);
 
@@ -55,15 +55,11 @@ void handle_int(mmanager_t *);
 
 int main(int argc, char *argv[])
 {
-	mmu = malloc(sizeof(*mmu));
+	initialize(&mmu);
 
-	initialize(mmu);
+	run(&mmu);
 
-	run(mmu);
-
-	cleanup(mmu);
-
-	free(mmu);
+	cleanup(&mmu);
 
 	printf("\nGoodbye.\n");
 
@@ -308,7 +304,7 @@ void handle_int(mmanager_t *mmanager)
 
 // # ---------------------------------------------------------------------------
 
-int register_sig(sighandler_t h, int s)
+void register_sig(sighandler_t h, int s)
 {
 	struct sigaction sa;
 
@@ -316,12 +312,13 @@ int register_sig(sighandler_t h, int s)
 	sigemptyset(&sa.sa_mask);
 	sa.sa_flags = 0;
 
-	return sigaction(s, &sa, NULL);
+	if(sigaction(s, &sa, NULL) == -1)
+		fatal("Error reinstalling sighandler for %i!", s);
 }
 
 void sighandler(int s)
 {
-	mmanager_t *mmanager = mmu;
+	mmanager_t *mmanager = &mmu;
 
 	if(mmanager->running)
 	{
@@ -339,8 +336,7 @@ void sighandler(int s)
 		}
 	}
 
-	if(register_sig(sighandler, s) == -1)
-		fatal("Error reinstalling sighandler for %i!", s);
+	register_sig(sighandler, s);
 }
 
 void logger(FILE *logfile, struct logevent le)
