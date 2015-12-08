@@ -2,7 +2,7 @@
 		IMPORT	setled
 		IMPORT	displaytime
 
-		IMOPRT	time
+		IMPORT	time
 
 		AREA mydata,DATA,ALIGN = 2
 
@@ -16,10 +16,9 @@
 
 ; # ===========================================================================
 
-state_init								; state_t state_init(void)
-		PROC
+state_init	PROC							; state_t state_init(void)
 
-		push	{r1-3,lr}				; {
+		push	{r1-r3,lr}				; {
 
 		on_key	#KEY_S7,init_norm		; if(checkkey(KEY_S7)) {
 
@@ -35,16 +34,15 @@ init_norm								; } else {
 		mov		r0,#STATE_INIT			; return STATE_INIT;
 
 init_return								; }
-		pop		{r1-3,pc}				; }
+		pop		{r1-r3,pc}				; }
 
 		ENDP
 
 ; # ===========================================================================
 
-state_running							; state_t state_running(void)
-		PROC
+state_running	PROC						; state_t state_running(void)
 
-		push	{r1-3,lr}				; {
+		push	{r1-r3,lr}				; {
 
 		on_key	#KEY_S5,run_other		; if(checkkey(KEY_S5)) {
 
@@ -76,24 +74,24 @@ run_return								; }
 		BL		displaytime
 		pop		{r0}					; displaytime(time)
 
-		pop		{r1-3,pc}				; }
+		pop		{r1-r3,pc}				; }
 
 		ENDP
 
 ; # ===========================================================================
 
-state_hold								; state_t state_hold(void)
-		PROC
+state_hold	PROC							; state_t state_hold(void)
 
-		push	{r1-3,lr}				; {
+		push	{r1-r3,lr}				; {
 
 		on_key	#KEY_S5,hold_other		; if(checkkey(KEY_S5)) {
 
 		do_led	#LED_D19,#OFF			; setled(LED_D19, OFF)
 		do_led	#LED_D20,#OFF			; setled(LED_D20, OFF)
 
-		ldr		r0,=time
-		ldr		r0,[r0]
+		ldr		r1,=time
+		mov		r0,#0
+		str		r0,[r1]
 		BL		displaytime				; displaytime(time)
 
 		mov		r0,#STATE_INIT			; return STATE_INIT
@@ -113,7 +111,9 @@ hold_norm								; } else {
 		mov		r0,#STATE_HOLD			; return STATE_HOLD
 
 hold_return								; }
-		pop		{r1-3,pc}				; }
+		pop		{r1-r3,pc}				; }
 
 		ENDP
+
+	END
 

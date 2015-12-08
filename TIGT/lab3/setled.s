@@ -28,3 +28,5 @@ done	strh	r0,[r1]
 		
 		ENDP
 
+	END
+

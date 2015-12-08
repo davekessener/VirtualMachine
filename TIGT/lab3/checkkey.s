@@ -21,3 +21,5 @@ checkkey PROC				; bool_t checkkey(key_t k)
 		
 		ENDP
 
+	END
+

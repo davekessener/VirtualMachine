@@ -1,13 +1,17 @@
-		IMPORT	TI_Init_Board
+		IMPORT	Init_TI_Board
 		IMPORT	initHW
+			
+		IMPORT	setled
+		IMPORT	checktimer
+		IMPORT	displaytime
 
 		IMPORT	state_init
 		IMPORT	state_running
 		IMPORT	state_hold
 
-		IMOPRT	states
-		IMOPRT	time
-		IMOPRT	state
+		IMPORT	states
+		IMPORT	time
+		IMPORT	state
 
 		AREA mydata,DATA,ALIGN = 2
 
@@ -17,13 +21,12 @@
 
 		EXPORT	initialize [CODE]
 
-initialize
-		PROC									; void initialize(void)
+initialize	PROC									; void initialize(void)
 
 		push	{r1,lr}							; {
 
 
-		BL		TI_Init_Board					; TI_Init_Board()
+		BL		Init_TI_Board					; TI_Init_Board()
 
 		BL		initHW							; initHW()
 
@@ -59,4 +62,6 @@ initialize
 		pop		{r1,pc}							; }
 		
 		ENDP
+
+	END
 
