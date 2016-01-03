@@ -11,7 +11,7 @@
 
 typedef void (*tzm_change_fn)(int64_t);
 
-void tzm_initialize(int64_t, tzm_change_fn);
+void tzm_initialize(tzm_change_fn);
 void tzm_pressed(int, uint64_t);
 void tzm_cleanup(void);
 

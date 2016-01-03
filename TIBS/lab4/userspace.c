@@ -12,7 +12,7 @@ int main(int argc, char *argv[])
 	struct timespec ts;
 
 	initializeTerminal();
-	tzm_initialize(MXT_DEFAULT_SPEED, &speed_changed);
+	tzm_initialize(&speed_changed);
 
 	while(1)
 	{
