@@ -35,6 +35,7 @@
 !*.poke
 !*.m3u
 !makefile
+!Makefile
 !aux
 ML/*
 LIB/lib/*
