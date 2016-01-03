@@ -38,6 +38,6 @@ int main(int argc, char *argv[])
 
 void speed_changed(int64_t v)
 {
-	printf("%lu (%lu.%03lus)\n", v, v / 1000000000L, (v / 1000000) % 1000);
+	printf("%li (%li.%03lis)\n", v, v / 1000000000L, (v / 1000000) % 1000);
 }
 
