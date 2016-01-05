@@ -11,12 +11,15 @@
 #define MXT_STR_DEVICENAME "tzm"
 #define MXT_BUFSIZE 32
 
+#define FALSE 0
+#define TRUE (!FALSE)
+
 MODULE_LICENSE("Dual BSD/GPL");
 
 typedef struct
 {
 	int64_t speed;
-	int setup_status;
+	int setup_status, is_open;
 	dev_t dev;
 	struct semaphore lock;
 	struct cdev cdev;
@@ -50,6 +53,7 @@ void TZM_init(TZM *this, int64_t speed)
 {
 	this->speed = speed;
 	this->setup_status = 0;
+	this->is_open = FALSE;
 	sema_init(&this->lock, 1);
 }
 
@@ -133,16 +137,16 @@ int tzm_fops_open(struct inode *n, struct file *f)
 
 	if(down_interruptible(&tzm.lock))
 		return -ERESTARTSYS;
- 
-	if(f->private_data)
+
+	if(tzm.is_open)
 	{
 		r = -EBUSY;
 	}
 	else
 	{
-		f->private_data = container_of(n->i_cdev, TZM, cdev);
+		tzm.is_open = TRUE;
 	}
-
+ 
 	up(&tzm.lock);
 	
 	return r;
@@ -153,7 +157,7 @@ int tzm_fops_release(struct inode *n, struct file *f)
 	if(down_interruptible(&tzm.lock))
 		return -ERESTARTSYS;
 	
-	f->private_data = NULL;
+ 	tzm.is_open = FALSE;
  
 	up(&tzm.lock);
 	

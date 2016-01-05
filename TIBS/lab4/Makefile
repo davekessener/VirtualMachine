@@ -24,13 +24,16 @@ endif
 
 
 clean:
-	rm -rf *.o *~ core .depend .*.cmd *.ko *.mod.c .tmp_versions userspace reader
+	rm -rf *.o *~ core .depend .*.cmd *.ko *.mod.c .tmp_versions userspace reader test
 
 userspace:
 	$(CC) userspace.c terminal.c speed.c $(ACFLAGS) -o userspace -lrt
 
 reader:
 	$(CC) reader.c $(ACFLAGS) -o reader
+
+test:
+	$(CC) test.c $(ACFLAGS) -o test
 
 depend .depend dep:
 	$(CC) $(CFLAGS) -M *.c > .depend
