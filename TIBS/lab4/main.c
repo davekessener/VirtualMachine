@@ -64,14 +64,14 @@ void TZM_setup(TZM *this)
 
 int TZM_register_device(TZM *this, const char *name)
 {
-	TZM_setup(&tzm);
+	TZM_setup(this);
 
 	return alloc_chrdev_region(&this->dev, 0, 1, name);
 }
 
 int TZM_setup_cdev(TZM *this, struct file_operations *fops)
 {
-	TZM_setup(&tzm);
+	TZM_setup(this);
 
 	cdev_init(&this->cdev, fops);
 
