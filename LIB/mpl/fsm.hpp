@@ -167,7 +167,7 @@ struct GetValue
 	typedef DoIf
 	<
 		IsSame<Caar<Map>, Key>,
-		Cdar<Map>,
+		Cadr<Map>,
 		GetValue<Cdr<Map>, Key>
 	> Type;
 };
