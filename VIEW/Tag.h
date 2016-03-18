@@ -5,7 +5,7 @@
 #include <memory>
 #include <vector>
 #include <string>
-#include <nbt/NBT.h>
+#include "nbt/NBT.h"
 
 class Tag
 {

@@ -6,7 +6,7 @@ OBJ=$(SRC:.cc=.o)
 TARGET=libdav_NBT.a
 
 %.o: %.cc %.h
-	$(CC) -c $(CFLAGS) $(DEBUG) -I.. $< -o $@
+	$(CC) -c $(CFLAGS) $(DEBUG) -I.. -I/home/dave/include $< -o $@
 
 $(TARGET): $(OBJ)
 	ar rcs $(TARGET) $(OBJ)

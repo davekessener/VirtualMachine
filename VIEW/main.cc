@@ -3,7 +3,6 @@
 #include "Manager.h"
 #include "Tag.h"
 #include <dav/Logger.h>
-#include <nbt/NBT.h>
 
 class Stringifier
 {
