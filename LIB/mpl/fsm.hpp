@@ -6,7 +6,7 @@ struct Nil
 };
 
 template<typename H, typename T>
-struct Cons;
+struct Cons
 {
 	typedef H Head;
 	typedef T Tail;
@@ -18,7 +18,7 @@ struct ConsMaker;
 template<typename T, typename ... TT>
 struct ConsMaker<T, TT...>
 {
-	typedef Cons<T, typename ConsMaker<TT...>::type> type;
+	typedef Cons<T, typename ConsMaker<TT...>::Type> Type;
 };
 
 template<>
@@ -40,19 +40,55 @@ template<typename T>
 using Car = typename T::Head;
 
 template<typename T>
+struct CarFn
+{
+	typedef Car<T> Type;
+};
+
+template<typename T>
 using Cdr = typename T::Tail;
+
+template<typename T>
+struct CdrFn
+{
+	typedef Cdr<T> Type;
+};
 
 template<typename T>
 using Caar = Car<Car<T>>;
 
 template<typename T>
+struct CaarFn
+{
+	typedef Caar<T> Type;
+};
+
+template<typename T>
 using Cadr = Car<Cdr<T>>;
+
+template<typename T>
+struct CadrFn
+{
+	typedef Cadr<T> Type;
+};
 
 template<typename T>
 using Cdar = Cdr<Car<T>>;
 
 template<typename T>
+struct CdarFn
+{
+	typedef Cdar<T> Type;
+};
+
+template<typename T>
 using Cddr = Cdr<Cdr<T>>;
+
+template<typename T>
+struct CddrFn
+{
+	typedef Cddr<T> Type;
+};
 
 template<int IDX, typename List>
 struct GetElem
@@ -86,17 +122,20 @@ using DoInheritLineage = InheritLineage<MakeList<T...>>;
 
 // ---------------------------------------------------------------------------
 
-template<template <class> F, typename T>
+template<template <typename> class F, typename T>
 struct Apply
 {
 	typedef Cons<typename F<Car<T>>::Type, typename Apply<F, Cdr<T>>::Type> Type;
-}
+};
 
-template<template <class> F>
+template<template <typename> class F>
 struct Apply<F, Nil>
 {
 	typedef Nil Type;
 };
+
+template<template <typename> class F, typename T>
+using DoApply = typename Apply<F, T>::Type;
 
 // ---------------------------------------------------------------------------
 
@@ -121,12 +160,12 @@ struct Value
 };
 
 template<int I>
-struct Int : Value<int, I>
+struct Int : public Value<int, I>
 {
 };
 
 template<bool V>
-struct Bool : Value<bool, V>
+struct Bool : public Value<bool, V>
 {
 };
 
@@ -147,13 +186,13 @@ struct If;
 template<typename T1, typename T2>
 struct If<true, T1, T2>
 {
-	typedef T1 Type;
+	typedef typename T1::Type Type;
 };
 
 template<typename T1, typename T2>
 struct If<false, T1, T2>
 {
-	typedef T2 Type;
+	typedef typename T2::Type Type;
 };
 
 template<typename C, typename T1, typename T2>
@@ -167,7 +206,7 @@ struct GetValue
 	typedef DoIf
 	<
 		IsSame<Caar<Map>, Key>,
-		Cadr<Map>,
+		Identity<Cdar<Map>>,
 		GetValue<Cdr<Map>, Key>
 	> Type;
 };
@@ -224,7 +263,7 @@ struct ReverseImpl<Done, Nil>
 template<typename List>
 struct Reverse
 {
-	typedef typename ReverseImpt<Nil, List>::Type Type;
+	typedef typename ReverseImpl<Nil, List>::Type Type;
 };
 
 template<typename List>
@@ -269,26 +308,29 @@ struct Append<Nil, Appendage>
 	typedef Appendage Type;
 };
 
+template<typename List, typename Appendage>
+using DoAppend = typename Append<List, Appendage>::Type;
+
 // ---------------------------------------------------------------------------
 
-template<typename List>
+template<typename T>
 struct Flatten
 {
-	typedef typename Flatten<Cdr<List>>::Type Type;
+	typedef T Type;
+};
+
+template<typename H, typename T>
+struct Flatten<Cons<H, T>>
+{
+	typedef typename Flatten<T>::Type Rest;
 
 	typedef DoIf
 	<
-		IsList<Car<List>>,
-		Append<typename Flatten<Car<List>>::Type, Rest>,
-		ConsFn<Car<List>, Rest>
+		IsList<H>,
+		Append<typename Flatten<H>::Type, Rest>,
+		Identity<Cons<H, Rest>>
 	>
 	Type;
-};
-
-template<>
-struct Flatten<Nil>
-{
-	typedef Nil Type;
 };
 
 template<typename List>
@@ -296,17 +338,20 @@ using DoFlatten = typename Flatten<List>::Type;
 
 // ---------------------------------------------------------------------------
 
-template<template <class, class> F, typename T, typename List>
+template<template <typename, typename> class F, typename T, typename List>
 struct Merge
 {
 	typedef typename Merge<F, typename F<T, Car<List>>::Type, Cdr<List>>::Type Type;
 };
 
-template<template <class, class> F, typename T>
+template<template <typename, typename> class F, typename T>
 struct Merge<F, T, Nil>
 {
 	typedef T Type;
 };
+
+template<template <typename, typename> class F, typename T, typename List>
+using DoMerge = typename Merge<F, T, List>::Type;
 
 // ---------------------------------------------------------------------------
 
@@ -336,6 +381,7 @@ struct ListAnd
 };
 
 template<typename T1, typename T2>
+struct Or
 {
 	static const bool value = T1::value || T2::value;
 };
@@ -370,15 +416,15 @@ struct Contains<Nil, T>
 // ---------------------------------------------------------------------------
 
 template<typename Done, typename ToDo>
-struct UnifyImpl
+struct SetifyImpl
 {
-	typedef typename UnifyImpl
+	typedef typename SetifyImpl
 	<
 		DoIf
 		<
 			Contains<Done, Car<ToDo>>,
 			Identity<Done>,
-			ConsFn<Car<ToDo>, Done>
+			Identity<Cons<Car<ToDo>, Done>>
 		>,
 		Cdr<ToDo>
 	>::Type
@@ -386,40 +432,43 @@ struct UnifyImpl
 };
 
 template<typename Done>
-struct UnifyImpl<Done, Nil>
+struct SetifyImpl<Done, Nil>
 {
 	typedef DoReverse<Done> Type;
 };
 
 template<typename List>
-struct Unify
+struct Setify
 {
-	typedef typename UnifyImpl<Nil, List>::Type Type;
+	typedef typename SetifyImpl<Nil, List>::Type Type;
 };
+
+template<typename List>
+using DoSetify = typename Setify<List>::Type;
 
 // ---------------------------------------------------------------------------
 
-template<template <class> F, typename List>
+template<template <typename> class F, typename List>
 struct Filter
 {
 	typedef typename Filter<F, Cdr<List>>::Type Rest;
 
 	typedef DoIf
 	<
-		F<Car<List>>::value,
-		ConsFn<Car<List>, Rest>,
-		Rest
+		F<Car<List>>,
+		Identity<Cons<Car<List>, Rest>>,
+		Identity<Rest>
 	>
 	Type;
 };
 
-template<template <class> F>
+template<template <typename> class F>
 struct Filter<F, Nil>
 {
 	typedef Nil Type;
 };
 
-template<template <class> F, typename List>
+template<template <typename> class F, typename List>
 using DoFilter = typename Filter<F, List>::Type;
 
 // ---------------------------------------------------------------------------
@@ -428,10 +477,13 @@ template<typename List>
 struct CreateStateList
 {
 	template<typename T>
-	using DoGetStateFromTransition = MakeList<typename T::Origin, typename T::Destination>;
+	struct DoGetStateFromTransition
+	{
+		typedef MakeList<typename T::Origin, typename T::Destination> Type;
+	};
 
 	typedef DoFlatten<DoApply<DoGetStateFromTransition, List>> StateList;
-	typedef DoListToMap<DoUnify<StateList>> StateMap;
+	typedef DoListToMap<DoSetify<StateList>> StateMap;
 	typedef DoApply<ReverseCons, StateMap> Type;
 };
 
@@ -444,7 +496,10 @@ template<typename List>
 struct CreateTransitionDependencyList
 {
 	template<typename T>
-	using DoGetDependency = MakeList<typename T::Event, Cons<typename T::Origin, typename T::Destination>>;
+	struct DoGetDependency
+	{
+		typedef MakeList<typename T::Event, Cons<typename T::Origin, typename T::Destination>> Type;
+	};
 
 	typedef DoApply<DoGetDependency, List> RawDependencies;
 
@@ -452,13 +507,13 @@ struct CreateTransitionDependencyList
 	struct CollectDependencies
 	{
 		template<typename T>
-		using IsCorrectEvent = Same<Car<T>, E>;
+		using IsCorrectEvent = IsSame<Car<T>, E>;
 
-		typedef DoApply<Cdr, DoFilter<IsCorrectEvent, RawDependencies>> Dependencies;
+		typedef DoApply<CadrFn, DoFilter<IsCorrectEvent, RawDependencies>> Dependencies;
 		typedef MakeList<E, Dependencies> Type;
 	};
 
-	typedef DoUnify<DoApply<Car, RawDependencies>> EventList;
+	typedef DoSetify<DoApply<CarFn, RawDependencies>> EventList;
 	typedef DoApply<CollectDependencies, EventList> Type;
 };
 
@@ -476,14 +531,31 @@ struct State
 	static void leave(Data) { std::cout << "leave base" << std::endl; }
 };
 
+template<>
+struct State<void>
+{
+	typedef void Data;
+
+	static void enter(void) { std::cout << "enter base" << std::endl; }
+	static void leave(void) { std::cout << "leave base" << std::endl; }
+};
+
+template<class Event, typename Data>
+struct RuleImpl
+{
+	static void apply(const Event&, Data) { std::cout << "empty transition" << std::endl; }
+};
+
+template<class Event>
+struct RuleImpl<Event, void>
+{
+	static void apply(const Event&) { std::cout << "empty transition" << std::endl; }
+};
+
 template<class Origin, class Event, class Destination>
-struct Rule
+struct Rule : public RuleImpl<Event, typename Origin::Data>
 {
 	static_assert(IsSame<typename Origin::Data, typename Destination::Data>::value, "States need to have identical data-types!");
-
-	typedef typename Origin::Data Data;
-
-	static void apply(const Event&, Data) { std::cout << "empty transition" << std::endl; }
 };
 
 template<class O, class E, class D>
@@ -502,20 +574,25 @@ struct FSMBase
 	int state_;
 };
 
-template<typename E, typename L, typename S>
-struct TransImpl : public TransImpl<E, Cdr<L>, S>
+// ---------------------------------------------------------------------------
+
+template<typename E, typename D, typename L, typename S>
+struct TransImpl : public TransImpl<E, D, Cdr<L>, S>
 {
-	typedef TransImpl<E, Cdr<L>, S> Super;
+	typedef TransImpl<E, D, Cdr<L>, S> Super;
 	typedef E Event;
-	typedef Car<L> Transition;
+	typedef D Data;
 	typedef S StateList;
+	typedef Car<L> Transition;
 	typedef Car<Transition> Origin;
 	typedef Cdr<Transition> Destination;
 	typedef Rule<Origin, Event, Destination> TransitionFunction;
-	typedef typename TransitionFunction::Data Data;
 	static const int OriginID = DoGetValue<StateList, Origin>::value;
 	static const int DestinationID = DoGetValue<StateList, Destination>::value;
-	static const bool IsActualTransition = !Same<Origin, Destination>::value;
+	static const bool IsActualTransition = !IsSame<Origin, Destination>::value;
+
+	using FSMBase::get_state;
+	using FSMBase::set_state;
 
 	virtual void process(const Event& e, Data d)
 	{
@@ -538,37 +615,103 @@ struct TransImpl : public TransImpl<E, Cdr<L>, S>
 	}
 };
 
-template<typename E, typename S>
-struct TransImpl<E, Nil, S> : public virtual FSMBase
+template<typename E, typename D, typename S>
+struct TransImpl<E, D, Nil, S> : public virtual FSMBase
 {
-	typedef typename Caar<S>::Data Data;
-
-	virtual void process(const E& e, Data d)
+	virtual void process(const E& e, D d)
 	{
 		throw new std::string("ERR: transition does not exist!");
 	}
 };
 
-template<int ID, typename Inheritance>
-struct FSM : public Inheritance
+template<typename E, typename L, typename S>
+struct TransImpl<E, void, L, S> : public TransImpl<E, void, Cdr<L>, S>
 {
-	FSM() { set_state(ID); }
+	typedef TransImpl<E, void, Cdr<L>, S> Super;
+	typedef E Event;
+	typedef S StateList;
+	typedef Car<L> Transition;
+	typedef Car<Transition> Origin;
+	typedef Cdr<Transition> Destination;
+	typedef Rule<Origin, Event, Destination> TransitionFunction;
+	static const int OriginID = DoGetValue<StateList, Origin>::value;
+	static const int DestinationID = DoGetValue<StateList, Destination>::value;
+	static const bool IsActualTransition = !IsSame<Origin, Destination>::value;
+
+	using FSMBase::get_state;
+	using FSMBase::set_state;
+
+	virtual void process(const Event& e)
+	{
+		if(get_state() == OriginID)
+		{
+			if(IsActualTransition)
+				Origin::leave();
+
+			TransitionFunction::apply(e);
+
+			if(IsActualTransition)
+				Destination::enter();
+
+			set_state(DestinationID);
+		}
+		else
+		{
+			Super::process(e);
+		}
+	}
+};
+
+template<typename E, typename S>
+struct TransImpl<E, void, Nil, S> : public virtual FSMBase
+{
+	virtual void process(const E& e)
+	{
+		throw new std::string("ERR: transition does not exist!");
+	}
+};
+
+// ---------------------------------------------------------------------------
+
+template<typename T>
+struct ConstructFSMLineage : public Car<T>, public ConstructFSMLineage<Cdr<T>>
+{
+	using Car<T>::process;
+	using ConstructFSMLineage<Cdr<T>>::process;
+};
+
+template<typename T>
+struct ConstructFSMLineage<Cons<T, Nil>> : public T
+{
+	using T::process;
+};
+
+template<int ID, typename Lineage>
+struct FSM : public Lineage
+{
+	using Lineage::process;
+
+	FSM() { FSMBase::set_state(ID); }
 };
 
 template<typename I, typename T>
 struct FSMMaker
 {
 	typedef I InitialState;
+	typedef typename I::Data Data;
 	typedef DoCreateStateList<T> StateList;
 	typedef DoCreateTransitionDependencyList<T> Transitions;
 	static const int InitialID = DoGetValue<StateList, InitialState>::value;
 
-	template<typename T>
-	using CreateTransitionTree = TransImpl<Car<T>, Cdr<T>, StateList>;
+	template<typename TT>
+	struct CreateTransitionTree
+	{
+		typedef TransImpl<Car<TT>, Data, Cadr<TT>, StateList> Type;
+	};
 
-	typedef InheritLineage<DoApply<CreateTransitionTree, Transitions>> Inheritance;
+	typedef ConstructFSMLineage<DoApply<CreateTransitionTree, Transitions>> Lineage;
 
-	typedef FSM<InitialID, Inheritance> Type;
+	typedef FSM<InitialID, Lineage> Type;
 };
 
 template<typename I, typename T>
@@ -582,7 +725,7 @@ struct A : public State<void>
 	{
 		std::cout << "enter A" << std::endl;
 	}
-}
+};
 
 struct B : public State<void>
 {
@@ -612,7 +755,7 @@ struct Rule<A, Ea, B>
 //template<>
 //struct Rule<A, Eb, A>
 //{
-//	static void apply(const Ea& e)
+//	static void apply(const Eb& e)
 //	{
 //		std::cout << "A -a> B" << std::endl;
 //	}
@@ -630,7 +773,7 @@ struct Rule<B, Ea, A>
 template<>
 struct Rule<B, Eb, A>
 {
-	static void apply(const Ea& e)
+	static void apply(const Eb& e)
 	{
 		std::cout << "B -b> A" << std::endl;
 	}
@@ -649,7 +792,7 @@ typedef MakeFSM
 >
 MyFSM;
 
-int main(void)
+int main(int argc, char *argv[])
 {
 	MyFSM fsm;
 
@@ -660,300 +803,3 @@ int main(void)
 	return 0;
 }
 
-// ---------------------------------------------------------------------------
-
-//template<int ID, typename Transitions>
-//struct Processor;
-//
-//template<int ID, typename H, typename T>
-//struct Processor<ID, Cons<H, T>>
-//{
-//	typedef typename H::Event Event;
-//	typedef typename H::Transition Transition;
-//	typedef typename H::StateTable StateTable;
-//	static const int OriginID = StateTable::template Lookup<typename Transition::Origin>::value;
-//	static const int DestinationID = StateTable::template Lookup<typename Transition::Destination>::value;
-//
-//	void process(Event& e)
-//	{
-//	}
-//};
-//
-//
-//
-//template<int ID, typename T>
-//struct Test;
-//
-//template<int I, typename H, typename T>
-//struct Test<I, Cons<H, T>> : public Test<I + 1, T>
-//{
-//	static const int ID = I;
-//	typedef Test<I + 1, T> Super;
-//
-//	using Super::process;
-//
-//	void process(const H&)
-//	{
-//		std::cout << ID << std::endl;
-//	}
-//};
-//
-//template<int I>
-//struct Test<I, Nil>
-//{
-//	void process(void) { }
-//};
-//
-//class A { };
-//class B { };
-//class C { };
-//
-//typedef Test<0, MakeList<A, B, C>> MyTest;
-//
-//int main(void)
-//{
-//	MyTest t;
-//
-//	t.process(A());
-//	t.process(B());
-//	t.process(C());
-//
-//	return 0;
-//}
-//
-//template<class S1, class S2, class T>
-//struct Transition;
-//
-//template
-//<
-//	typename T,
-//	template <typename> S1, 
-//	template <typename> S2,
-//	template <typename> F
-//>
-//struct Transition<S1<T>, S2<T>, F<T>>
-//{
-//	typedef S1<T> OriginState;
-//	typedef S2<T> DestinationState;
-//	typedef F<T> TransitionFunction;
-//	typedef T Data;
-//
-//	static void transition(Data data)
-//	{
-//		OriginState::leave(data);
-//		TransitionFunction::apply(data);
-//		DestinationState::enter(data);
-//	}
-//};
-//
-//// ---------------------------------------------------------------------------
-//
-//template<typename T, typename TT>
-//struct FSM
-//{
-//	typedef T Data;
-//	typedef TT Transitions;
-//};
-//
-//template<typename T>
-//class Allocator
-//{
-//	public:
-//		static T *allocate( );
-//	
-//	private:
-//		static T *allocated;
-//};
-//
-//template<typename T>
-//T *Allocator<T>::allocated = nullptr;
-//
-//template<typename T>
-//T *Allocator<T>::allocate(void)
-//{
-//	if(allocated)
-//		delete allocated;
-//
-//	return allocated = new T;
-//}
-//
-//// ---------------------------------------------------------------------------
-//
-//template<typename T, typename E>
-//struct LookupWrapper;
-//
-//template<typename H, typename T, typename E>
-//struct LookupWrapper<Cons<H, T>, E>
-//{
-//	typedef typename LookupWrapper<T, E>::Handler Handler;
-//};
-//
-//template<typename H, typename T>
-//struct LookupWrapper<Cons<H, T>, typename H::Event>
-//{
-//	typedef typename H::Handler Handler;
-//};
-//
-//template<typename Transitions>
-//struct Table;
-//
-//template<typename T, typename TT>
-//struct Table<Cons<T, TT>>
-//{
-//	template<typename E>
-//	struct Lookup
-//	{
-//		typedef typename LookupWrapper<Cons<T, TT>, E>::Handler Handler;
-//	};
-//};
-//
-//template<typename State>
-//struct Transitioner
-//{
-//	typedef typename State::BaseState BaseState;
-//	typedef typename State::Data Data;
-//
-//	template<typename E, const BaseState *(State::*F)(Data *) const>
-//	struct Transition
-//	{
-//		typedef E Event;
-//
-//		struct Handler
-//		{
-//			static const BaseState *handle(State *state, Data *data)
-//			{
-//				return (state->*F)(data);
-//			}
-//		};
-//	};
-//};
-//
-//// ---------------------------------------------------------------------------
-//
-//template<typename InitialState>
-//class FSM
-//{
-//	private:
-//		typedef typename InitialState::Data Data;
-//		typedef typename InitialState::BaseState BaseState;
-//
-//	public:
-//		FSM( ) 
-//			: state_(InitialState::instance())
-//			, data_(Allocator<Data>::allocate()) 
-//			{ }
-//		~FSM( ) { delete data_; }
-//		template<typename E>
-//			void consume(const E&);
-//	private:
-//		const BaseState *state_;
-//		Data *data_;
-//};
-//
-//template<typename T>
-//template<typename E>
-//void FSM<T>::consume(const E& e)
-//{
-//	state_ = state_->consume(e, data_);
-//}
-//
-//// ===========================================================================
-//
-//#define MAKELOOKUPFOR(state,...) \
-//template<typename E> struct Lookup { \
-//struct LookupGenerator : public Transitioner<state> { \
-//typedef Table<MakeList<__VA_ARGS__>> StateTable; \
-//}; \
-//typedef typename LookupGenerator::StateTable StateTable; \
-//typedef typename StateTable::template Lookup<E>::Handler Handler; \
-//}; \
-//static BaseState *instance() { static state inst; return &inst; } \
-//template<typename E> \
-//const BaseState *consume(const E&, Data *data) const { \
-//	typedef typename Lookup<E>::Handler Handler; \
-//	return Handler::handle(this, data); \
-//}
-//
-//template<typename T>
-//struct CommonState
-//{
-//	typedef CommonState<T> BaseState;
-//	typedef T Data;
-//
-//	template<typename E>
-//	const BaseState *consume(const E&, Data *) const
-//	{
-//		throw new std::string("FUCK");
-//	}
-//};
-//
-//struct EventA { };
-//struct EventB { };
-//
-//struct MyState : public CommonState<Nil>
-//{
-//};
-//
-//struct StateB : public MyState
-//{
-//	const BaseState *reactA(Data *data) const
-//	{
-//		std::cout << "B:A" << std::endl;
-//
-//		return this;
-//	}
-//
-//	const BaseState *reactB(Data *data) const
-//	{
-//		std::cout << "B:B" << std::endl;
-//
-//		return this;
-//	}
-//
-//	MAKELOOKUPFOR(StateB,
-//		Transition<EventA, &StateB::reactA>,
-//		Transition<EventB, &StateB::reactB>
-//	)
-//};
-//
-//struct StateA : public MyState
-//{
-//	const BaseState *reactA(Data *data) const
-//	{
-//		std::cout << "A:A" << std::endl;
-//
-//		return StateB::instance();
-//	}
-//
-//	const BaseState *reactB(Data *data) const
-//	{
-//		std::cout << "A:B" << std::endl;
-//
-//		return this;
-//	}
-//
-//	MAKELOOKUPFOR(StateA,
-//		Transition<EventA, &StateA::reactA>,
-//		Transition<EventB, &StateA::reactB>
-//	)
-//};
-//
-//typedef FSM<StateA> MyFSM;
-//
-//// =========================================================================== 
-//
-//int main(void)
-//{
-//	MyFSM fsm;
-//
-//	EventA a;
-//	EventB b;
-//
-//	fsm.consume(b);
-//	fsm.consume(a);
-//	fsm.consume(b);
-//	fsm.consume(a);
-//
-//	return 0;
-//}
-//
