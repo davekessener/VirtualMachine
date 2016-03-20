@@ -1,19 +1,21 @@
-#ifndef DAV_TEST_UNITTEST_H
-#define DAV_TEST_UNITTEST_H
+#ifndef DAV_LIB_TEST_UNITTEST_H
+#define DAV_LIB_TEST_UNITTEST_H
 
 #include <test/TestManager.h>
+#include <test/UnitTest.h>
 
-#define MXT_STRINGIFY(a) #a
+#define MXT_STRINGIFY_IMPL(a) #a
+#define MXT_STRINGIFY(a) MXT_STRINGIFY_IMPL(a)
 
 // # ---------------------------------------------------------------------------
 
 #define BEGIN \
 namespace TEST_CASE_NAME { \
-struct Base { }; \
+struct Base : public ::lib::test::UnitTest { }; \
 static ::lib::test::TestManager::Selector select_unit_##TEST_CASE_NAME(MXT_STRINGIFY(TEST_CASE_NAME)); \
 template<typename T> struct Data { }; \
-template<typename T> struct Before : public virtual Data<T> { void setup(void) { } }; \
-template<typename T> struct After : public virtual Data<T> { void teardown(void) { } };
+template<typename T> struct Before : public virtual Data<T> { }; \
+template<typename T> struct After : public virtual Data<T> { };
 
 // # ---------------------------------------------------------------------------
 
@@ -33,9 +35,9 @@ struct Data<Base>
 template<> \
 struct Before<Base> : public virtual Data<Base> \
 { \
-	void setup( ); \
+	Before( ); \
 }; \
-void Before<Base>::setup(void)
+Before<Base>::Before(void)
 
 // # ---------------------------------------------------------------------------
 
@@ -43,14 +45,14 @@ void Before<Base>::setup(void)
 template<> \
 struct After<Base> : public virtual Data<Base> \
 { \
-	void teardown( ); \
+	virtual ~After( ); \
 }; \
-void After<Base>::teardown(void)
+After<Base>::~After(void)
 
 // # ---------------------------------------------------------------------------
 
 #define TEST(test_name) \
-struct test_name : public Before<Base>, public After<Base> \
+struct test_name : public Before<Base>, public After<Base>, public Base \
 { \
 	void test( ); \
 	static void wrapper( ); \
@@ -58,9 +60,7 @@ struct test_name : public Before<Base>, public After<Base> \
 void test_name::wrapper(void) \
 { \
 	test_name t; \
-	t.setup(); \
 	t.test(); \
-	t.teardown(); \
 } \
 static ::lib::test::TestManager::Registrar register_##test_name(#test_name, &test_name::wrapper); \
 void test_name::test(void)

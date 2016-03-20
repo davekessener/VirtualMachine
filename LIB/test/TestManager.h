@@ -29,12 +29,19 @@ namespace lib
 					}
 				};
 
+				struct Log
+				{
+					virtual std::string read( );
+					virtual bool isEmpty( ) const;
+				};
+
 			public:
 				static TestManager& Instance( );
 
 				void setUnit(const std::string&);
 				void addTest(const std::string&, testFn);
 				int run( );
+				Log& getLog( );
 			private:
 				TestManager( );
 				~TestManager( );
